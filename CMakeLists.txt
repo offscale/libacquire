@@ -155,5 +155,7 @@ else()
 endif()
 
 add_executable(acquire ${src})
-message(STATUS "CURL_LINK_LIBRARIES is ${CURL_LINK_LIBRARIES}")
 target_include_directories(acquire PUBLIC ${PROJECT_BINARY_DIR}/src)
+if(DEFINED CURL_LINK_LIBRARIES)
+    target_link_libraries(acquire ${CURL_LINK_LIBRARIES})
+endif()

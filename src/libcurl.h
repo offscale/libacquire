@@ -6,6 +6,7 @@
 
 #include "stdbool.h"
 #include "errors.h"
+#include "curl_fopen.h"
 
 const char* get_download_dir() {
     return ".downloads";
@@ -13,13 +14,15 @@ const char* get_download_dir() {
 
 bool is_downloaded(const char *url, const char *checksum);
 
-int download(const char *url, const char *checksum, const char *target_directory, bool follow, size_t retry) {
+int download_to_stdout(const char *url, const char *checksum, const char *target_directory, bool follow, size_t retry) {
     CURL *curl = curl_easy_init();
     if(curl) {
         CURLcode res;
         curl_easy_setopt(curl, CURLOPT_URL, url);
         if (url[0] == 'f' && url[1] == 't' && url[2] == 'p' && url[3] == 's')
             curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+        else
+            curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
         /* >=TLS1.2  */
         curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST, "NULL-SHA256 AES128-SHA256 AES256-SHA256 AES128-GCM-SHA256 "
                                                         "AES256-GCM-SHA384 DH-RSA-AES128-SHA256 DH-RSA-AES256-SHA256 "
@@ -48,6 +51,54 @@ int download(const char *url, const char *checksum, const char *target_directory
     }
     return EXIT_FAILURE;
 }
+
+/* Small main program to retrieve from a url using fgets and fread saving the
+ * output to two test files (note the fgets method will corrupt binary files if
+ * they contain 0 chars */
+int download(const char *url, const char *checksum, const char *target_directory, bool follow, size_t retry)
+{
+    URL_FILE *handle;
+    FILE *outf;
+
+    size_t nread;
+    char buffer[256];
+
+    /* copy from url line by line with fgets */
+    outf = fopen(strcat(strdup(target_directory), "/downloaded_file.fgets.txt"), "wb+");
+    if(!outf) {
+        perror("couldn't open fgets output file\n");
+        return 1;
+    }
+
+    handle = url_fopen(url, "r");
+    if(!handle) {
+        printf("couldn't url_fopen() %s\n", url);
+        fclose(outf);
+        return 2;
+    }
+
+    while(!url_feof(handle)) {
+        url_fgets(buffer, sizeof(buffer), handle);
+        fwrite(buffer, 1, strlen(buffer), outf);
+    }
+
+    url_fclose(handle);
+
+    fclose(outf);
+
+
+    /* Copy from url with fread */
+    outf = fopen(strcat(strdup(target_directory), "/downloaded_file.fread.txt"), "wb+");
+    if(!outf) {
+        perror("couldn't open fread output file\n");
+        return 1;
+    }
+
+    fclose(outf);
+
+    return 0;/* all done */
+}
+
 
 int download_many(const char *url[], const char *checksum, const char *target_directory, bool follow, size_t retry) {
     return UNIMPLEMENTED;
