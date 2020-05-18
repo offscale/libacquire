@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
         args.directory = TMPDIR;
 
     printf("`args.url`:\t\"%s\"\n", args.url);
-    download(args.url, NULL, args.directory, false, 0);
+    download(args.url, NULL, args.directory, false, 0, 0);
 
     return EXIT_SUCCESS;
 }
