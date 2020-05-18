@@ -1,0 +1,14 @@
+'''acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.
+
+Usage:
+  acquire --check <url>...
+  acquire --directory=<d> <url>...
+  acquire --help
+  acquire --version
+
+Options:
+  -h --help             Show this screen.
+  --version             Show version.
+  --check               Check if already downloaded.
+  -d, --directory=<d>   Location to download files to.
+  -o FILE --output=FILE Output file. If not specified, will derive from URL.'''

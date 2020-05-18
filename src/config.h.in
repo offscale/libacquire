@@ -1,0 +1,17 @@
+#ifndef OSBUILD_VERSION_H
+#define OSBUILD_VERSION_H
+
+#define VERSION "@libacquire_VERSION@"
+#define TMPDIR "@TMPDIR@"
+#if @LIBCURL@ == 1
+#define USE_LIBCURL @LIBCURL@
+#endif
+
+#if @HAVE_LIMITS_H@ == 1
+#define HAVE_LIMITS_H @HAVE_LIMITS_H@
+#else
+#define HAVE_SYS_LIMITS_H @HAVE_SYS_LIMITS_H@
+#endif
+
+
+#endif

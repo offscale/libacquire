@@ -1,0 +1,7 @@
+#ifndef OSBUILD_ERRORS_H
+#define OSBUILD_ERRORS_H
+
+#define UNEXPECTED_CHILD_STATUS 400
+#define UNIMPLEMENTED 500
+
+#endif

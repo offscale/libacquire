@@ -1,0 +1,14 @@
+FROM debian
+
+COPY . /libacquire
+
+WORKDIR /libacquire
+
+RUN apt-get update -qq && \
+    apt-get install -y gcc cmake make libc-dev && \
+    mkdir 'cmake-build-docker-debug' && \
+    cd '/libacquire/cmake-build-docker-debug' && \
+    cmake -DCMAKE_BUILD_TYPE='Debug' .. && \
+    cmake --build "$PWD" && chmod +x ./libacquire
+
+CMD /libacquire/cmake-build-docker-debug/libacquire
