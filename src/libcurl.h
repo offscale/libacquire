@@ -6,16 +6,50 @@
 
 #include "stdbool.h"
 #include "errors.h"
+#include "stringutils.h"
 
-const char* get_download_dir() {
+#if defined(_AIX)
+#include <sys/limits.h>
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
+|| defined(__OpenBSD__) || defined(__bsdi__)
+|| defined(__DragonFly__) || defined(macintosh)
+|| defined(__APPLE__) || defined(__APPLE_CC__)
+#include <sys/syslimits.h>
+#elif defined(__HAIKU__)
+#include <system/user_runtime.h>
+#elif defined(__linux__) || defined(linux) || defined(__linux)
+#include <linux/version.h>
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22)
+#include <linux/limits.h>
+#endif
+#elif defined(sun) || defined(__sun) || defined(__SVR4) || defined(__svr4__)
+#include <sys/param.h>
+#else
+
+#include <limits.h>
+
+#endif
+
+#ifndef NAME_MAX
+#ifdef PATH_MAX
+#define NAME_MAX PATH_MAX
+#else
+#define NAME_MAX 4096
+#endif
+#endif
+
+#include <memory.h>
+
+const char *get_download_dir() {
     return ".downloads";
 }
 
 bool is_downloaded(const char *url, const char *checksum);
 
-int download_to_stdout(const char *url, const char *checksum, const char *target_directory, bool follow, size_t retry) {
+int download_to_stdout(const char *url, const char *checksum, const char *target_directory,
+                       bool follow, size_t retry) {
     CURL *curl = curl_easy_init();
-    if(curl) {
+    if (curl) {
         CURLcode res;
         curl_easy_setopt(curl, CURLOPT_URL, url);
 
@@ -26,100 +60,149 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
     return EXIT_FAILURE;
 }
 
-/*
- * This callback sets the filename where output shall be written when
- * curl options --remote-name (-O) and --remote-header-name (-J) have
- * been simultaneously given and additionally server returns an HTTP
- * Content-Disposition header specifying a filename property.
- */
-static void set_filename() {
-    /*curl_easy_getinfo(per->curl, CURLINFO_PROTOCOL, CURLPROTO_HTTPS);
-    if(checkprefix("Content-disposition:", str)) {
-        const char *p = str + 20;*/
+struct dnld_params_t {
+    char dnld_remote_fname[NAME_MAX];
+    char dnld_full_local_fname[NAME_MAX];
+    char dnld_url[NAME_MAX];
+    FILE *dnld_stream;
+    FILE *dbg_stream;
+    uint64_t dnld_file_sz;
+};
 
-        /* look for the 'filename=' parameter
-           (encoded filenames (*=) are not supported) */
-        /*for(;;) {
-            char *filename;
-            size_t len;
+static int get_oname_from_cd(char const *const cd, char *oname) {
+    char const *const cdtag = "Content-disposition:";
+    char const *const key = "filename=";
+    int ret = 0;
+    char *val = NULL;
 
-            while(*p && (p < end) && !ISALPHA(*p))
-                p++;
-            if(p > end - 9)
-                break;
+    /* Example Content-Disposition: filename=name1367; charset=funny; option=strange */
 
-            if(memcmp(p, "filename=", 9)) {*/
-                /* no match, find next parameter */
-                /*while((p < end) && (*p != ';'))
-                    p++;
-                continue;
-            }
-            p += 9;*/
+    /* If filename is present */
+    val = strcasestr(cd, key);
+    if (!val) {
+        printf("No key-value for \"%s\" in \"%s\"", key, cdtag);
+        goto bail;
+    }
 
-            /* this expression below typecasts 'cb' only to avoid
-               warning: signed and unsigned type in conditional expression
-            */
-            /*len = (ssize_t)cb - (p - str);
-            filename = parse_filename(p, len);
-            if(filename) {
-                if(outs->stream) {
-                    int rc;*/
-                    /* already opened and possibly written to */
-                    /*if(outs->fopened)
-                        fclose(outs->stream);
-                    outs->stream = NULL;*/
+    /* Move to value */
+    val += strlen(key);
 
-                    /* rename the initial file name to the new file name */
-                    /*rc = rename(outs->filename, filename);
-                    if(rc != 0) {
-                        warnf(per->config->global, "Failed to rename %s -> %s: %s\n",
-                              outs->filename, filename, strerror(errno));
-                    }
-                    if(outs->alloc_filename)
-                        Curl_safefree(outs->filename);
-                    if(rc != 0) {
-                        free(filename);
-                        return failure;
-                    }
-                }
-                outs->is_cd_filename = TRUE;
-                outs->s_isreg = TRUE;
-                outs->fopened = FALSE;
-                outs->filename = filename;
-                outs->alloc_filename = TRUE;
-                hdrcbdata->honor_cd_filename = FALSE; */ /* done now! */
-                /*if(!tool_create_output_file(outs, per->config))
-                    return failure;
-            }
-            break;
+    /* Copy value as oname */
+    while (*val != '\0' && *val != ';') {
+        //printf (".... %c\n", *val);
+        *oname++ = *val++;
+    }
+    *oname = '\0';
+
+    bail:
+    return ret;
+}
+
+static int get_oname_from_url(char const *url, char *oname) {
+    int ret = 0;
+    char const *u = url;
+
+    /* Remove "http(s)://" */
+    u = strstr(u, "://");
+    if (u)
+        u += strlen("://");
+
+    u = strrchr(u, '/');
+
+    /* Remove last '/' */
+    u++;
+
+    /* Copy value as oname */
+    while (*u != '\0') {
+        //printf (".... %c\n", *u);
+        *oname++ = *u++;
+    }
+    *oname = '\0';
+
+    return ret;
+}
+
+size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
+    const size_t cb = size * nmemb;
+    const char *hdr_str = hdr;
+    struct dnld_params_t *dnld_params = (struct dnld_params_t *) userdata;
+    char const *const cdtag = "Content-disposition:";
+
+    /* Example:
+     * ...
+     * Content-Type: text/html
+     * Content-Disposition: filename=name1367; charset=funny; option=strange
+     */
+    if (strstr(hdr_str, "Content-disposition:"))
+        printf("has c-d: %s\n", hdr_str);
+
+    if (!strncasecmp(hdr_str, cdtag, strlen(cdtag))) {
+        printf("Found c-d: %s\n", hdr_str);
+        int ret = get_oname_from_cd(hdr_str + strlen(cdtag), dnld_params->dnld_remote_fname);
+        if (ret) {
+            printf("ERR: bad remote name");
         }
-        if(!outs->stream && !tool_create_output_file(outs, per->config))
-            return failure;
-    }*/
+    }
+
+    return cb;
 }
 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-    size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
-    return written;
+FILE *get_dnld_stream(char const *const fname) {
+    FILE *fp = fopen(fname, "wb");
+    if (!fp) {
+        printf("Could not create file %s\n", fname);
+    }
+
+    return fp;
 }
 
-int download(const char *url, const char *checksum, const char *target_directory, bool follow, size_t retry, size_t verbosity)
-{
-    /* Function body mostly from https://github.com/curl/curl/blob/4c2f5d5/docs/examples/url2file.c  */
+size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
+    size_t ret = 0;
+    struct dnld_params_t *dnld_params = (struct dnld_params_t *) userdata;
+
+    if (!dnld_params->dnld_remote_fname[0]) {
+        ret = get_oname_from_url(dnld_params->dnld_url, dnld_params->dnld_remote_fname);
+    }
+
+    if (!dnld_params->dnld_stream) {
+        dnld_params->dnld_stream = get_dnld_stream(dnld_params->dnld_full_local_fname);
+    }
+
+    ret = fwrite(buffer, sz, nmemb, dnld_params->dnld_stream);
+
+    if (ret == (sz * nmemb)) {
+        dnld_params->dnld_file_sz += ret;
+    }
+    return ret;
+}
+
+
+int download(const char *url, const char *checksum, const char *target_directory,
+             bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
-    CURLcode res;
-    static const char *pagefilename = "page.out";
+    int ret = -1;
+    CURLcode cerr = CURLE_OK;
+    struct dnld_params_t dnld_params;
     FILE *pagefile;
+    char fname[NAME_MAX];
+    size_t i;
+    const char *path;
 
     curl_global_init(CURL_GLOBAL_ALL);
 
-    /* init the curl session */
-    curl = curl_easy_init();
-    if (!curl) return EXIT_FAILURE;
+    memset(&dnld_params, 0, sizeof(dnld_params));
+    strncpy(dnld_params.dnld_url, url, strlen(url));
 
-    /* set URL to get here */
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl = curl_easy_init();
+    if (!curl) {
+        goto bail;
+    }
+
+    cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (cerr) {
+        printf("%s: failed with err %d\n", "URL", cerr);
+        goto bail;
+    }
 
     if (url[0] == 'f' && url[1] == 't' && url[2] == 'p' && url[3] == 's')
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
@@ -153,38 +236,73 @@ int download(const char *url, const char *checksum, const char *target_directory
     /* disable progress meter, set to 0L to enable it */
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
-    /* send all data to this function  */
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-
-    /* open the file */
-    pagefile = fopen(pagefilename, "wb");
-    if (pagefile) {
-        /* write the page body to this file handle */
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, pagefile);
-
-        /* get it! */
-        res = curl_easy_perform(curl);
-
-        /* close the header file */
-        fclose(pagefile);
+    cerr = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, dnld_header_parse);
+    if (cerr) {
+        printf("%s: failed with err %d\n", "HEADER", cerr);
+        goto bail;
     }
 
-    /* cleanup curl stuff */
-    curl_easy_cleanup(curl);
+    cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
+    if (cerr) {
+        printf("%s: failed with err %d\n", "HEADER DATA", cerr);
+        goto bail;
+    }
 
+    if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
+        path = get_path_from_url(url);
+        for (i = 0; i < strlen(path); i++)
+            dnld_params.dnld_remote_fname[i] = path[i];
+        dnld_params.dnld_remote_fname[i + 1] = '\0';
+    }
+
+    if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
+        printf("unable to derive a filename to save to, from: %s\n", url);
+        goto bail;
+    }
+
+    snprintf(dnld_params.dnld_full_local_fname, sizeof(dnld_params.dnld_full_local_fname),
+             "%s/%s", target_directory, dnld_params.dnld_remote_fname);
+
+    printf("target_directory:\t\t\t\t\t %s\n"
+           "dnld_params.dnld_remote_fname:\t %s\n"
+           "dnld_params.dnld_full_local_fname:\t %s\n",
+           target_directory, dnld_params.dnld_remote_fname, dnld_params.dnld_full_local_fname);
+
+    cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+    if (cerr) {
+        printf("%s: failed with err %d\n", "WR CB", cerr);
+        goto bail;
+    }
+
+    cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
+    if (cerr) {
+        printf("%s: failed with err %d\n", "WR Data", cerr);
+        goto bail;
+    }
+
+
+    cerr = curl_easy_perform(curl);
+    if (cerr != CURLE_OK) {
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(cerr));
+    }
+
+    printf("Remote name: %s\n", dnld_params.dnld_remote_fname);
+    fclose(dnld_params.dnld_stream);
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    if (res != CURLE_OK) {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        return EXIT_FAILURE;
-    }
-    return EXIT_SUCCESS;
+    ret = 0;
+    printf("file size : %llu\n", dnld_params.dnld_file_sz);
+
+    bail:
+    return ret;
 }
 
-
-int download_many(const char *url[], const char *checksum, const char *target_directory, bool follow, size_t retry, size_t verbosity) {
+int download_many(const char *url[], const char *checksum, const char *target_directory,
+                  bool follow, size_t retry, size_t verbosity) {
     return UNIMPLEMENTED;
 }
-
 
 #endif //LIBACQUIRE_LIBCURL_H
