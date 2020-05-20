@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: build
         run: |
-          apt-get install -y libssl-dev
+          sudo apt-get install -y libssl-dev
           mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: build
         run: |
-          brew install openssl
+          brew install openssl pkg-config
           mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
