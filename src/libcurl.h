@@ -94,7 +94,7 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
 
     /* Copy value as oname */
     while (*val != '\0' && *val != ';') {
-        //fprintf (stderr, ".... %c\n", *val);
+        /* fprintf (stderr, ".... %c\n", *val); */
         *oname++ = *val++;
     }
     *oname = '\0';
@@ -251,7 +251,7 @@ int download(const char *url, const char *checksum, const char target_directory[
         goto bail;
     }
 
-    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX,
+    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX -1,
              "%s/%s", target_directory, dnld_params.dnld_remote_fname);
 
     if (is_file(dnld_params.dnld_full_local_fname)) {

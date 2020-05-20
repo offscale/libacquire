@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: build
         run: |
-          brew install openssl pkg-config
+          brew install pkg-config  # openssl
           mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
