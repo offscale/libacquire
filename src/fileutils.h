@@ -47,4 +47,4 @@ extern bool exists(const char *path) {
 #endif
 }
 
-#endif //LIBACQUIRE_FILEUTILS_H
+#endif /* LIBACQUIRE_FILEUTILS_H */

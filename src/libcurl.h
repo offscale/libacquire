@@ -2,6 +2,8 @@
 #define LIBACQUIRE_LIBCURL_H
 
 #include <stdlib.h>
+#include <stdint.h>
+
 #include <curl/curl.h>
 
 #include "stdbool.h"
@@ -65,7 +67,7 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
 }
 
 struct dnld_params_t {
-    char dnld_remote_fname[NAME_MAX];
+    char dnld_remote_fname[255];
     char dnld_full_local_fname[NAME_MAX];
     char dnld_url[NAME_MAX];
     FILE *dnld_stream;
@@ -81,7 +83,7 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
     /* Example Content-Disposition: filename=name1367; charset=funny; option=strange */
 
     /* If filename is present */
-    val = strcasestr(cd, key);
+    val = strcasestr((const char*)cd, (const char*)key);
     if (!val) {
         fprintf(stderr, "No key-value for \"%s\" in \"%s\"", key, cdtag);
         return EXIT_FAILURE;
@@ -249,7 +251,7 @@ int download(const char *url, const char *checksum, const char *target_directory
         goto bail;
     }
 
-    snprintf(dnld_params.dnld_full_local_fname, sizeof(dnld_params.dnld_full_local_fname),
+    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX,
              "%s/%s", target_directory, dnld_params.dnld_remote_fname);
 
     if (is_file(dnld_params.dnld_full_local_fname)) {
@@ -294,4 +296,4 @@ int download_many(const char *url[], const char *checksum, const char *target_di
     return UNIMPLEMENTED;
 }
 
-#endif //LIBACQUIRE_LIBCURL_H
+#endif /* LIBACQUIRE_LIBCURL_H */

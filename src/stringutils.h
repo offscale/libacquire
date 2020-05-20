@@ -15,4 +15,4 @@ const char *get_path_from_url(const char *url) {
     return end_possible_query;
 }
 
-#endif //LIBACQUIRE_STRINGUTILS_H
+#endif /* LIBACQUIRE_STRINGUTILS_H */
