@@ -69,7 +69,7 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
 struct dnld_params_t {
     char dnld_remote_fname[255];
     char dnld_full_local_fname[NAME_MAX];
-    char dnld_url[NAME_MAX];
+    char dnld_url[2083];
     FILE *dnld_stream;
     /* FILE *dbg_stream; */
     uint64_t dnld_file_sz;
@@ -183,7 +183,7 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
 }
 
 
-int download(const char *url, const char *checksum, const char *target_directory,
+int download(const char *url, const char *checksum, const char target_directory[248],
              bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
     CURLcode cerr = CURLE_OK;
