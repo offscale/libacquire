@@ -7,6 +7,7 @@
 #include "stdbool.h"
 #include "errors.h"
 #include "stringutils.h"
+#include "fileutils.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>
@@ -50,11 +51,14 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
                        bool follow, size_t retry) {
     CURL *curl = curl_easy_init();
     if (curl) {
-        CURLcode res;
-        curl_easy_setopt(curl, CURLOPT_URL, url);
+        CURLcode res = curl_easy_setopt(curl, CURLOPT_URL, url);
+        if (res != CURLE_OK)
+            return EXIT_FAILURE;
 
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
+        if (res != CURLE_OK)
+            return EXIT_FAILURE;
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
@@ -65,14 +69,13 @@ struct dnld_params_t {
     char dnld_full_local_fname[NAME_MAX];
     char dnld_url[NAME_MAX];
     FILE *dnld_stream;
-    FILE *dbg_stream;
+    /* FILE *dbg_stream; */
     uint64_t dnld_file_sz;
 };
 
 static int get_oname_from_cd(char const *const cd, char *oname) {
     char const *const cdtag = "Content-disposition:";
     char const *const key = "filename=";
-    int ret = 0;
     char *val = NULL;
 
     /* Example Content-Disposition: filename=name1367; charset=funny; option=strange */
@@ -80,8 +83,8 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
     /* If filename is present */
     val = strcasestr(cd, key);
     if (!val) {
-        printf("No key-value for \"%s\" in \"%s\"", key, cdtag);
-        goto bail;
+        fprintf(stderr, "No key-value for \"%s\" in \"%s\"", key, cdtag);
+        return EXIT_FAILURE;
     }
 
     /* Move to value */
@@ -89,17 +92,15 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
 
     /* Copy value as oname */
     while (*val != '\0' && *val != ';') {
-        //printf (".... %c\n", *val);
+        //fprintf (stderr, ".... %c\n", *val);
         *oname++ = *val++;
     }
     *oname = '\0';
 
-    bail:
-    return ret;
+    return EXIT_SUCCESS;
 }
 
 static int get_oname_from_url(char const *url, char *oname) {
-    int ret = 0;
     char const *u = url;
 
     /* Remove "http(s)://" */
@@ -114,12 +115,12 @@ static int get_oname_from_url(char const *url, char *oname) {
 
     /* Copy value as oname */
     while (*u != '\0') {
-        //printf (".... %c\n", *u);
+        /* fprintf (stderr, ".... %c\n", *u); */
         *oname++ = *u++;
     }
     *oname = '\0';
 
-    return ret;
+    return EXIT_SUCCESS;
 }
 
 size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
@@ -133,15 +134,14 @@ size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
      * Content-Type: text/html
      * Content-Disposition: filename=name1367; charset=funny; option=strange
      */
-    if (strstr(hdr_str, "Content-disposition:"))
-        printf("has c-d: %s\n", hdr_str);
+    /* if (strstr(hdr_str, "Content-disposition:"))
+        fprintf(stderr, "has c-d: %s\n", hdr_str);*/
 
     if (!strncasecmp(hdr_str, cdtag, strlen(cdtag))) {
-        printf("Found c-d: %s\n", hdr_str);
+        /* fprintf(stderr, "Found c-d: %s\n", hdr_str); */
         int ret = get_oname_from_cd(hdr_str + strlen(cdtag), dnld_params->dnld_remote_fname);
-        if (ret) {
-            printf("ERR: bad remote name");
-        }
+        if (ret)
+            fprintf(stderr, "ERR: bad remote name");
     }
 
     return cb;
@@ -150,7 +150,8 @@ size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
 FILE *get_dnld_stream(char const *const fname) {
     FILE *fp = fopen(fname, "wb");
     if (!fp) {
-        printf("Could not create file %s\n", fname);
+        fprintf(stderr, "Could not create file %s\n", fname);
+        return NULL;
     }
 
     return fp;
@@ -163,6 +164,9 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
     if (!dnld_params->dnld_remote_fname[0]) {
         ret = get_oname_from_url(dnld_params->dnld_url, dnld_params->dnld_remote_fname);
     }
+
+    if (ret != 0)
+        return ret;
 
     if (!dnld_params->dnld_stream) {
         dnld_params->dnld_stream = get_dnld_stream(dnld_params->dnld_full_local_fname);
@@ -180,13 +184,15 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
 int download(const char *url, const char *checksum, const char *target_directory,
              bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
-    int ret = -1;
     CURLcode cerr = CURLE_OK;
     struct dnld_params_t dnld_params;
-    FILE *pagefile;
-    char fname[NAME_MAX];
     size_t i;
     const char *path;
+
+    if (!is_directory(target_directory)) {
+        fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again`\n", target_directory);
+        return CURLINFO_OS_ERRNO + 2;
+    }
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -195,12 +201,14 @@ int download(const char *url, const char *checksum, const char *target_directory
 
     curl = curl_easy_init();
     if (!curl) {
-        goto bail;
+        curl_global_cleanup();
+        fprintf(stderr, "`curl_easy_init()` failed\n");
+        return EXIT_FAILURE;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
     if (cerr) {
-        printf("%s: failed with err %d\n", "URL", cerr);
+        fprintf(stderr, "%s: failed with err %d\n", "URL", cerr);
         goto bail;
     }
 
@@ -238,13 +246,13 @@ int download(const char *url, const char *checksum, const char *target_directory
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, dnld_header_parse);
     if (cerr) {
-        printf("%s: failed with err %d\n", "HEADER", cerr);
+        fprintf(stderr, "%s: failed with err %d\n", "HEADER", cerr);
         goto bail;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
     if (cerr) {
-        printf("%s: failed with err %d\n", "HEADER DATA", cerr);
+        fprintf(stderr, "%s: failed with err %d\n", "HEADER DATA", cerr);
         goto bail;
     }
 
@@ -256,48 +264,48 @@ int download(const char *url, const char *checksum, const char *target_directory
     }
 
     if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
-        printf("unable to derive a filename to save to, from: %s\n", url);
+        fprintf(stderr, "unable to derive a filename to save to, from: %s\n", url);
         goto bail;
     }
 
     snprintf(dnld_params.dnld_full_local_fname, sizeof(dnld_params.dnld_full_local_fname),
              "%s/%s", target_directory, dnld_params.dnld_remote_fname);
 
-    printf("target_directory:\t\t\t\t\t %s\n"
-           "dnld_params.dnld_remote_fname:\t %s\n"
-           "dnld_params.dnld_full_local_fname:\t %s\n",
-           target_directory, dnld_params.dnld_remote_fname, dnld_params.dnld_full_local_fname);
+    if (is_file(dnld_params.dnld_full_local_fname)) {
+        cerr = CURLE_ALREADY_COMPLETE;
+        goto bail;
+    }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
     if (cerr) {
-        printf("%s: failed with err %d\n", "WR CB", cerr);
+        fprintf(stderr, "%s: failed with err %d\n", "WR CB", cerr);
         goto bail;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
     if (cerr) {
-        printf("%s: failed with err %d\n", "WR Data", cerr);
+        fprintf(stderr, "%s: failed with err %d\n", "WR Data", cerr);
         goto bail;
     }
 
-
     cerr = curl_easy_perform(curl);
-    if (cerr != CURLE_OK) {
+    if (cerr != CURLE_OK)
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(cerr));
+
+    fclose(dnld_params.dnld_stream);
+
+    if (dnld_params.dnld_file_sz < 1) {
+        fprintf(stderr, "Downloaded an empty file\n");
+        cerr = CURLE_GOT_NOTHING;
     }
 
-    printf("Remote name: %s\n", dnld_params.dnld_remote_fname);
-    fclose(dnld_params.dnld_stream);
+    bail:
 
     /* always cleanup */
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    ret = 0;
-    printf("file size : %llu\n", dnld_params.dnld_file_sz);
-
-    bail:
-    return ret;
+    return cerr;
 }
 
 int download_many(const char *url[], const char *checksum, const char *target_directory,

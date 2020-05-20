@@ -140,7 +140,10 @@ endif()
 
 configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h)
 
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_COMPILER_IS_MSVC)
+    # TODO: Configure compiler flags for this one
+    message("TODO: Configure compiler flags for this one")
+else()
     add_compile_options("$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:RELEASE>:-O3>")
     add_compile_options("$<$<CONFIG:DEBUG>:-Werror>")
 
@@ -149,9 +152,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
     else()
         add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")
     endif()
-else()
-    # TODO: Configure compiler flags for this one
-    message("TODO: Configure compiler flags for this one")
 endif()
 
 add_executable(acquire ${src})

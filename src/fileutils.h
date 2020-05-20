@@ -1,29 +1,49 @@
 #ifndef LIBACQUIRE_FILEUTILS_H
 #define LIBACQUIRE_FILEUTILS_H
 
+#include "stdbool.h"
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define OS_WINDOWS
-#elif defined(__posix__)
-#define OS_POSIX
-#endif
-
-#ifdef OS_WINDOWS
 #include <Fileapi.h>
-#elif defined(OS_POSIX)
+#include <io.h>
+#else
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
-extern int isDirectory(const char *path) {
-#ifdef OS_WINDOWS
-    DWORD dwAttrib = GetFileAttributes(path);
+extern bool is_directory(const char *path) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    const DWORD dwAttrib = GetFileAttributes(path);
 
     return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
             (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
-#elif defined(OS_POSIX)
+#else
     struct stat statbuf;
     if (stat(path, &statbuf) != 0)
-        return 0;
+        return false;
     return S_ISDIR(statbuf.st_mode);
+#endif
+}
+
+extern bool is_file(const char *path) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    const DWORD dwAttrib = GetFileAttributes(path);
+
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+            (dwAttrib & FILE_ATTRIBUTE_NORMAL));
+#else
+    struct stat statbuf;
+    if (stat(path, &statbuf) != 0)
+        return false;
+    return S_ISREG(statbuf.st_mode);
+#endif
+}
+
+extern bool exists(const char *path) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    return _access(path, 0) != -1;
+#else
+    return access(path, 0) != -1;
 #endif
 }
 
