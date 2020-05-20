@@ -144,8 +144,12 @@ if(CMAKE_COMPILER_IS_MSVC)
     # TODO: Configure compiler flags for this one
     message("TODO: Configure compiler flags for this one")
 else()
-    add_compile_options("$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:RELEASE>:-O3>")
-    add_compile_options("$<$<CONFIG:DEBUG>:-Werror>")
+    add_compile_options(
+            "$<$<CONFIG:DEBUG>:-Wall>"
+            "$<$<CONFIG:DEBUG>:-Werror>"
+            "$<$<CONFIG:DEBUG>:-Wno-missing-braces>"
+            "$<$<CONFIG:RELEASE>:-O3>"
+    )
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_compile_options("$<$<CONFIG:DEBUG>:-pedantic>")
