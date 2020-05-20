@@ -9,6 +9,7 @@
 #include "stdbool.h"
 #include "errors.h"
 #include "stringutils.h"
+#include "StringExtras.h"
 #include "fileutils.h"
 
 #if defined(_AIX)
