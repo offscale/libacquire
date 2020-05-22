@@ -1,14 +1,16 @@
-'''acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.
+acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.
 
 Usage:
-  acquire --check <url>...
-  acquire --directory=<d> <url>...
+  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...
+  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...
   acquire --help
   acquire --version
 
 Options:
-  -h --help             Show this screen.
-  --version             Show version.
-  --check               Check if already downloaded.
-  -d, --directory=<d>   Location to download files to.
-  -o FILE --output=FILE Output file. If not specified, will derive from URL.'''
+  -h --help               Show this screen.
+  --version               Show version.
+  --check                 Check if already downloaded.
+  --hash<h>               Hash to verify.
+  --checksum<sha>         Checksum algorithm, e.g., SHA256 or SHA512.
+  -d=<d>, --directory=<d> Location to download files to.
+  -o FILE --output=FILE   Output file. If not specified, will derive from URL.

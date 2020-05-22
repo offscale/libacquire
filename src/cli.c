@@ -48,8 +48,8 @@ struct Tokens {
 
 const char usage_pattern[] =
 "Usage:\n"
-"  acquire --check <url>...\n"
-"  acquire --directory=<d> <url>...\n"
+"  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
+"  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
 "  acquire --help\n"
 "  acquire --version";
 
@@ -230,7 +230,7 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
     for (i=0; i < elements->n_options; i++) {
         option = &elements->options[i];
         if (help && option->value && strcmp(option->olong, "--help") == 0) {
-            for (j = 0; j < 14; j++)
+            for (j = 0; j < 17; j++)
                 puts(args->help_message[j]);
             return 1;
         } else if (version && option->value &&
@@ -243,9 +243,19 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
             args->help = option->value;
         } else if (strcmp(option->olong, "--version") == 0) {
             args->version = option->value;
-        } else if (strcmp(option->olong, "--directory") == 0) {
+        } else if (strcmp(option->olong, "--checksum") == 0) {
+            if (option->argument) {
+                args->checksum = (char*) option->argument;
+            }
+        }
+ else if (strcmp(option->olong, "--directory") == 0) {
             if (option->argument) {
                 args->directory = (char*) option->argument;
+            }
+        }
+ else if (strcmp(option->olong, "--hash") == 0) {
+            if (option->argument) {
+                args->hash = (char*) option->argument;
             }
         }
     }
@@ -270,22 +280,25 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
 
 struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char *version) {
     struct DocoptArgs args = {
-        NULL, 0, 0, 0, NULL,
+        NULL, 0, 0, 0, NULL, NULL, NULL,
         usage_pattern,
-        { "'''acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.",
+        { "acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.",
           "",
           "Usage:",
-          "  acquire --check <url>...",
-          "  acquire --directory=<d> <url>...",
+          "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+          "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
           "  acquire --help",
           "  acquire --version",
           "",
           "Options:",
-          "  -h --help             Show this screen.",
-          "  --version             Show version.",
-          "  --check               Check if already downloaded.",
-          "  -d, --directory=<d>   Location to download files to.",
-          "  -o FILE --output=FILE Output file. If not specified, will derive from URL.'''"}
+          "  -h --help               Show this screen.",
+          "  --version               Show version.",
+          "  --check                 Check if already downloaded.",
+          "  --hash<h>               Hash to verify.",
+          "  --checksum<sha>         Checksum algorithm, e.g., SHA256 or SHA512.",
+          "  -d=<d>, --directory=<d> Location to download files to.",
+          "  -o FILE --output=FILE   Output file. If not specified, will derive from URL.",
+          ""}
     };
     struct Tokens ts;
     struct Command commands[] = {NULL
@@ -297,12 +310,14 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
         {NULL, "--check", 0, 0, NULL},
         {"-h", "--help", 0, 0, NULL},
         {NULL, "--version", 0, 0, NULL},
-        {"-d", "--directory", 1, 0, NULL}
+        {NULL, "--checksum", 1, 0, NULL},
+        {"-d", "--directory", 1, 0, NULL},
+        {NULL, "--hash", 1, 0, NULL}
     };
     struct Elements elements;
     elements.n_commands = 0;
     elements.n_arguments = 1;
-    elements.n_options = 4;
+    elements.n_options = 6;
     elements.commands = commands;
     elements.arguments = arguments;
     elements.options = options;

@@ -6,8 +6,11 @@
 #include "cli.h"
 #include "errors.h"
 #include "acquire.h"
+
 #ifdef USE_LIBCURL
+
 #include "libcurl.h"
+
 #endif
 
 int main(int argc, char *argv[]) {
@@ -16,15 +19,15 @@ int main(int argc, char *argv[]) {
     /* TODO: Ensure environment variables don't take priority over CLI arguments */
     const char *check = getenv("CHECK");
     if (check != NULL && args.check == 0) args.check = (bool) check;
-
-    if (args.check)
-        return UNIMPLEMENTED;
-    else if (args.url == 0) {
+    if (args.directory == 0) args.directory = TMPDIR;
+    if (args.url == 0) {
         if (argc == 2) args.url = argv[1];
         else return UNIMPLEMENTED;
     }
-    if (args.directory == 0)
-        args.directory = TMPDIR;
+
+    if (args.check)
+        return is_downloaded(args.url, args.checksum || "SHA256", args.hash, args.directory) ?
+               EXIT_SUCCESS : EXIT_FAILURE;
 
     printf("`args.url`:\t\"%s\"\n", args.url);
     download(args.url, NULL, args.directory, false, 0, 0);

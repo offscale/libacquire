@@ -2,6 +2,7 @@
 #define DOCOPT_CLI_H
 
 #include <stddef.h>
+#include "stdbool.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>
@@ -45,10 +46,12 @@ struct DocoptArgs {
     size_t help;
     size_t version;
     /* options with arguments */
+    char *checksum;
     char *directory;
+    char *hash;
     /* special */
     const char *usage_pattern;
-    const char *help_message[14];
+    const char *help_message[17];
 };
 
 struct DocoptArgs docopt(size_t, char *[], bool, const char *);

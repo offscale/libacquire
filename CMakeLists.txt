@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.0)
-    project(libacquire
+project(libacquire
         VERSION "0.0.1"
         LANGUAGES C)
+
+##############################################################
+# CMake options that can be overridden at configuration time #
+##############################################################
+
 set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
 set(DESCRIPTION "Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.")
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-
 option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
 
 include(CheckIncludeFile)
@@ -37,7 +41,28 @@ else()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
 endif()
 
+############################
+# Initial src dependencies #
+############################
+
 set(src src/main.c src/cli src/acquire)
+
+#################
+# SSL libraries #
+#################
+
+if(CMAKE_USE_OPENSSL)
+    if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
+            AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
+        set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+    endif()
+    find_package(OpenSSL REQUIRED)
+    set(USE_OPENSSL ON)
+endif()
+
+########################
+# HTTP/HTTPS libraries #
+########################
 
 if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
     set(USE_LIBCURL ON)
@@ -138,6 +163,10 @@ else()
     set(LIBCURL 0)
 endif()
 
+#############################################
+# Compiler, library, and exec configuration #
+#############################################
+
 configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h)
 
 if(CMAKE_COMPILER_IS_MSVC)
@@ -160,6 +189,7 @@ endif()
 
 add_executable(acquire ${src})
 target_include_directories(acquire PUBLIC ${PROJECT_BINARY_DIR}/src)
+
 if(DEFINED CURL_LINK_LIBRARIES)
     target_link_libraries(acquire ${CURL_LINK_LIBRARIES})
 endif()

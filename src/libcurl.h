@@ -11,6 +11,7 @@
 #include "stringutils.h"
 #include "StringExtras.h"
 #include "fileutils.h"
+#include "checksums.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>
@@ -48,8 +49,6 @@ const char *get_download_dir() {
     return ".downloads";
 }
 
-bool is_downloaded(const char *url, const char *checksum);
-
 int download_to_stdout(const char *url, const char *checksum, const char *target_directory,
                        bool follow, size_t retry) {
     CURL *curl = curl_easy_init();
@@ -68,7 +67,7 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
 }
 
 struct dnld_params_t {
-    char dnld_remote_fname[255];
+    char dnld_remote_fname[MAX_FILENAME];
     char dnld_full_local_fname[NAME_MAX];
     char dnld_url[2083];
     FILE *dnld_stream;
