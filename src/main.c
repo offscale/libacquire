@@ -8,29 +8,42 @@
 #include "acquire.h"
 
 #ifdef USE_LIBCURL
-
 #include "libcurl.h"
-
 #endif
 
 int main(int argc, char *argv[]) {
     struct DocoptArgs args = docopt(argc, argv, /* help */ 1, /* version */ VERSION);
+    enum Checksum checksum = SHA256;
 
     /* TODO: Ensure environment variables don't take priority over CLI arguments */
     const char *check = getenv("CHECK");
     if (check != NULL && args.check == 0) args.check = (bool) check;
     if (args.directory == 0) args.directory = TMPDIR;
     if (args.url == 0) {
-        if (argc == 2) args.url = argv[1];
-        else return UNIMPLEMENTED;
+        switch (argc) {
+            case 2:
+                args.url = argv[1];
+                break;
+            case 1:
+                return UNIMPLEMENTED;
+            default:
+                if (is_url(argv[1]))
+                    args.url = argv[1];
+                else if (is_url(argv[argc - 1]))
+                    args.url = argv[argc - 1];
+                else
+                    return UNIMPLEMENTED;
+        }
     }
+    if (args.checksum != NULL)
+        checksum = string2checksum((const char *) args.checksum);
 
     if (args.check)
-        return is_downloaded(args.url, args.checksum || "SHA256", args.hash, args.directory) ?
+        return is_downloaded(args.url, checksum, args.hash, args.directory) ?
                EXIT_SUCCESS : EXIT_FAILURE;
 
     printf("`args.url`:\t\"%s\"\n", args.url);
-    download(args.url, NULL, args.directory, false, 0, 0);
+    download(args.url, checksum, args.hash, args.directory, false, 0, 0);
 
     return EXIT_SUCCESS;
 }

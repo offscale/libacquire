@@ -3,17 +3,51 @@ project(libacquire
         VERSION "0.0.1"
         LANGUAGES C)
 
-##############################################################
-# CMake options that can be overridden at configuration time #
-##############################################################
-
 set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
 set(DESCRIPTION "Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.")
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
 
 include(CheckIncludeFile)
+include(CheckIncludeFiles)
+
+############################
+# Initial src dependencies #
+############################
+
+set(src src/main.c src/cli src/acquire)
+
+##############################################################
+# CMake options that can be overridden at configuration time #
+##############################################################
+
+option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
+
+# "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
+if(DEFINED CRYPTO_LIB)
+    message(FATAL_ERROR "TODO")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
+    if(NOT HAVE_COMMON_CRYPTO_H)
+        message(FATAL_ERROR "CommonCrypto.h not found")
+    endif()
+    set(CRYPTO_LIB CommonCrypto)
+    set(USE_COMMON_CRYPTO 1)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    set(CRYPTO_LIB LibreSSL)
+    include(cmake/FindLibreSSL.cmake)
+    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+    set(USE_LIBRESSL 1)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux"
+        OR CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
+        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    set(CRYPTO_LIB OpenSSL)
+    set(USE_OPENSSL 1)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    message(FATAL_ERROR "TODO")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+    message(FATAL_ERROR "TODO")
+endif()
 
 function(gettempdir VARNAME)
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -41,23 +75,29 @@ else()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
 endif()
 
-############################
-# Initial src dependencies #
-############################
-
-set(src src/main.c src/cli src/acquire)
-
 #################
 # SSL libraries #
 #################
 
-if(CMAKE_USE_OPENSSL)
+if(CRYPTO_LIB STREQUAL "OpenSSL")
+    message("GOT HERE")
     if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
             AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
         set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
     endif()
     find_package(OpenSSL REQUIRED)
-    set(USE_OPENSSL ON)
+    # check_include_files("conf.h" OPENSSL_LIBS LANGUAGE C)
+    # check_include_files("<openssl/conf.h>;<openssl/evp.h>;<openssl/err.h>" OPENSSL_LIBS LANGUAGE C)
+    # if(NOT OPENSSL_LIBS)
+    #     message(FATAL_ERROR "OpenSSL installation doesn't have the required header files, install them or use alt SSL")
+    # endif()
+elseif(CRYPTO_LIB STREQUAL "LibreSSL")
+    message("GOT THERE")
+    find_package(LibreSSL REQUIRED)
+elseif(CRYPTO_LIB STREQUAL "CommonCrypto")
+    list(APPEND src src/macos_crypto.h)
+else()
+    message("CRYPTO_LIB is ${CRYPTO_LIB}")
 endif()
 
 ########################
@@ -66,92 +106,8 @@ endif()
 
 if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
     set(USE_LIBCURL ON)
-    set(CURL_NO_OLDIES ON)
-
-    # curl version >=7.57 can have config files
-    find_package(CURL QUIET COMPONENTS libcurl CONFIG)
-
-    # This conditional if/else block from https://gitlab.kitware.com/cmake/cmake/-/issues/18378#note_467156
-    if(CURL_FOUND)
-        message(STATUS "Using ${CURL_LIBRARIES} v${CURL_VERSION}")
-        get_target_property(LIBCURL_TYPE CURL::libcurl TYPE)
-        # CURL_STATICLIB is missing for curl versions <7.61.1
-        if(CURL_VERSION VERSION_LESS 7.61.1 AND LIBCURL_TYPE STREQUAL "STATIC_LIBRARY")
-            set_target_properties(CURL::libcurl PROPERTIES
-                    INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB)
-        endif()
-    else()
-        # try to use libcurl.pc if installed
-        set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} lib)
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES} _imp.lib -d.lib -d_imp.lib)
-        find_package(PkgConfig)
-        if(PkgConfig_FOUND)
-            set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
-            pkg_search_module(CURL libcurl)
-            if(CURL_FOUND)
-                # CMake <3.12 workaround
-                if(NOT CURL_LINK_LIBRARIES)
-                    find_library(CURL_LINK_LIBRARIES NAMES ${CURL_LIBRARIES}
-                            HINTS "${CURL_LIBDIR}" NO_DEFAULT_PATH)
-                    if(NOT CURL_LINK_LIBRARIES)
-                        message(FATAL_ERROR "curl is not installed; install libcurl then try again")
-                    endif()
-                endif()
-                if(NOT CURL_LINK_LIBRARIES MATCHES "_imp.lib$|${CMAKE_SHARED_LIBRARY_SUFFIX}$")
-                    list(REMOVE_ITEM CURL_STATIC_LIBRARIES ${CURL_LIBRARIES})
-                    add_library(CURL::libcurl STATIC IMPORTED)
-                    set_target_properties(CURL::libcurl PROPERTIES
-                            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_STATIC_INCLUDE_DIRS}"
-                            INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
-                            INTERFACE_LINK_LIBRARIES "${CURL_STATIC_LIBRARIES}"
-                            IMPORTED_LINK_INTERFACE_LANGUAGES C
-                            IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
-                    link_directories(CURL_STATIC_LIBRARY_DIRS)
-                else()
-                    add_library(CURL::libcurl SHARED IMPORTED)
-                    set_target_properties(CURL::libcurl PROPERTIES
-                            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIRS}")
-                    if(WIN32)
-                        set_target_properties(CURL::libcurl PROPERTIES
-                                IMPORTED_IMPLIB "${CURL_LINK_LIBRARIES}")
-                    else()
-                        set_target_properties(CURL::libcurl PROPERTIES
-                                IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
-                    endif()
-                endif()
-                message(STATUS "Using ${CURL_LIBRARIES} v${CURL_VERSION}")
-            endif()
-        endif()
-        # try old module from CMake distribution
-        if(NOT CURL_FOUND)
-            find_package(CURL REQUIRED COMPONENTS libcurl MODULE)
-            if(NOT CURL_LIBRARIES MATCHES "_imp.lib$|${CMAKE_SHARED_LIBRARY_SUFFIX}$")
-                add_library(CURL::libcurl STATIC IMPORTED)
-                set_target_properties(CURL::libcurl PROPERTIES
-                        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIRS}"
-                        INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
-                        IMPORTED_LINK_INTERFACE_LANGUAGES C
-                        IMPORTED_LOCATION "${CURL_LIBRARIES}")
-            else()
-                add_library(CURL::libcurl SHARED IMPORTED)
-                set_target_properties(CURL::libcurl PROPERTIES
-                        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIRS}")
-                if(WIN32)
-                    set_target_properties(CURL::libcurl PROPERTIES
-                            IMPORTED_IMPLIB "${CURL_LIBRARIES}")
-                else()
-                    set_target_properties(CURL::libcurl PROPERTIES
-                            IMPORTED_LOCATION "${CURL_LIBRARIES}")
-                endif()
-            endif()
-            set(CURL_VERSION ${CURL_VERSION_STRING})
-        endif()
-    endif()
-
-    if (NOT CURL_FOUND)
-        message(FATAL_ERROR "curl is not installed; install libcurl then try again")
-    endif()
-
+    include(cmake/FindCurlCustom.cmake)
+    get_curl(CURL_LINK_LIBRARIES)
     list(APPEND src src/libcurl)
 else()
     message(FATAL_ERROR "TODO: Windows APIs")
@@ -163,11 +119,15 @@ else()
     set(LIBCURL 0)
 endif()
 
+################################
+# Configure file (interpolate) #
+################################
+
+configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
+
 #############################################
 # Compiler, library, and exec configuration #
 #############################################
-
-configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h)
 
 if(CMAKE_COMPILER_IS_MSVC)
     # TODO: Configure compiler flags for this one
@@ -176,6 +136,7 @@ else()
     add_compile_options(
             "$<$<CONFIG:DEBUG>:-Wall>"
             "$<$<CONFIG:DEBUG>:-Werror>"
+            "$<$<CONFIG:DEBUG>:-pedantic>"
             "$<$<CONFIG:DEBUG>:-Wno-missing-braces>"
             "$<$<CONFIG:RELEASE>:-O3>"
     )

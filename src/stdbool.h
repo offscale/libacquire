@@ -1,5 +1,5 @@
 /* Modififed from  MUSL */
-#ifndef _STDBOOL_H
+#if !defined(_STDBOOL_H) && !defined(bool)
 #define _STDBOOL_H
 
 #include <stdlib.h>

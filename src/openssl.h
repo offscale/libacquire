@@ -37,6 +37,7 @@ const char *openssl_runner() {
 }
 
 bool sha256(const char *payload, const char *checksum) {
+    puts("GOT HERE");
     return false;
 }
 

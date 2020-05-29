@@ -183,7 +183,7 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
 }
 
 
-int download(const char *url, const char *checksum, const char target_directory[248],
+int download(const char *url, enum Checksum checksum, const char *hash, const char target_directory[248],
              bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
     CURLcode cerr = CURLE_OK;
@@ -291,7 +291,7 @@ int download(const char *url, const char *checksum, const char target_directory[
     return cerr;
 }
 
-int download_many(const char *url[], const char *checksum, const char *target_directory,
+int download_many(const char *url[], const char *hashes[], enum Checksum checksums[], const char *target_directory,
                   bool follow, size_t retry, size_t verbosity) {
     return UNIMPLEMENTED;
 }

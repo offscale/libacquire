@@ -7,6 +7,7 @@
 #include "stdbool.h"
 #include "checksums.h"
 #include "stringutils.h"
+#include "StringExtras.h"
 #include "fileutils.h"
 
 #ifndef MAX_FILENAME
@@ -14,12 +15,19 @@
 #endif
 
 extern const char* get_download_dir();
-extern bool is_downloaded(const char *filename, enum Checksums checksum,
+extern enum Checksum string2checksum(const char *s) {
+    if (strncasecmp(s, "SHA256", 6) == 0)
+        return SHA256;
+    else if (strncasecmp(s, "SHA512", 6) == 0)
+        return SHA512;
+    else return UNSUPPORTED;
+}
+extern bool is_downloaded(const char *filename, enum Checksum checksum,
                           const char *hash, const char *target_directory) {
     char *full_local_fname;
     const char *fname = strdup(filename);
-    const char *fname_contents;
-    FILE *file;
+    /* const char *fname_contents;
+    FILE *file;*/
     bool res = false;
 
     if (target_directory == NULL)
@@ -38,7 +46,7 @@ extern bool is_downloaded(const char *filename, enum Checksums checksum,
     if (!is_file(full_local_fname))
         return false;
 
-
+    puts("GOT THIS FARRRR");
     /* TODO: Checksum verification
     file = fopen(full_local_fname, "rb");
     // fread()
@@ -53,7 +61,7 @@ extern bool is_downloaded(const char *filename, enum Checksums checksum,
     return res;
 }
 
-extern int download(const char*, const char*, const char[248], bool, size_t, size_t);
-extern int download_many(const char*[], const char*, const char*, bool, size_t, size_t);
+extern int download(const char *, enum Checksum, const char *, const char[248], bool, size_t, size_t);
+extern int download_many(const char*[], const char*[], enum Checksum[], const char*, bool, size_t, size_t);
 
 #endif /* LIBACQUIRE_ACQUIRE_H */
