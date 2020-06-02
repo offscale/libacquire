@@ -70,7 +70,7 @@ int download_to_stdout(const char *url, const char *checksum, const char *target
 
 struct dnld_params_t {
     char dnld_remote_fname[MAX_FILENAME];
-    char dnld_full_local_fname[NAME_MAX];
+    char dnld_full_local_fname[NAME_MAX + 1];
     char dnld_url[2083];
     FILE *dnld_stream;
     /* FILE *dbg_stream; */

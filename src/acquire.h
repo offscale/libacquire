@@ -11,8 +11,8 @@
 #include "config.h"
 
 #include "checksums.h"
-#ifdef USE_COMMON_CRYPTO
-#include "macos_crypto.h"
+#if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
+#include "openssl.h"
 #endif
 
 #ifndef MAX_FILENAME
@@ -31,11 +31,8 @@ extern enum Checksum string2checksum(const char *s) {
 
 extern bool is_downloaded(const char *url, enum Checksum checksum,
                           const char *hash, const char *target_directory) {
-    char *full_local_fname;
+    char full_local_fname[NAME_MAX + 1];
     const char *filename = is_url(url) ? get_path_from_url(url) : url;
-    printf("is_downloaded::is_url(\"%s\") = %lu\n", filename, is_url(filename));
-    printf("is_downloaded::get_path_from_url(\"%s\") = \"%s\"\n", filename, get_path_from_url(filename));
-    printf("is_downloaded::filename = \"%s\"\n", filename);
 
     if (target_directory == NULL)
         target_directory = get_download_dir();
@@ -43,7 +40,8 @@ extern bool is_downloaded(const char *url, enum Checksum checksum,
     if (filename == NULL || strlen(filename) == 0 || !is_directory(target_directory))
         return false;
 
-    full_local_fname = strdup(target_directory);
+    snprintf(full_local_fname, NAME_MAX + 1,
+             "%s/%s", target_directory, filename);
 
     if (!is_file(full_local_fname))
         return false;

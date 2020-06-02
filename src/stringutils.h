@@ -6,8 +6,8 @@
 
 const char *get_path_from_url(const char *url) {
     size_t i;
-    char *end_possible_query = strrchr(url, '/') + 1;
-    end_possible_query = strdup(end_possible_query);
+    char *end_possible_query = strdup(url);
+    end_possible_query = strrchr(end_possible_query, '/') + 1;
     for (i = 0; i < strlen(end_possible_query); i++)
         if (end_possible_query[i] == '?' || end_possible_query[i] == '#') {
             end_possible_query[i] = '\0';
