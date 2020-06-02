@@ -58,7 +58,7 @@
 
 #if defined(_MSC_VER)
 #if _MSC_VER < 1900
-// snprintf is implemented in VS 2015
+/* snprintf is implemented in VS 2015 */
 inline int snprintf(char* buffer, size_t count, const char* format, ...)
 {
     int result;
@@ -66,8 +66,8 @@ inline int snprintf(char* buffer, size_t count, const char* format, ...)
     va_start(args, format);
     result = _vsnprintf(buffer, count, format, args);
     va_end(args);
-    // In the case where the string entirely filled the buffer, _vsnprintf will not
-    // null-terminate it, but snprintf must.
+    /* In the case where the string entirely filled the buffer, _vsnprintf will not
+       null-terminate it, but snprintf must. */
     if (count > 0)
         buffer[count - 1] = '\0';
     return result;
@@ -76,16 +76,16 @@ inline int snprintf(char* buffer, size_t count, const char* format, ...)
 inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_list args)
 {
     int result = _vsnprintf(buffer, count, format, args);
-    // In the case where the string entirely filled the buffer, _vsnprintf will not
-    // null-terminate it, but vsnprintf must.
+    /* In the case where the string entirely filled the buffer, _vsnprintf will not
+       null-terminate it, but vsnprintf must. */
     if (count > 0)
         buffer[count - 1] = '\0';
     return result;
 }
 
-// Work around a difference in Microsoft's implementation of vsnprintf, where
-// vsnprintf does not null terminate the buffer. WebKit can rely on the null
-// termination. Microsoft's implementation is fixed in VS 2015.
+/* Work around a difference in Microsoft's implementation of vsnprintf, where
+   vsnprintf does not null terminate the buffer. WebKit can rely on the null
+   termination. Microsoft's implementation is fixed in VS 2015. */
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
 #endif
 

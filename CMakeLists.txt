@@ -10,6 +10,20 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
+include(CheckSymbolExists)
+
+if (NOT _GNU_SOURCE)
+    check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
+
+    if (NOT _GNU_SOURCE)
+        unset(_GNU_SOURCE CACHE)
+        check_symbol_exists(_GNU_SOURCE "features.h" _GNU_SOURCE)
+    endif ()
+endif ()
+
+if (_GNU_SOURCE)
+    add_definitions(-D_GNU_SOURCE)
+endif ()
 
 ############################
 # Initial src dependencies #
@@ -142,6 +156,7 @@ else()
     )
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        # add_definitions(-D_GNU_SOURCE)
         add_compile_options("$<$<CONFIG:DEBUG>:-pedantic>")
     else()
         add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")

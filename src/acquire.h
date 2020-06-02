@@ -32,7 +32,7 @@ extern enum Checksum string2checksum(const char *s) {
 extern bool is_downloaded(const char *url, enum Checksum checksum,
                           const char *hash, const char *target_directory) {
     char *full_local_fname;
-    const char *filename = is_url(filename) ? get_path_from_url(url) : url;
+    const char *filename = is_url(url) ? get_path_from_url(url) : url;
     printf("is_downloaded::is_url(\"%s\") = %lu\n", filename, is_url(filename));
     printf("is_downloaded::get_path_from_url(\"%s\") = \"%s\"\n", filename, get_path_from_url(filename));
     printf("is_downloaded::filename = \"%s\"\n", filename);

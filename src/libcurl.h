@@ -23,8 +23,10 @@
 #elif defined(__HAIKU__)
 #include <system/user_runtime.h>
 #elif defined(__linux__) || defined(linux) || defined(__linux)
+
 #include <linux/version.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22)
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 22)
 #include <linux/limits.h>
 #endif
 #elif defined(sun) || defined(__sun) || defined(__SVR4) || defined(__svr4__)
@@ -83,7 +85,7 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
     /* Example Content-Disposition: filename=name1367; charset=funny; option=strange */
 
     /* If filename is present */
-    val = strcasestr((const char*)cd, (const char*)key);
+    val = strcasestr((const char *) cd, (const char *) key);
     if (!val) {
         fprintf(stderr, "No key-value for \"%s\" in \"%s\"", key, cdtag);
         return EXIT_FAILURE;
@@ -196,7 +198,7 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
         return CURLINFO_OS_ERRNO + 2;
     }
 
-    curl_global_init((size_t)CURL_GLOBAL_ALL);
+    curl_global_init((size_t) CURL_GLOBAL_ALL);
 
     memset(&dnld_params, 0, sizeof(dnld_params));
     strncpy(dnld_params.dnld_url, url, strlen(url));
@@ -251,7 +253,7 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
         goto bail;
     }
 
-    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX -1,
+    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX + 1,
              "%s/%s", target_directory, dnld_params.dnld_remote_fname);
 
     if (is_file(dnld_params.dnld_full_local_fname)) {
