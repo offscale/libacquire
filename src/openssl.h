@@ -16,14 +16,15 @@
 #define SHA256_Final CC_SHA256_Final
 #define SHA256_BLOCK_BYTES CC_SHA256_BLOCK_BYTES
 #elif defined(USE_OPENSSL)
+
 #include <openssl/sha.h>
+
 #define SHA256_BLOCK_BYTES       64          /* block size in bytes */
 #endif
 
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-
 
 
 void sha256_hash_string(unsigned char hash[SHA256_DIGEST_LENGTH], char outputBuffer[65]) {
@@ -60,7 +61,7 @@ int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
     SHA256_Final(hash, &sha256);
     sha256_hash_string(hash, outputBuffer);
     cleanup:
-    file != NULL && fclose(file);
+    if (file != NULL) fclose(file);
     free(buffer);
     return exit_code;
 }

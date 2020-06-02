@@ -8,11 +8,12 @@ That way you don't need to trust me, just the `diff` on your end,
 #include "config.h"
 
 extern bool sha256(const char *, const char *);
+
 extern bool sha512(const char *, const char *);
 
 enum Checksum {
-    SHA256,
-    SHA512,
+    LIBACQUIRE_SHA256,
+    LIBACQUIRE_SHA512,
     UNSUPPORTED
 };
 

@@ -38,13 +38,13 @@ set(src src/main.c src/cli src/acquire)
 option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
 
 # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
-if(DEFINED CRYPTO_LIB)
+if (DEFINED CRYPTO_LIB)
     message(FATAL_ERROR "TODO")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
-    if(NOT HAVE_COMMON_CRYPTO_H)
+    if (NOT HAVE_COMMON_CRYPTO_H)
         message(FATAL_ERROR "CommonCrypto.h not found")
-    endif()
+    endif ()
     set(CRYPTO_LIB CommonCrypto)
     set(USE_COMMON_CRYPTO 1)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
@@ -61,78 +61,78 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(FATAL_ERROR "TODO")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     message(FATAL_ERROR "TODO")
-endif()
+endif ()
 
 function(gettempdir VARNAME)
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set(${VARNAME} "$ENV{TEMP}" PARENT_SCOPE)
-    else()
+    else ()
         set(${VARNAME} "$ENV{TMPDIR}" PARENT_SCOPE)
         message("-- Using ${VARNAME} $ENV{TMPDIR}")
         if (NOT ${VARNAME})
             set(${VARNAME} "/tmp" PARENT_SCOPE)
-        endif()
-    endif()
+        endif ()
+    endif ()
 endfunction(gettempdir)
 
 gettempdir(TMPDIR_DEFAULT)
 set(TMPDIR "${TMPDIR_DEFAULT}" CACHE PATH "Select tmpdir, will use default otherwise")
 
-if(NOT IS_DIRECTORY "${TMPDIR}")
+if (NOT IS_DIRECTORY "${TMPDIR}")
     message(FATAL_ERROR "Cannot determine usable temporary directory, found ${TMPDIR}")
-endif()
+endif ()
 
 check_include_file(limits.h HAVE_LIMITS_H)
 if (HAVE_LIMITS_H)
     set(HAVE_SYS_LIMITS_H 0)  # Don't actually care if it exists or not, always choose limits.h
-else()
+else ()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
-endif()
+endif ()
 
 #################
 # SSL libraries #
 #################
 
-if(CRYPTO_LIB STREQUAL "OpenSSL")
+if (CRYPTO_LIB STREQUAL "OpenSSL")
     if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
             AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
         set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-    elseif((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
+    elseif ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
             AND IS_DIRECTORY "/usr/include/openssl")
         set(OPENSSL_ROOT_DIR "/usr/include/openssl")
-    endif()
+    endif ()
     find_package(OpenSSL REQUIRED)
     check_include_file("openssl/sha.h" HAVE_OPENSSL_SHA_H LANGUAGE C)
-    if(NOT HAVE_OPENSSL_SHA_H)
+    if (NOT HAVE_OPENSSL_SHA_H)
         message(FATAL_ERROR "OpenSSL installation doesn't have the required header files, install them or use alt SSL")
-    endif()
-elseif(CRYPTO_LIB STREQUAL "LibreSSL")
+    endif ()
+elseif (CRYPTO_LIB STREQUAL "LibreSSL")
     message("GOT THERE")
     find_package(LibreSSL REQUIRED)
-elseif(CRYPTO_LIB STREQUAL "CommonCrypto")
-    list(APPEND src src/macos_crypto.h)
-else()
+elseif (CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "OpenSSL")
+    list(APPEND src src/openssl.h)
+else ()
     message("CRYPTO_LIB is ${CRYPTO_LIB}")
-endif()
+endif ()
 
 ########################
 # HTTP/HTTPS libraries #
 ########################
 
-if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
+if (NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
     set(USE_LIBCURL ON)
     include(cmake/FindCurlCustom.cmake)
     get_curl(CURL_LINK_LIBRARIES)
     list(APPEND src src/libcurl)
-else()
+else ()
     message(FATAL_ERROR "TODO: Windows APIs")
-endif()
+endif ()
 
 if (USE_LIBCURL)
     set(LIBCURL 1)
-else()
+else ()
     set(LIBCURL 0)
-endif()
+endif ()
 
 ################################
 # Configure file (interpolate) #
@@ -144,10 +144,10 @@ configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
 # Compiler, library, and exec configuration #
 #############################################
 
-if(CMAKE_COMPILER_IS_MSVC)
+if (CMAKE_COMPILER_IS_MSVC)
     # TODO: Configure compiler flags for this one
     message("TODO: Configure compiler flags for this one")
-else()
+else ()
     add_compile_options(
             "$<$<CONFIG:DEBUG>:-Wall>"
             "$<$<CONFIG:DEBUG>:-Werror>"
@@ -156,23 +156,23 @@ else()
             "$<$<CONFIG:RELEASE>:-O3>"
     )
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         # add_definitions(-D_GNU_SOURCE)
         add_compile_options("$<$<CONFIG:DEBUG>:-pedantic>")
-    else()
+    else ()
         add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")
-    endif()
-endif()
+    endif ()
+endif ()
 
 add_executable(acquire ${src})
 target_include_directories(acquire PUBLIC ${PROJECT_BINARY_DIR}/src)
 
-if(DEFINED CURL_LINK_LIBRARIES)
+if (DEFINED CURL_LINK_LIBRARIES)
     target_link_libraries(acquire ${CURL_LINK_LIBRARIES})
-endif()
+endif ()
 
-if(DEFINED OPENSSL_LIBRARIES)
+if (DEFINED OPENSSL_LIBRARIES)
     target_link_libraries(acquire OpenSSL::SSL)
     target_link_libraries(acquire ${OPENSSL_LIBRARIES})
     target_include_directories(acquire PRIVATE ${OPENSSL_INCLUDE_DIR})
-endif()
+endif ()

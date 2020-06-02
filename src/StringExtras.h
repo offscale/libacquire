@@ -33,7 +33,9 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #else
+
 #include <sys/param.h>
+
 #endif
 
 #if defined(__posix__) || defined(__unix__) || defined(__unix)
@@ -42,10 +44,11 @@
 
 #if !defined(HAVE_STRNSTR)
 #if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) && defined(__MACH__) \
-    || defined(__FreeBSD__) && !defined(__GLIBC__)
+ || defined(__FreeBSD__) && !defined(__GLIBC__)
 #define HAVE_STRNSTR 1
 #endif
 #endif
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -53,7 +56,9 @@
 #include <strings.h>
 
 #if defined(HAVE_STRINGS_H)
+
 #include <strings.h>
+
 #endif
 
 #if defined(_MSC_VER)
@@ -102,18 +107,18 @@ int strcasecmp(const char* s1, const char* s2)
 
 #if !defined(STRNSTR)
 
-char* strnstr(const char* buffer, const char* target, size_t bufferLength)
-{
+char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
     size_t targetLength = strlen(target);
-    const char* start;
+    const char *start;
     if (targetLength == 0)
-        return (char*)buffer;
+        return (char *) buffer;
     for (start = buffer; *start && start + targetLength <= buffer + bufferLength; start++) {
         if (*start == *target && strncmp(start + 1, target + 1, targetLength - 1) == 0)
-            return (char*)(start);
+            return (char *) (start);
     }
     return 0;
 }
+
 #endif
 
 #endif

@@ -8,12 +8,14 @@
 #include "acquire.h"
 
 #ifdef USE_LIBCURL
+
 #include "libcurl.h"
+
 #endif
 
 int main(int argc, char *argv[]) {
     struct DocoptArgs args = docopt(argc, argv, /* help */ 1, /* version */ VERSION);
-    enum Checksum checksum = SHA256;
+    enum Checksum checksum = LIBACQUIRE_SHA256;
 
     /* TODO: Ensure environment variables don't take priority over CLI arguments */
     const char *check = getenv("CHECK");
