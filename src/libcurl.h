@@ -196,7 +196,7 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
         return CURLINFO_OS_ERRNO + 2;
     }
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    curl_global_init((size_t)CURL_GLOBAL_ALL);
 
     memset(&dnld_params, 0, sizeof(dnld_params));
     strncpy(dnld_params.dnld_url, url, strlen(url));
