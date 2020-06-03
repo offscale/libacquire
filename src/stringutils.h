@@ -3,6 +3,9 @@
 
 #include <string.h>
 #include "stdbool.h"
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define strdup _strdup
+#endif
 
 const char *get_path_from_url(const char *url) {
     size_t i;

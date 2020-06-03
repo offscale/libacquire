@@ -29,7 +29,7 @@ endif ()
 # Initial src dependencies #
 ############################
 
-set(src src/main.c src/cli src/acquire)
+set(src src/main.c src/cli src/acquire src/wininet.h src/wincrypt.h)
 
 ##############################################################
 # CMake options that can be overridden at configuration time #
@@ -38,28 +38,28 @@ set(src src/main.c src/cli src/acquire)
 option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
 
 # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
-if (DEFINED CRYPTO_LIB)
-    message(FATAL_ERROR "TODO")
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT DEFINED CRYPTO_LIB)
     check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
     if (NOT HAVE_COMMON_CRYPTO_H)
         message(FATAL_ERROR "CommonCrypto.h not found")
     endif ()
     set(CRYPTO_LIB CommonCrypto)
     set(USE_COMMON_CRYPTO 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+elseif ((CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND NOT DEFINED CRYPTO_LIB) OR CRYPTO_LIB STREQUAL "LibreSSL")
     set(CRYPTO_LIB LibreSSL)
     include(cmake/FindLibreSSL.cmake)
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
     set(USE_LIBRESSL 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux"
+elseif ((CMAKE_SYSTEM_NAME STREQUAL "Linux"
         OR CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
         OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+        AND NOT DEFINED CRYPTO_LIB
+        OR CRYPTO_LIB STREQUAL "OpenSSL")
     set(CRYPTO_LIB OpenSSL)
     set(USE_OPENSSL 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    message(FATAL_ERROR "TODO")
-elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED CRYPTO_LIB)
+    set(CRYPTO_LIB "WinCrypt")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS"  AND NOT DEFINED CRYPTO_LIB)
     message(FATAL_ERROR "TODO")
 endif ()
 
@@ -111,6 +111,8 @@ elseif (CRYPTO_LIB STREQUAL "LibreSSL")
     find_package(LibreSSL REQUIRED)
 elseif (CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "OpenSSL")
     list(APPEND src src/openssl.h)
+elseif (NOT DEFINED CRYPTO_LIB)
+    message(FATAL_ERROR "CRYPTO_LIB undefined")
 else ()
     message("CRYPTO_LIB is ${CRYPTO_LIB}")
 endif ()
@@ -120,18 +122,13 @@ endif ()
 ########################
 
 if (NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
-    set(USE_LIBCURL ON)
+    set(USE_LIBCURL 1)
     include(cmake/FindCurlCustom.cmake)
     get_curl(CURL_LINK_LIBRARIES)
     list(APPEND src src/libcurl)
 else ()
-    message(FATAL_ERROR "TODO: Windows APIs")
-endif ()
-
-if (USE_LIBCURL)
-    set(LIBCURL 1)
-else ()
-    set(LIBCURL 0)
+    set(USE_WININET 1)
+    list(APPEND src src/wininet)
 endif ()
 
 ################################
@@ -144,9 +141,8 @@ configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
 # Compiler, library, and exec configuration #
 #############################################
 
-if (CMAKE_COMPILER_IS_MSVC)
-    # TODO: Configure compiler flags for this one
-    message("TODO: Configure compiler flags for this one")
+if (MSVC)
+    add_compile_options(/WX)
 else ()
     add_compile_options(
             "$<$<CONFIG:DEBUG>:-Wall>"
@@ -157,7 +153,6 @@ else ()
     )
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        # add_definitions(-D_GNU_SOURCE)
         add_compile_options("$<$<CONFIG:DEBUG>:-pedantic>")
     else ()
         add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")

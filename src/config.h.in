@@ -4,7 +4,8 @@
 #define VERSION "@libacquire_VERSION@"
 #define TMPDIR "@TMPDIR@"
 
-#cmakedefine USE_LIBCURL @LIBCURL@
+#cmakedefine USE_LIBCURL @USE_LIBCURL@
+#cmakedefine USE_WININET @USE_WININET@
 
 #cmakedefine HAVE_LIMITS_H @HAVE_LIMITS_H@
 #cmakedefine HAVE_SYS_LIMITS_H @HAVE_SYS_LIMITS_H@

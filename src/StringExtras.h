@@ -53,8 +53,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <strings.h>
-
 #if defined(HAVE_STRINGS_H)
 
 #include <strings.h>
