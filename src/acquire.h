@@ -22,6 +22,10 @@
 #define MAX_FILENAME 255
 #endif
 
+#ifndef NAME_MAX
+#define NAME_MAX 4096
+#endif
+
 extern const char *get_download_dir();
 
 extern enum Checksum string2checksum(const char *s) {

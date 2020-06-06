@@ -89,6 +89,14 @@ else ()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
 endif ()
 
+set(TARGET_ARCH_REGEX "^.*-march[= ]([^ ]+).*$")
+string(REGEX MATCH "${TARGET_ARCH_REGEX}" TARGET_ARCH_MATCH ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS})
+if (TARGET_ARCH_MATCH)
+    string(REGEX REPLACE "${TARGET_ARCH_REGEX}" "\\1" TARGET_ARCH ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS})
+else()
+    set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+endif()
+
 #################
 # SSL libraries #
 #################
@@ -142,7 +150,7 @@ configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
 #############################################
 
 if (MSVC)
-    add_compile_options(/WX)
+    add_compile_options(/WX /Za)
 else ()
     add_compile_options(
             "$<$<CONFIG:DEBUG>:-Wall>"

@@ -3,7 +3,6 @@
 
 #include <windows.h>
 #include <wininet.h>
-#include <minwindef.h>
 #include <corecrt_wstdio.h>
 #include <stdio.h>
 #include <string.h>

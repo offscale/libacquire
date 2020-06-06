@@ -15,4 +15,6 @@
 #cmakedefine USE_LIBRESSL @USE_LIBRESSL@
 #cmakedefine USE_COMMON_CRYPTO @USE_COMMON_CRYPTO@
 
+#define _@TARGET_ARCH@_
+
 #endif
