@@ -156,7 +156,7 @@ configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
 #############################################
 
 if (MSVC)
-    add_compile_options(/WX /Za)
+    add_compile_options(/WX /permissive-)
 else ()
     add_compile_options(
             "$<$<CONFIG:DEBUG>:-Wall>"
