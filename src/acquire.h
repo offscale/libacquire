@@ -13,9 +13,9 @@
 #include "checksums.h"
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
-
 #include "openssl.h"
-
+#elif defined(USE_WINCRYPT)
+#include "wincrypt.h"
 #endif
 
 #ifndef MAX_FILENAME

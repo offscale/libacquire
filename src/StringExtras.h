@@ -92,15 +92,14 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
 #endif
 
-int strncasecmp(const char* s1, const char* s2, size_t len)
-{
+int strncasecmp(const char *s1, const char *s2, size_t len) {
     return _strnicmp(s1, s2, len);
 }
 
-int strcasecmp(const char* s1, const char* s2)
-{
+int strcasecmp(const char *s1, const char *s2) {
     return _stricmp(s1, s2);
 }
+
 #endif
 
 #if !defined(STRNSTR)

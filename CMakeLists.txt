@@ -29,7 +29,7 @@ endif ()
 # Initial src dependencies #
 ############################
 
-set(src src/main.c src/cli src/acquire src/wininet.h src/wincrypt.h)
+set(src src/main.c src/cli src/acquire)
 
 ##############################################################
 # CMake options that can be overridden at configuration time #
@@ -59,6 +59,7 @@ elseif ((CMAKE_SYSTEM_NAME STREQUAL "Linux"
     set(USE_OPENSSL 1)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED CRYPTO_LIB)
     set(CRYPTO_LIB "WinCrypt")
+    set(USE_WINCRYPT 1)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS" AND NOT DEFINED CRYPTO_LIB)
     message(FATAL_ERROR "TODO")
 endif ()
@@ -93,8 +94,8 @@ if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
 endif ()
 
-if ((DEFINED CMAKE_C_FLAGS AND NOT CMAKE_C_FLAGS STREQUAL "") OR
-    (DEFINED CMAKE_CXX_FLAGS AND NOT CMAKE_CXX_FLAGS STREQUAL ""))
+if ((DEFINED CMAKE_C_FLAGS AND NOT CMAKE_C_FLAGS STREQUAL "")
+        OR (DEFINED CMAKE_CXX_FLAGS AND NOT CMAKE_CXX_FLAGS STREQUAL ""))
     set(TARGET_ARCH_REGEX "^.*-march[= ]([^ ]+).*$")
     string(REGEX MATCH "${TARGET_ARCH_REGEX}" TARGET_ARCH_MATCH ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS})
     string(REGEX MATCH <match-regex> <out-var> <input>...)
@@ -121,10 +122,11 @@ if (CRYPTO_LIB STREQUAL "OpenSSL")
         message(FATAL_ERROR "OpenSSL installation doesn't have the required header files, install them or use alt SSL")
     endif ()
 elseif (CRYPTO_LIB STREQUAL "LibreSSL")
-    message("GOT THERE")
     find_package(LibreSSL REQUIRED)
 elseif (CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "OpenSSL")
     list(APPEND src src/openssl.h)
+elseif (CRYPTO_LIB STREQUAL "WinCrypt")
+    list(APPEND src src/wincrypt.h)
 elseif (NOT DEFINED CRYPTO_LIB)
     message(FATAL_ERROR "CRYPTO_LIB undefined")
 else ()

@@ -83,11 +83,11 @@ if (WIN32)
             "${_programfiles}/LibreSSL"
             )
     unset(_programfiles)
-else()
+else ()
     set(_LIBRESSL_ROOT_PATHS
             "/usr/local/"
             )
-endif()
+endif ()
 
 # Combine
 set(_LIBRESSL_ROOT_HINTS_AND_PATHS
@@ -144,7 +144,7 @@ set(LIBRESSL_LIBRARIES ${LIBRESSL_CRYPTO_LIBRARY} ${LIBRESSL_SSL_LIBRARY} ${LIBR
 mark_as_advanced(LIBRESSL_INCLUDE_DIR LIBRESSL_LIBRARIES LIBRESSL_CRYPTO_LIBRARY LIBRESSL_SSL_LIBRARY LIBRESSL_TLS_LIBRARY)
 
 # Find Version File
-if(LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
+if (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
 
     # Get Version From File
     file(STRINGS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h" OPENSSLV.H REGEX "#define LIBRESSL_VERSION_TEXT[ ]+\".*\"")
@@ -160,7 +160,7 @@ if(LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
     # Set Version String
     set(LIBRESSL_VERSION "${LIBRESSL_VERSION_MAJOR}.${LIBRESSL_VERSION_MINOR}.${LIBRESSL_VERSION_REVISION}")
 
-endif()
+endif ()
 
 # Set Find Package Arguments
 find_package_handle_standard_args(LibreSSL
@@ -175,10 +175,10 @@ find_package_handle_standard_args(LibreSSL
         )
 
 # LibreSSL Found
-if(LIBRESSL_FOUND)
+if (LIBRESSL_FOUND)
 
     # Set LibreSSL::Crypto
-    if(NOT TARGET LibreSSL::Crypto AND EXISTS "${LIBRESSL_CRYPTO_LIBRARY}")
+    if (NOT TARGET LibreSSL::Crypto AND EXISTS "${LIBRESSL_CRYPTO_LIBRARY}")
 
         # Add Library
         add_library(LibreSSL::Crypto UNKNOWN IMPORTED)
@@ -192,10 +192,10 @@ if(LIBRESSL_FOUND)
                 IMPORTED_LOCATION "${LIBRESSL_CRYPTO_LIBRARY}"
         )
 
-    endif() # LibreSSL::Crypto
+    endif () # LibreSSL::Crypto
 
     # Set LibreSSL::SSL
-    if(NOT TARGET LibreSSL::SSL AND EXISTS "${LIBRESSL_SSL_LIBRARY}")
+    if (NOT TARGET LibreSSL::SSL AND EXISTS "${LIBRESSL_SSL_LIBRARY}")
 
         # Add Library
         add_library(LibreSSL::SSL UNKNOWN IMPORTED)
@@ -210,10 +210,10 @@ if(LIBRESSL_FOUND)
                 INTERFACE_LINK_LIBRARIES LibreSSL::Crypto
         )
 
-    endif() # LibreSSL::SSL
+    endif () # LibreSSL::SSL
 
     # Set LibreSSL::TLS
-    if(NOT TARGET LibreSSL::TLS AND EXISTS "${LIBRESSL_TLS_LIBRARY}")
+    if (NOT TARGET LibreSSL::TLS AND EXISTS "${LIBRESSL_TLS_LIBRARY}")
         add_library(LibreSSL::TLS UNKNOWN IMPORTED)
         set_target_properties(
                 LibreSSL::TLS
@@ -224,6 +224,6 @@ if(LIBRESSL_FOUND)
                 INTERFACE_LINK_LIBRARIES LibreSSL::SSL
         )
 
-    endif() # LibreSSL::TLS
+    endif () # LibreSSL::TLS
 
-endif(LIBRESSL_FOUND)
+endif (LIBRESSL_FOUND)

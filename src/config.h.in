@@ -14,6 +14,7 @@
 #cmakedefine USE_OPENSSL @USE_OPENSSL@
 #cmakedefine USE_LIBRESSL @USE_LIBRESSL@
 #cmakedefine USE_COMMON_CRYPTO @USE_COMMON_CRYPTO@
+#cmakedefine USE_WINCRYPT @USE_WINCRYPT@
 
 #define _@TARGET_ARCH@_
 

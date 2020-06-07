@@ -19,11 +19,11 @@ bool sha256(const char *filename, const char *hash) {
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash = 0;
     HANDLE hFile = NULL;
-    BYTE rgbFile[BUFSIZE];
+    BYTE rgbFile[BUFSIZE], rgbHash[SHA256LEN];
     DWORD cbRead = 0;
-    BYTE rgbHash[SHA256LEN];
     DWORD cbHash = 0;
     CHAR rgbDigits[] = "0123456789abcdef";
+    DWORD i;
     /* Logic to check usage goes here. */
 
     hFile = CreateFile(filename,
@@ -86,10 +86,10 @@ bool sha256(const char *filename, const char *hash) {
         return dwStatus;
     }
 
-    cbHash = MD5LEN;
+    cbHash = SHA256LEN;
     if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
         printf("hash of \"%s\": ", filename);
-        for (DWORD i = 0; i < cbHash; i++) {
+        for (i = 0; i < cbHash; i++) {
             printf("%c%c", rgbDigits[rgbHash[i] >> 4],
                    rgbDigits[rgbHash[i] & 0xf]);
         }
@@ -102,6 +102,8 @@ bool sha256(const char *filename, const char *hash) {
     CryptDestroyHash(hHash);
     CryptReleaseContext(hProv, 0);
     CloseHandle(hFile);
+
+    /* TODO: verify hash against function provided hash */
 
     return dwStatus;
 }
@@ -181,7 +183,7 @@ DWORD hash_fname_with_checksum(LPCWSTR filename, enum Checksum checksum, const c
 
     cbHash = MD5LEN;
     if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
-        printf("hash of \"%s\": ", filename);
+        printf("hash of \"%ls\": ", filename);
         for (DWORD i = 0; i < cbHash; i++) {
             printf("%c%c", rgbDigits[rgbHash[i] >> 4],
                    rgbDigits[rgbHash[i] & 0xf]);
