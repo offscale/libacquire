@@ -229,7 +229,7 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
     /* options */
     for (i=0; i < elements->n_options; i++) {
         option = &elements->options[i];
-        if (help && option->value && strcmp(option->olong, "--help") == 0) {
+        if (help && strcmp(option->olong, "--help") == 0) {
             for (j = 0; j < 17; j++)
                 puts(args->help_message[j]);
             return 1;
@@ -248,17 +248,17 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
                 args->checksum = (char*) option->argument;
             }
         }
- else if (strcmp(option->olong, "--directory") == 0) {
-            if (option->argument) {
-                args->directory = (char*) option->argument;
-            }
+        else if (strcmp(option->olong, "--directory") == 0) {
+                    if (option->argument) {
+                        args->directory = (char*) option->argument;
+                    }
+                }
+        else if (strcmp(option->olong, "--hash") == 0) {
+                    if (option->argument) {
+                        args->hash = (char*) option->argument;
+                    }
+                }
         }
- else if (strcmp(option->olong, "--hash") == 0) {
-            if (option->argument) {
-                args->hash = (char*) option->argument;
-            }
-        }
-    }
     /* commands */
     for (i=0; i < elements->n_commands; i++) {
         command = &elements->commands[i];

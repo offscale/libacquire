@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
 #else
     const char *check = getenv("CHECK");
 #endif
+
     if (check != NULL && args.check == 0) args.check = (bool) check;
     if (args.directory == 0) args.directory = TMPDIR;
     if (args.url == 0) {
