@@ -8,6 +8,8 @@ set(DESCRIPTION "Downloads using libcurl—if not Windows or built with USE_LIBC
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+set(EXEC_NAME acquire)
+
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
@@ -175,15 +177,20 @@ else ()
     endif ()
 endif ()
 
-add_executable(acquire ${src})
-target_include_directories(acquire PUBLIC ${PROJECT_BINARY_DIR}/src)
+add_executable(${EXEC_NAME} ${src})
+set_target_properties(${EXEC_NAME} PROPERTIES OUTPUT_NAME "acquire")
+target_include_directories(${EXEC_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src)
 
 if (DEFINED CURL_LINK_LIBRARIES)
-    target_link_libraries(acquire ${CURL_LINK_LIBRARIES})
+    target_link_libraries(${EXEC_NAME} ${CURL_LINK_LIBRARIES})
 endif ()
 
 if (DEFINED OPENSSL_LIBRARIES)
-    target_link_libraries(acquire OpenSSL::SSL)
-    target_link_libraries(acquire ${OPENSSL_LIBRARIES})
-    target_include_directories(acquire PRIVATE ${OPENSSL_INCLUDE_DIR})
+    target_link_libraries(${EXEC_NAME} OpenSSL::SSL)
+    target_link_libraries(${EXEC_NAME} ${OPENSSL_LIBRARIES})
+    target_include_directories(${EXEC_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif ()
+
+if (DEFINED USE_WININET)
+    target_link_libraries("${EXEC_NAME}" wininet)
+endif()

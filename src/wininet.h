@@ -6,73 +6,57 @@
 #include <tchar.h>
 #include "stdbool.h"
 
-
-bool GetFile(HINTERNET, const TCHAR *, const TCHAR *, TCHAR *);
+#define BUFFER_SIZE 4096
 
 const char *get_download_dir() {
     return ".downloads";
 }
 
-bool GetFile(HINTERNET hOpen,      /* Handle from InternetOpen() */
-             const TCHAR *szURL,   /* Full URL */
-             const TCHAR *szpath,
-             TCHAR *szname) {
-    DWORD dwSize;
-    TCHAR szHead[15];
-    BYTE *szTemp[1024];
-    HINTERNET hConnect;
-    FILE *pFile;
-    TCHAR szpathfilename[100];
-
-    szHead[0] = '\0';
-
-    if (!(hConnect = InternetOpenUrl(hOpen, szURL, szHead, 15, INTERNET_FLAG_DONT_CACHE, 0))) {
-        fprintf(stderr, "Error: InternetOpenUrl\n");
-        return 0;
-    }
-
-    if (szname == NULL || strlen(szname) == 0) szname = (char*)get_path_from_url(szURL);
-
-    fopen_s(&pFile, szpathfilename, "wb");
-    if (pFile == NULL) {
-        fprintf(stderr, "Error _tfopen\n");
-        return false;
-    }
-    do {
-        /* Keep copying in 1024 bytes chunks, while file has any data left.
-           Note: bigger buffer will greatly improve performance. */
-        if (!InternetReadFile(hConnect, szTemp, 1024, &dwSize)) {
-            fclose(pFile);
-            fprintf(stderr, "Error InternetReadFile\n");
-            return FALSE;
-        }
-        if (dwSize == 0)
-            break;  /* Condition of dwSize=0 indicate EOF. Stop. */
-        else
-            fwrite(szTemp, sizeof(BYTE), dwSize, pFile);
-    }   /* do */
-    while (TRUE);
-    fflush(pFile);
-    fclose(pFile);
-
-    return TRUE;
-}
-
 int download(const char* url, enum Checksum checksum, const char* hash, const char target_directory[248],
-    bool follow, size_t retry, size_t verbosity) {
+    bool follow, size_t retry, size_t verbosity)
+{
+    HINTERNET hInternet, hURL;
+    DWORD file_size, nbread;
+    FILE* fp = NULL;
+    char* buff;
+    size_t count;
+    const char* file_name = get_path_from_url(url);
 
-    HINTERNET hInternet;
+    hInternet = InternetOpen("QuickGet", 0, 0, 0, 0);
+    if (hInternet == NULL)
+        return -1;
+    hURL = InternetOpenUrl(hInternet, url, 0, 0, 0, 0);
+    if (hURL == NULL)
+        return -1;
 
-    hInternet = InternetOpen("libacquire",               /* __in LPCSTR lpszAgent       */
-                             INTERNET_OPEN_TYPE_DIRECT,  /* __in DWORD  dwAccessType    */
-                             NULL,                       /* __in LPCSTR lpszProxy       */
-                             NULL,                       /* __in LPCSTR lpszProxyBypass */
-                             0                           /* __in DWORD  dwFlags         */
-    );
-    GetFile(hInternet, url, get_download_dir(), NULL);
-    InternetCloseHandle(hInternet);
+    file_size = InternetSetFilePointer(hURL, 0, 0, FILE_END, 0);
+    if (file_size == -1)
+        return -1;
 
-    return EXIT_SUCCESS;
+    InternetSetFilePointer(hURL, 0, 0, FILE_BEGIN, 0);
+
+    
+    fopen_s(&fp, file_name, "wb");
+    if (fp == NULL)
+        return -1;
+
+
+    puts("Starting download...");
+
+    nbread = 0;
+    buff = malloc(BUFFER_SIZE);
+    count = 0;
+    while (count < file_size)
+    {
+        InternetReadFile(hURL, buff, BUFFER_SIZE, &nbread);
+        fwrite(buff, nbread, 1, fp);
+        count += nbread;
+        printf("\r%zu of %lu bytes downloded from %s.", count, file_size, url);
+    }
+    free(buff);
+    fclose(fp);
+    InternetCloseHandle(hURL); InternetCloseHandle(hInternet);
+    return 0;
 }
 
 #endif /* LIBACQUIRE_WININET_H */
