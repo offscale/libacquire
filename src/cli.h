@@ -6,11 +6,18 @@
 
 #if defined(_AIX)
 #include <sys/limits.h>
-#elif defined(__FreeBSD__) || defined(__NetBSD__)
-|| defined(__OpenBSD__) || defined(__bsdi__)
-|| defined(__DragonFly__) || defined(macintosh)
-|| defined(__APPLE__) || defined(__APPLE_CC__)
+#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) \
+ || defined(__DragonFly__) || defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+
+#ifdef __CC_SUPPORTS_WARNING
+#undef __CC_SUPPORTS_WARNING
+#define ____CC_SUPPORTS_WARNING
+#endif
 #include <sys/syslimits.h>
+#ifdef ____CC_SUPPORTS_WARNING
+#define __CC_SUPPORTS_WARNING 1
+#endif
+
 #elif defined(__HAIKU__)
 #include <system/user_runtime.h>
 #elif defined(__linux__) || defined(linux) || defined(__linux)

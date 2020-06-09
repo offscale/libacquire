@@ -139,14 +139,20 @@ endif ()
 # HTTP/HTTPS libraries #
 ########################
 
-if (NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR USE_LIBCURL)
+if ((CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
+        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD"
+        OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+        AND USE_LIBCURL STREQUAL "OFF")
+    set(USE_FETCH 1)
+    list(APPEND src src/libfetch)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(USE_WININET 1)
+    list(APPEND src src/wininet)
+else ()
     set(USE_LIBCURL 1)
     include(cmake/FindCurlCustom.cmake)
     get_curl(CURL_LINK_LIBRARIES)
     list(APPEND src src/libcurl)
-else ()
-    set(USE_WININET 1)
-    list(APPEND src src/wininet)
 endif ()
 
 ################################
@@ -193,4 +199,4 @@ endif ()
 
 if (DEFINED USE_WININET)
     target_link_libraries("${EXEC_NAME}" wininet)
-endif()
+endif ()
