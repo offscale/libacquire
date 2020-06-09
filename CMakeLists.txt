@@ -143,7 +143,7 @@ if ((CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
         OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD"
         OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
         AND USE_LIBCURL STREQUAL "OFF")
-    set(USE_FETCH 1)
+    set(USE_LIBFETCH 1)
     list(APPEND src src/libfetch)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(USE_WININET 1)
@@ -189,6 +189,10 @@ target_include_directories(${EXEC_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src)
 
 if (DEFINED CURL_LINK_LIBRARIES)
     target_link_libraries(${EXEC_NAME} ${CURL_LINK_LIBRARIES})
+elseif (DEFINED USE_WININET)
+    target_link_libraries("${EXEC_NAME}" wininet)
+elseif (DEFINED USE_LIBFETCH)
+    target_link_libraries("${EXEC_NAME}" fetch)
 endif ()
 
 if (DEFINED OPENSSL_LIBRARIES)
@@ -197,6 +201,3 @@ if (DEFINED OPENSSL_LIBRARIES)
     target_include_directories(${EXEC_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif ()
 
-if (DEFINED USE_WININET)
-    target_link_libraries("${EXEC_NAME}" wininet)
-endif ()

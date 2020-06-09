@@ -15,6 +15,10 @@
 
 #include "wininet.h"
 
+#elif defined(USE_LIBFETCH)
+
+#include "libfetch.h"
+
 #endif
 
 int main(int argc, char *argv[]) {
