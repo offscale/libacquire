@@ -5,7 +5,7 @@ libacquire
 [![CI for FreeBSD](https://api.cirrus-ci.com/github/offscale/libacquire.svg)](https://cirrus-ci.com/github/offscale/libacquire)
 [![C89](https://img.shields.io/badge/C-89-blue)](https://en.wikipedia.org/wiki/C89_(C_version))
 
-The core for your package manager. Download, verify, and extract.
+The core for your package manager, minus the dependency graph components. Features: **download**, **verify**, and **extract**.
 
 By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DUSE_LIBCURL` or  `-DUSE_LIBFETCH`.
 
