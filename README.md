@@ -3,8 +3,13 @@ libacquire
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CI for Linux, Windows, macOS](https://github.com/offscale/libacquire/workflows/CI%20for%20Linux,%20Windows,%20macOS/badge.svg)](https://github.com/offscale/libacquire/actions)
 [![CI for FreeBSD](https://api.cirrus-ci.com/github/offscale/libacquire.svg)](https://cirrus-ci.com/github/offscale/libacquire)
+[![C89](https://img.shields.io/badge/C-89-blue)](https://en.wikipedia.org/wiki/C89_(C_version))
 
-Downloads using libcurl—if not Windows or built with `USE_LIBCURL`—or Windows APIs.
+The core for your package manager. Download, verify, and extract.
+
+By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DUSE_LIBCURL` or  `-DUSE_LIBFETCH`.
+
+By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DUSE_OPENSSL`.
 
 Supports:
 
@@ -13,6 +18,15 @@ Supports:
   - [ ] Windows
   - [ ] Solaris/OpenSolaris/illumos
   - [ ] BSD
+
+## Advantage
+
+  - Extremely portable C code (ANSI C: C89)
+  - link with different libraries, including those built in to your OS
+  - very small executable size (thanks to above)
+  - fast
+  - simple API, easy to integrate in your C project (or really any language, they all have nice FFI back to C or a C intermediary language)
+  - default cipher selection >= TLS 1.2
 
 ## Docker
 
@@ -60,14 +74,9 @@ acquire \
   - Everyone has their favourite `curl`/`wget`/`fetch` command, rarely do they set the ciphers (TLS 1.2 or higher is now the recommendation)
   - Can be edited easily
 
-### libaquire advantage
+## Developer note
 
-  - C89 code that is extremely portable
-  - link with different libraries, including those built in to your OS
-  - very small executable size (thanks to above)
-  - fast
-  - simple API, easy to integrate in your C project (or really any language, they all have nice FFI back to C or a C intermediary language)
-  - default cipher selection is >= TLS 1.2
+Want different options for libcurl, OpenSSL, or any of the other dependencies? - CMake has a `CACHE`ing mechanism. - You should be able to explicitly include your settings before including `libacquire`, and it'll use the one already included (with your custom settings).
 
 ---
 
