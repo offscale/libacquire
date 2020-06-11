@@ -1,4 +1,4 @@
-acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.
+acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.
 
 Usage:
   acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...

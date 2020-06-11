@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include "stdbool.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -226,10 +226,15 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
     (void)command;
     (void)argument;
 
+    puts("GOT HERE");
     /* options */
     for (i=0; i < elements->n_options; i++) {
         option = &elements->options[i];
-        if (help && strcmp(option->olong, "--help") == 0) {
+        printf("option->argument: %s\n"
+               "option->olong: \t %s\n"
+               "option->value: \t %lu\n\n",
+               option->argument, option->olong, option->value);
+        if (help && option->value != 0 && strcmp(option->olong, "--help") == 0) {
             for (j = 0; j < 17; j++)
                 puts(args->help_message[j]);
             return 1;
@@ -282,7 +287,7 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
     struct DocoptArgs args = {
         NULL, 0, 0, 0, NULL, NULL, NULL,
         usage_pattern,
-        { "acquire: Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.",
+        { "acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
           "",
           "Usage:",
           "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
@@ -315,6 +320,7 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
         {NULL, "--hash", 1, 0, NULL}
     };
     struct Elements elements;
+    size_t return_code = EXIT_SUCCESS;
     elements.n_commands = 0;
     elements.n_arguments = 1;
     elements.n_options = 6;
@@ -322,10 +328,16 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
     elements.arguments = arguments;
     elements.options = options;
 
+    if (argc == 1) {
+        argv[++argc - 1] = "--help";
+        argv[++argc - 1] = NULL;
+        return_code = EXIT_FAILURE;
+    }
+
     ts = tokens_new(argc, argv);
     if (parse_args(&ts, &elements))
         exit(EXIT_FAILURE);
     if (elems_to_args(&elements, &args, help, version))
-        exit(EXIT_SUCCESS);
+        exit(return_code);
     return args;
 }

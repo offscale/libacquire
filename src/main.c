@@ -19,6 +19,10 @@
 
 #include "libfetch.h"
 
+#elif defined(USE_OPENBSD_FTP)
+
+#include "openbsd_ftp.h"
+
 #endif
 
 int main(int argc, char *argv[]) {
@@ -34,14 +38,19 @@ int main(int argc, char *argv[]) {
 #else
     const char *check = getenv("CHECK");
 #endif
+    size_t i;
+    for(i=0; i<argc; i++)
+        printf("main::argv[%lu] = %s\n", i, argv[i]);
 
     if (check != NULL && args.check == 0) args.check = (bool) check;
     if (args.directory == 0) args.directory = TMPDIR;
     if (args.url == 0) {
         switch (argc) {
             case 2:
-                args.url = argv[1];
-                break;
+                if (is_url(argv[1])) {
+                    args.url = argv[1];
+                    break;
+                }
             case 1:
                 return UNIMPLEMENTED;
             default:

@@ -4,7 +4,7 @@ project(libacquire
         LANGUAGES C)
 
 set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
-set(DESCRIPTION "Downloads using libcurl—if not Windows or built with USE_LIBCURL—or Windows APIs.")
+set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -140,11 +140,12 @@ endif ()
 ########################
 
 if ((CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
-        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD"
-        OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
         AND USE_LIBCURL STREQUAL "OFF")
     set(USE_LIBFETCH 1)
     list(APPEND src src/libfetch)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND USE_LIBCURL STREQUAL "OFF")
+    set(USE_OPENBSD_FTP 1)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(USE_WININET 1)
     list(APPEND src src/wininet)
