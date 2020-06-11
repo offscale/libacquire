@@ -13,7 +13,9 @@
 #undef __CC_SUPPORTS_WARNING
 #define ____CC_SUPPORTS_WARNING
 #endif
+
 #include <sys/syslimits.h>
+
 #ifdef ____CC_SUPPORTS_WARNING
 #define __CC_SUPPORTS_WARNING 1
 #endif
@@ -45,7 +47,7 @@
 #endif
 
 struct DocoptArgs {
-    
+
     /* arguments */
     char *url;
     /* options without arguments */

@@ -38,9 +38,6 @@ int main(int argc, char *argv[]) {
 #else
     const char *check = getenv("CHECK");
 #endif
-    size_t i;
-    for(i=0; i<argc; i++)
-        printf("main::argv[%lu] = %s\n", i, argv[i]);
 
     if (check != NULL && args.check == 0) args.check = (bool) check;
     if (args.directory == 0) args.directory = TMPDIR;
@@ -60,6 +57,7 @@ int main(int argc, char *argv[]) {
                     args.url = argv[argc - 1];
                 else
                     return UNIMPLEMENTED;
+                printf("`args.url`:\t\"%s\"\n", args.url);
         }
     }
     if (args.checksum != NULL)
@@ -69,8 +67,5 @@ int main(int argc, char *argv[]) {
         return is_downloaded(args.url, checksum, args.hash, args.directory) ?
                EXIT_SUCCESS : EXIT_FAILURE;
 
-    printf("`args.url`:\t\"%s\"\n", args.url);
-    download(args.url, checksum, args.hash, args.directory, false, 0, 0);
-
-    return EXIT_SUCCESS;
+    return download(args.url, checksum, args.hash, args.directory, false, 0, 0);
 }
