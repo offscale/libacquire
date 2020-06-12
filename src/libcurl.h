@@ -185,7 +185,8 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
 }
 
 
-int download(const char *url, enum Checksum checksum, const char *hash, const char target_directory[248],
+int download(const char *url, enum Checksum checksum,
+             const char *hash, const char target_directory[248],
              bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
     CURLcode cerr = CURLE_OK;
@@ -211,7 +212,7 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
-    if (cerr) {
+    if (cerr != CURLE_OK) {
         fprintf(stderr, "%s: failed with err %d\n", "URL", cerr);
         goto bail;
     }
@@ -230,13 +231,13 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, dnld_header_parse);
-    if (cerr) {
+    if (cerr != CURLE_OK) {
         fprintf(stderr, "%s: failed with err %d\n", "HEADER", cerr);
         goto bail;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
-    if (cerr) {
+    if (cerr != CURLE_OK) {
         fprintf(stderr, "%s: failed with err %d\n", "HEADER DATA", cerr);
         goto bail;
     }
@@ -262,13 +263,13 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
-    if (cerr) {
+    if (cerr != CURLE_OK) {
         fprintf(stderr, "%s: failed with err %d\n", "WR CB", cerr);
         goto bail;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
-    if (cerr) {
+    if (cerr != CURLE_OK) {
         fprintf(stderr, "%s: failed with err %d\n", "WR Data", cerr);
         goto bail;
     }
@@ -290,7 +291,12 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    return cerr;
+    if (cerr != CURLE_OK && cerr != CURLE_ALREADY_COMPLETE) {
+        fprintf(stderr, "curl failed with: %s\n", curl_easy_strerror(cerr));
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }
 
 int download_many(const char *url[], const char *hashes[], enum Checksum checksums[], const char *target_directory,

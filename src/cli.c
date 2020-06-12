@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stdbool.h"
 #include <stddef.h>
 #include <string.h>
+
+#if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+
+#include <stdbool.h>
+
+#else
+
+#include "stdbool.h"
+
+#endif
 
 #include "cli.h"
 
@@ -217,8 +226,8 @@ size_t parse_args(struct Tokens *ts, struct Elements *elements) {
     return 0;
 }
 
-size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const bool help,
-                     const char *version) {
+size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args,
+                     const bool help, const char *version) {
     struct Command *command;
     struct Argument *argument;
     struct Option *option;
@@ -231,8 +240,8 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
     /* options */
     for (i = 0; i < elements->n_options; i++) {
         option = &elements->options[i];
-        if (help && option->value != 0 && strcmp(option->olong, "--help") == 0) {
-            for (j = 0; j < 17; j++)
+        if (help && option->value && strcmp(option->olong, "--help") == 0) {
+            for (j = 0; j < 16; j++)
                 puts(args->help_message[j]);
             return 1;
         } else if (version && option->value &&
@@ -262,10 +271,12 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
     /* commands */
     for (i = 0; i < elements->n_commands; i++) {
         command = &elements->commands[i];
+        
     }
     /* arguments */
     for (i = 0; i < elements->n_arguments; i++) {
         argument = &elements->arguments[i];
+        
         if (strcmp(argument->name, "<url>") == 0) {
             args->url = (char *) argument->value;
         }
@@ -280,42 +291,42 @@ size_t elems_to_args(struct Elements *elements, struct DocoptArgs *args, const b
 
 struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char *version) {
     struct DocoptArgs args = {
-            NULL, 0, 0, 0, NULL, NULL, NULL,
+        NULL, 0, 0, 0, NULL, NULL, NULL,
             usage_pattern,
-            {"acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
-             "",
-             "Usage:",
-             "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-             "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-             "  acquire --help",
-             "  acquire --version",
-             "",
-             "Options:",
-             "  -h --help               Show this screen.",
-             "  --version               Show version.",
-             "  --check                 Check if already downloaded.",
-             "  --hash<h>               Hash to verify.",
-             "  --checksum<sha>         Checksum algorithm, e.g., SHA256 or SHA512.",
-             "  -d=<d>, --directory=<d> Location to download files to.",
-             "  -o FILE --output=FILE   Output file. If not specified, will derive from URL.",
-             ""}
+            { "acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
+              "",
+              "Usage:",
+              "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+              "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+              "  acquire --help",
+              "  acquire --version",
+              "",
+              "Options:",
+              "  -h --help               Show this screen.",
+              "  --version               Show version.",
+              "  --check                 Check if already downloaded.",
+              "  --hash<h>               Hash to verify.",
+              "  --checksum<sha>         Checksum algorithm, e.g., SHA256 or SHA512.",
+              "  -d=<d>, --directory=<d> Location to download files to.",
+              "  -o FILE --output=FILE   Output file. If not specified, will derive from URL."}
     };
     struct Tokens ts;
     struct Command commands[] = {NULL
     };
     struct Argument arguments[] = {
-            {"<url>", NULL, NULL}
+        {"<url>", NULL, NULL}
     };
     struct Option options[] = {
-            {NULL, "--check",     0, 0, NULL},
-            {"-h", "--help",      0, 0, NULL},
-            {NULL, "--version",   0, 0, NULL},
-            {NULL, "--checksum",  1, 0, NULL},
-            {"-d", "--directory", 1, 0, NULL},
-            {NULL, "--hash",      1, 0, NULL}
+        {NULL, "--check", 0, 0, NULL},
+        {"-h", "--help", 0, 0, NULL},
+        {NULL, "--version", 0, 0, NULL},
+        {NULL, "--checksum", 1, 0, NULL},
+        {"-d", "--directory", 1, 0, NULL},
+        {NULL, "--hash", 1, 0, NULL}
     };
     struct Elements elements;
     size_t return_code = EXIT_SUCCESS;
+
     elements.n_commands = 0;
     elements.n_arguments = 1;
     elements.n_options = 6;
@@ -324,8 +335,8 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
     elements.options = options;
 
     if (argc == 1) {
-        argv[++argc - 1] = "--help";
-        argv[++argc - 1] = NULL;
+        argv[argc++] = "--help";
+        argv[argc++] = NULL;
         return_code = EXIT_FAILURE;
     }
 
