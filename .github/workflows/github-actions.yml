@@ -7,22 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: deps
+        run: sudo apt-get install -y libssl-dev libcurl4-openssl-dev
       - name: build
         run: |
-          sudo apt-get install -y libssl-dev libcurl4-openssl-dev
           mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
+      - name: test
+        run: ctest .
   build_macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - name: deps
+        run: brew install pkg-config  # openssl
       - name: build
         run: |
-          brew install pkg-config  # openssl
           mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
+      - name: test
+        run: ctest .
   build_windows:
     runs-on: windows-latest
     steps:
@@ -33,3 +39,5 @@ jobs:
           cd cmake-build-debug
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
+      - name: test
+        run: ctest .
