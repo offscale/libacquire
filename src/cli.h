@@ -17,10 +17,10 @@
 
 #include <sys/limits.h>
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__)
-|| defined(__OpenBSD__) || defined(__bsdi__)
-|| defined(__DragonFly__) || defined(macintosh)
-|| defined(__APPLE__) || defined(__APPLE_CC__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) \
+ || defined(__OpenBSD__) || defined(__bsdi__) \
+ || defined(__DragonFly__) || defined(macintosh) \
+ || defined(__APPLE__) || defined(__APPLE_CC__)
 
 #include <sys/syslimits.h>
 
@@ -63,7 +63,7 @@
 #endif
 
 struct DocoptArgs {
-    
+
     /* arguments */
     char *url;
     /* options without arguments */
