@@ -24,7 +24,7 @@ include_directories(${PROJECT_BINARY_DIR}/downloads ${PROJECT_BINARY_DIR}/src ..
 ########################
 # Set src dependencies #
 ########################
-set(src src/test_fileutils)
+set(src src/test src/test_fileutils src/test_string_extras)
 
 add_executable(test_libacquire ${src})
 #add_library(${PROJECT_NAME}::rexo ALIAS rexo)

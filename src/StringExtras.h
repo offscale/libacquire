@@ -105,7 +105,23 @@ int strcasecmp(const char *s1, const char *s2) {
 #if !defined(STRNSTR)
 
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
-    size_t targetLength = strlen(target);
+    /*
+       Find the first occurrence of find in s, where the search is limited to the
+       first slen characters of s.
+
+    DESCRIPTION
+         The strnstr() function locates the	first occurrence of the	null-termi-
+         nated string little in the	string big, where not more than	len characters
+         are searched.  Characters that appear after a `\0'	character are not
+         searched.
+
+    RETURN VALUES
+         If	little is an empty string, big is returned; if little occurs nowhere
+         in	big, NULL is returned; otherwise a pointer to the first	character of
+         the first occurrence of little is returned.
+
+     [this doc (c) FreeBSD <3 clause BSD license> from their manpage]  */
+    const size_t targetLength = strlen(target);
     const char *start;
     if (targetLength == 0)
         return (char *) buffer;

@@ -41,7 +41,7 @@ int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
     FILE *file = fopen(path, "rb");
     const int bufSize = 32768;
     unsigned char *buffer = malloc(bufSize);
-    unsigned short exit_code = 0;
+    unsigned short exit_code = EXIT_SUCCESS;
     size_t bytesRead;
 
     if (!file) {

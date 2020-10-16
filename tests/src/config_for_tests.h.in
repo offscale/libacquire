@@ -7,4 +7,6 @@
 
 #define CMAKE_CURRENT_LIST_FILE "@CMAKE_CURRENT_LIST_FILE@"
 
+#define _@TARGET_ARCH@_
+
 #endif

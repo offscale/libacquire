@@ -44,11 +44,13 @@ extern bool is_file(const char *path) {
 }
 
 extern bool exists(const char *path) {
+    return
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    return _access(path, 0) != -1;
+        _access
 #else
-    return access(path, 0) != -1;
+            access
 #endif
+                    (path, 0) != -1;
 }
 
 #endif /* LIBACQUIRE_FILEUTILS_H */

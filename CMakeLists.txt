@@ -38,7 +38,7 @@ set(src src/main.c src/cli src/acquire)
 # CMake options that can be overridden at configuration time #
 ##############################################################
 
-option(USE_LIBCURL "Enable libcurl (defaults to `YES` on non-Windows)" OFF)
+option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
 
 # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT DEFINED CRYPTO_LIB)

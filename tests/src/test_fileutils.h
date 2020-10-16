@@ -46,20 +46,11 @@ TEST x_exists_should_be_false(void) {
 }
 
 /* Suites can group multiple tests with common setup. */
-SUITE(the_suite) {
+SUITE(fileutils_suite) {
     RUN_TEST(x_is_directory_should_be_true);
     RUN_TEST(x_is_directory_should_be_false);
     RUN_TEST(x_is_file_should_be_true);
     RUN_TEST(x_is_file_should_be_false);
     RUN_TEST(x_exists_should_be_true);
     RUN_TEST(x_exists_should_be_false);
-}
-
-/* Add definitions that need to be in the test runner's main file. */
-GREATEST_MAIN_DEFS();
-
-int main(int argc, char **argv) {
-    GREATEST_MAIN_BEGIN();
-    RUN_SUITE(the_suite);
-    GREATEST_MAIN_END();
 }
