@@ -11,10 +11,21 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 file(DOWNLOAD https://raw.githubusercontent.com/silentbicycle/greatest/master/greatest.h
         ${PROJECT_BINARY_DIR}/downloads/greatest.h)
 
-include_directories(${PROJECT_BINARY_DIR}/downloads)
+################################
+# Configure file (interpolate) #
+################################
+configure_file(src/config_for_tests.h.in ${PROJECT_BINARY_DIR}/src/config_for_tests.h @ONLY)
 
-set(src src/test_foo)
+################################
+# Put directory in path for <> #
+################################
+include_directories(${PROJECT_BINARY_DIR}/downloads ${PROJECT_BINARY_DIR}/src ../src)
 
-add_executable(test_foo_exe ${src})
+########################
+# Set src dependencies #
+########################
+set(src src/test_fileutils)
+
+add_executable(test_libacquire ${src})
 #add_library(${PROJECT_NAME}::rexo ALIAS rexo)
-add_test(test_foo ${PROJECT_BINARY_DIR}/test_foo_exe)
+add_test(test_libacquire ${PROJECT_BINARY_DIR}/test_libacquire)
