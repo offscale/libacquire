@@ -5,8 +5,8 @@
 
 TEST x_is_directory_should_be_true(void) {
     const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);
-    ASSERT_EQ_FMT((size_t)true, x, "%lu");
-    PASS();
+            ASSERT_EQ_FMT((size_t) true, x, "%zu");
+            PASS();
 }
 
 TEST x_is_directory_should_be_false(void) {
@@ -19,8 +19,8 @@ TEST x_is_directory_should_be_false(void) {
 
 TEST x_is_file_should_be_true(void) {
     const bool x = is_file(CMAKE_CURRENT_LIST_FILE);
-    ASSERT_EQ_FMT((size_t)true, x, "%lu");
-    PASS();
+            ASSERT_EQ_FMT((size_t) true, x, "%zu");
+            PASS();
 }
 
 TEST x_is_file_should_be_false(void) {
@@ -34,9 +34,9 @@ TEST x_is_file_should_be_false(void) {
 TEST x_exists_should_be_true(void) {
     const bool x = exists(CMAKE_CURRENT_SOURCE_DIR);
     const bool y = exists(CMAKE_CURRENT_LIST_FILE);
-    ASSERT_EQ_FMT((size_t)true, x, "%lu");
-    ASSERT_EQ_FMT((size_t)true, y, "%lu");
-    PASS();
+            ASSERT_EQ_FMT((size_t) true, x, "%zu");
+            ASSERT_EQ_FMT((size_t) true, y, "%zu");
+            PASS();
 }
 
 TEST x_exists_should_be_false(void) {

@@ -325,7 +325,7 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
         {NULL, "--hash", 1, 0, NULL}
     };
     struct Elements elements;
-    size_t return_code = EXIT_SUCCESS;
+    int return_code = EXIT_SUCCESS;
 
     elements.n_commands = 0;
     elements.n_arguments = 1;
