@@ -3,7 +3,7 @@
 #include <fileutils.h>
 #include <config_for_tests.h>
 
-#ifdef _MSC_BUILD
+#ifdef _MSC_VER
 #define NUM_FORMAT "%zu"
 typedef unsigned size_t num_type;
 #else
