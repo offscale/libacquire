@@ -13,8 +13,8 @@ typedef unsigned long num_type;
 
 TEST x_is_directory_should_be_true(void) {
     const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);
-            ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
-            PASS();
+    ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
+    PASS();
 }
 
 TEST x_is_directory_should_be_false(void) {
@@ -27,38 +27,38 @@ TEST x_is_directory_should_be_false(void) {
 
 TEST x_is_file_should_be_true(void) {
     const bool x = is_file(CMAKE_CURRENT_LIST_FILE);
-            ASSERT_EQ_FMT((num_type) true, x, "%zu");
-            PASS();
+    ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
+    PASS();
 }
 
 TEST x_is_file_should_be_false(void) {
     const bool x = is_file(CMAKE_CURRENT_SOURCE_DIR);
     const bool y = is_directory(BAD_DIR);
-            ASSERT_FALSE(x);
-            ASSERT_FALSE(y);
-            PASS();
+    ASSERT_FALSE(x);
+    ASSERT_FALSE(y);
+    PASS();
 }
 
 TEST x_exists_should_be_true(void) {
     const bool x = exists(CMAKE_CURRENT_SOURCE_DIR);
     const bool y = exists(CMAKE_CURRENT_LIST_FILE);
-            ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
-            ASSERT_EQ_FMT((num_type) true, y, NUM_FORMAT);
-            PASS();
+    ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
+    ASSERT_EQ_FMT((num_type) true, y, NUM_FORMAT);
+    PASS();
 }
 
 TEST x_exists_should_be_false(void) {
     const bool x = exists(BAD_DIR);
-            ASSERT_FALSE(x);
-            PASS();
+    ASSERT_FALSE(x);
+    PASS();
 }
 
 /* Suites can group multiple tests with common setup. */
 SUITE (fileutils_suite) {
-            RUN_TEST(x_is_directory_should_be_true);
-            RUN_TEST(x_is_directory_should_be_false);
-            RUN_TEST(x_is_file_should_be_true);
-            RUN_TEST(x_is_file_should_be_false);
-            RUN_TEST(x_exists_should_be_true);
-            RUN_TEST(x_exists_should_be_false);
+    RUN_TEST(x_is_directory_should_be_true);
+    RUN_TEST(x_is_directory_should_be_false);
+    RUN_TEST(x_is_file_should_be_true);
+    RUN_TEST(x_is_file_should_be_false);
+    RUN_TEST(x_exists_should_be_true);
+    RUN_TEST(x_exists_should_be_false);
 }
