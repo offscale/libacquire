@@ -5,7 +5,7 @@
 
 #ifdef _MSC_VER
 #define NUM_FORMAT "%zu"
-typedef unsigned size_t num_type;
+typedef size_t num_type;
 #else
 #define NUM_FORMAT "%lu"
 typedef unsigned long num_type;
