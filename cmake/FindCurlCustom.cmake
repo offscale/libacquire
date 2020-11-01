@@ -32,14 +32,16 @@ function(get_curl LINK_LIBRARIES)
                 endif ()
                 if (NOT CURL_LINK_LIBRARIES MATCHES "_imp.lib$|${CMAKE_SHARED_LIBRARY_SUFFIX}$")
                     list(REMOVE_ITEM CURL_STATIC_LIBRARIES ${CURL_LIBRARIES})
-                    add_library(CURL::libcurl STATIC IMPORTED)
-                    set_target_properties(CURL::libcurl PROPERTIES
-                            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_STATIC_INCLUDE_DIRS}"
-                            INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
-                            INTERFACE_LINK_LIBRARIES "${CURL_STATIC_LIBRARIES}"
-                            IMPORTED_LINK_INTERFACE_LANGUAGES C
-                            IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
-                    link_directories(CURL_STATIC_LIBRARY_DIRS)
+                    if (NOT TARGET CURL::libcurl)
+                        add_library(CURL::libcurl STATIC IMPORTED)
+                        set_target_properties(CURL::libcurl PROPERTIES
+                                INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CURL_STATIC_INCLUDE_DIRS}"
+                                INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
+                                INTERFACE_LINK_LIBRARIES "${CURL_STATIC_LIBRARIES}"
+                                IMPORTED_LINK_INTERFACE_LANGUAGES C
+                                IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
+                        link_directories(CURL_STATIC_LIBRARY_DIRS)
+                    endif()
                 else ()
                     add_library(CURL::libcurl SHARED IMPORTED)
                     set_target_properties(CURL::libcurl PROPERTIES

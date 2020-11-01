@@ -53,13 +53,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(HAVE_STRINGS_H)
+#ifdef HAVE_STRINGS_H
 
 #include <strings.h>
 
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #if _MSC_VER < 1900
 /* snprintf is implemented in VS 2015 */
 inline int snprintf(char* buffer, size_t count, const char* format, ...)

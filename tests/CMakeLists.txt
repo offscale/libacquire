@@ -7,9 +7,15 @@ set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
 set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(GREATEST_SHA256 35eef57bb1c105d4a14497d62e96cd59a86adc893aa48d4fe305f5141e909df4)
 
 file(DOWNLOAD https://raw.githubusercontent.com/silentbicycle/greatest/master/greatest.h
-        ${PROJECT_BINARY_DIR}/downloads/greatest.h)
+        ${PROJECT_BINARY_DIR}/downloads/greatest.h
+        EXPECTED_HASH SHA256=${GREATEST_SHA256})
+
+include(../cmake/libacquire.cmake)
+
+libacquire()
 
 ################################
 # Configure file (interpolate) #
