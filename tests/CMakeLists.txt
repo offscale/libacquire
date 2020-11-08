@@ -13,10 +13,6 @@ file(DOWNLOAD https://raw.githubusercontent.com/silentbicycle/greatest/master/gr
         ${PROJECT_BINARY_DIR}/downloads/greatest.h
         EXPECTED_HASH SHA256=${GREATEST_SHA256})
 
-include(../cmake/libacquire.cmake)
-
-libacquire()
-
 ################################
 # Configure file (interpolate) #
 ################################

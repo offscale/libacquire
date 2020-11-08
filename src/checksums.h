@@ -5,7 +5,7 @@ That way you don't need to trust me, just the `diff` on your end,
 #define LIBACQUIRE_CHECKSUMS_H
 
 #include "stdbool.h"
-#include <config.h>
+#include "config.h"
 
 extern bool sha256(const char *, const char *);
 
@@ -18,4 +18,3 @@ enum Checksum {
 };
 
 #endif /* LIBACQUIRE_CHECKSUMS_H */
-
