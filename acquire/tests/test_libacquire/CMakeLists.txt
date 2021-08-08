@@ -33,7 +33,7 @@ target_include_directories(
         "${PROJECT_BINARY_DIR}/src"
 )
 
-add_test("${EXEC_NAME}" "${PROJECT_BINARY_DIR}/test_libacquire")
+add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
 
 #########################
 # Export / installation #
