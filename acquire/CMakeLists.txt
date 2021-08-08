@@ -105,13 +105,10 @@ source_group("Header Files" FILES "${Header_Files}")
 add_library("${LIBRARY_NAME}" INTERFACE)
 target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
 
-target_include_directories(
-        "${LIBRARY_NAME}"
-        INTERFACE
+set(_include_dirs
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-        "$<INSTALL_INTERFACE:include>"
-)
+        "$<INSTALL_INTERFACE:include>")
 
 set(_libs "")
 if (DEFINED CURL_LINK_LIBRARIES)
@@ -125,9 +122,14 @@ endif ()
 if (DEFINED OPENSSL_LIBRARIES)
   list(APPEND _libs "OpenSSL::SSL")
   list(APPEND _libs "${OPENSSL_LIBRARIES}")
-  target_include_directories("${LIBRARY_NAME}" PRIVATE ${OPENSSL_INCLUDE_DIR})
+  list(APPEND _include_dirs "${OPENSSL_INCLUDE_DIR}")
 endif ()
 
+target_include_directories(
+        "${LIBRARY_NAME}"
+        INTERFACE
+        "${_include_dirs}"
+)
 target_link_libraries("${LIBRARY_NAME}" INTERFACE "${PROJECT_LOWER_NAME}_compiler_flags" "${_libs}")
 
 set_target_properties(

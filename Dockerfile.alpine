@@ -2,12 +2,10 @@ FROM alpine
 
 COPY . /libacquire
 
-WORKDIR /libacquire
+WORKDIR /libacquire/build
 
-RUN apk add --no-cache gcc cmake make libc-dev && \
-    mkdir 'cmake-build-docker-debug' && \
-    cd '/libacquire/cmake-build-docker-debug' && \
+RUN apk add --no-cache gcc cmake make pkgconf musl-dev linux-headers libcurl curl-dev openssl-dev && \
     cmake -DCMAKE_BUILD_TYPE=Debug .. && \
-    cmake --build "$PWD" && ls -l && chmod +x ./libacquire
+    cmake --build .
 
-CMD /libacquire/cmake-build-docker-debug/libacquire
+CMD ctest .

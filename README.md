@@ -32,7 +32,7 @@ Supports:
 
 `Dockerfile`s are provided for convenience, try them out, e.g., by running:
 
-    docker build . -f Dockerfile.ubuntu --tag libacquire
+    docker build . -f Dockerfile.alpine --tag libacquire
     docker run libacquire
 
 ## Shell script equivalent (UNIX with `grep`, `curl`, and `tar`)
