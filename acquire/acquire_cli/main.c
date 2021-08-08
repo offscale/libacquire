@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stdbool.h"
+#include "../stdbool.h"
 
-#include "config.h"
+#include <acquire.h>
+#include <config.h>
+#include <errors.h>
 #include "cli.h"
-#include "errors.h"
-#include "acquire.h"
 
 #ifdef USE_LIBCURL
 
-#include "libcurl.h"
+#include <libcurl.h>
 
 #elif defined(USE_WININET)
 

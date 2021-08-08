@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 project(libacquire
         VERSION "0.0.1"
         LANGUAGES C)
@@ -7,8 +7,6 @@ set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
 set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(EXEC_NAME acquire)
 
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
@@ -26,45 +24,6 @@ endif ()
 
 if (_GNU_SOURCE)
     add_definitions(-D_GNU_SOURCE)
-endif ()
-
-############################
-# Initial src dependencies #
-############################
-
-set(src src/main.c src/cli src/acquire)
-
-##############################################################
-# CMake options that can be overridden at configuration time #
-##############################################################
-
-option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
-
-# "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT DEFINED CRYPTO_LIB)
-    check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
-    if (NOT HAVE_COMMON_CRYPTO_H)
-        message(FATAL_ERROR "CommonCrypto.h not found")
-    endif ()
-    set(CRYPTO_LIB CommonCrypto)
-    set(USE_COMMON_CRYPTO 1)
-elseif ((CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND NOT DEFINED CRYPTO_LIB) OR CRYPTO_LIB STREQUAL "LibreSSL")
-    set(CRYPTO_LIB LibreSSL)
-    include(cmake/FindLibreSSL.cmake)
-    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-    set(USE_LIBRESSL 1)
-elseif ((CMAKE_SYSTEM_NAME STREQUAL "Linux"
-        OR CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
-        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
-        AND NOT DEFINED CRYPTO_LIB
-        OR CRYPTO_LIB STREQUAL "OpenSSL")
-    set(CRYPTO_LIB OpenSSL)
-    set(USE_OPENSSL 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED CRYPTO_LIB)
-    set(CRYPTO_LIB "WinCrypt")
-    set(USE_WINCRYPT 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS" AND NOT DEFINED CRYPTO_LIB)
-    message(FATAL_ERROR "TODO")
 endif ()
 
 function(gettempdir VARNAME)
@@ -93,6 +52,34 @@ else ()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
 endif ()
 
+add_library("${PROJECT_LOWER_NAME}_compiler_flags" INTERFACE)
+target_compile_features("${PROJECT_LOWER_NAME}_compiler_flags" INTERFACE "c_std_90")
+
+# add compiler warning flags just when building this project via
+# the BUILD_INTERFACE genex
+set(gcc_like "$<COMPILE_LANG_AND_ID:C,CXX,ARMClang,AppleClang,Clang,GNU>")
+set(msvc "$<COMPILE_LANG_AND_ID:C,CXX,MSVC>")
+target_compile_options(
+        "${PROJECT_LOWER_NAME}_compiler_flags"
+        INTERFACE
+        "$<${gcc_like}:$<BUILD_INTERFACE:-Wshadow;-Wformat=2;-Wall;-Wno-missing-braces;-pedantic>>"
+        "$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi;-permissive->>"
+)
+
+# control where the static and shared libraries are built so that on windows
+# we don't need to tinker with the path to run the executable
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
+if(APPLE)
+    set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+elseif(UNIX)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
+
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
 endif ()
@@ -107,103 +94,10 @@ if ((DEFINED CMAKE_C_FLAGS AND NOT CMAKE_C_FLAGS STREQUAL "")
     endif ()
 endif ()
 
-#################
-# SSL libraries #
-#################
-
-if (CRYPTO_LIB STREQUAL "OpenSSL")
-    if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
-            AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
-        set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-    elseif ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
-            AND IS_DIRECTORY "/usr/include/openssl")
-        set(OPENSSL_ROOT_DIR "/usr/include/openssl")
-    endif ()
-    find_package(OpenSSL REQUIRED)
-    check_include_file("openssl/sha.h" HAVE_OPENSSL_SHA_H LANGUAGE C)
-    if (NOT HAVE_OPENSSL_SHA_H)
-        message(FATAL_ERROR "OpenSSL installation doesn't have the required header files, install them or use alt SSL")
-    endif ()
-elseif (CRYPTO_LIB STREQUAL "LibreSSL")
-    find_package(LibreSSL REQUIRED)
-elseif (CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "OpenSSL")
-    list(APPEND src src/openssl.h)
-elseif (CRYPTO_LIB STREQUAL "WinCrypt")
-    list(APPEND src src/wincrypt.h)
-elseif (NOT DEFINED CRYPTO_LIB)
-    message(FATAL_ERROR "CRYPTO_LIB undefined")
-else ()
-    message("CRYPTO_LIB is ${CRYPTO_LIB}")
-endif ()
-
-########################
-# HTTP/HTTPS libraries #
-########################
-
-if ((CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
-        OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
-        AND USE_LIBCURL STREQUAL "OFF")
-    set(USE_LIBFETCH 1)
-    list(APPEND src src/libfetch)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND USE_LIBCURL STREQUAL "OFF")
-    set(USE_OPENBSD_FTP 1)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(USE_WININET 1)
-    list(APPEND src src/wininet)
-else ()
-    set(USE_LIBCURL 1)
-    include(cmake/FindCurlCustom.cmake)
-    get_curl(CURL_LINK_LIBRARIES)
-    list(APPEND src src/libcurl)
-endif ()
-
-################################
-# Configure file (interpolate) #
-################################
-
-configure_file(src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h @ONLY)
-
-#############################################
-# Compiler, library, and exec configuration #
-#############################################
-
-if (MSVC)
-    add_compile_options(/WX /permissive-)
-else ()
-    add_compile_options(
-            "$<$<CONFIG:DEBUG>:-Wall>"
-            "$<$<CONFIG:DEBUG>:-Werror>"
-            "$<$<CONFIG:DEBUG>:-pedantic>"
-            "$<$<CONFIG:DEBUG>:-Wno-missing-braces>"
-            "$<$<CONFIG:RELEASE>:-O3>"
-    )
-
-    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        add_compile_options("$<$<CONFIG:DEBUG>:-pedantic>")
-    else ()
-        add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")
-    endif ()
-endif ()
-
-add_executable(${EXEC_NAME} ${src})
-set_target_properties(${EXEC_NAME} PROPERTIES OUTPUT_NAME "acquire")
-target_include_directories(${EXEC_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src)
-
-if (DEFINED CURL_LINK_LIBRARIES)
-    target_link_libraries(${EXEC_NAME} ${CURL_LINK_LIBRARIES})
-elseif (DEFINED USE_WININET)
-    target_link_libraries("${EXEC_NAME}" wininet)
-elseif (DEFINED USE_LIBFETCH)
-    target_link_libraries("${EXEC_NAME}" fetch)
-endif ()
-
-if (DEFINED OPENSSL_LIBRARIES)
-    target_link_libraries(${EXEC_NAME} OpenSSL::SSL)
-    target_link_libraries(${EXEC_NAME} ${OPENSSL_LIBRARIES})
-    target_include_directories(${EXEC_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
-endif ()
+add_subdirectory("acquire")
+add_subdirectory("acquire/acquire_cli")
 
 if (CMAKE_PROJECT_NAME STREQUAL "libacquire" AND BUILD_TESTING)
     enable_testing()
-    add_subdirectory(tests)
+    add_subdirectory("acquire/tests")
 endif ()

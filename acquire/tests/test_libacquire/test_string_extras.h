@@ -1,7 +1,7 @@
 #include <string.h>
 #include <greatest.h>
 #include <StringExtras.h>
-#include <config_for_tests.h>
+#include "config_for_tests.h"
 
 static const char *buffer = "hello world";
 static const char *target = "hello\0\0\0";
