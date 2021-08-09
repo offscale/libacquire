@@ -1,6 +1,7 @@
 get_filename_component(EXEC_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" EXEC_NAME "${EXEC_NAME}")
 
+include(../../../cmake/FindCurlCustom.cmake)
 include(../../../cmake/libacquire_helpers.cmake)
 
 set(Header_Files "test_fileutils.h" "test_string_extras.h")
