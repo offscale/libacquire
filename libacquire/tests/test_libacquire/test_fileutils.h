@@ -1,6 +1,6 @@
 #include <greatest.h>
 #include <stdbool.h>
-#include <fileutils.h>
+#include <acquire_fileutils.h>
 #include <config_for_tests.h>
 
 #ifdef _MSC_VER

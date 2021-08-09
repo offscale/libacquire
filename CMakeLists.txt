@@ -5,14 +5,21 @@ project(libacquire
 
 set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
 set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
+
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+
+###############################
+# System symbol configuration #
+###############################
 
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
 include(CTest)
 
+CHECK_INCLUDE_FILE("stdbool.h" HAS_STDBOOL)
+add_compile_definitions(HAS_STDBOOL)
 if (NOT _GNU_SOURCE)
     check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
 
@@ -47,13 +54,21 @@ endif ()
 
 check_include_file(limits.h HAVE_LIMITS_H)
 if (HAVE_LIMITS_H)
-    set(HAVE_SYS_LIMITS_H 0)  # Don't actually care if it exists or not, always choose limits.h
+    add_compile_definitions(HAVE_LIMITS_H)
+    add_compile_definitions(HAVE_SYS_LIMITS_H)  # Don't actually care if it exists or not, always choose limits.h
 else ()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
+    if (HAVE_SYS_LIMITS_H)
+        add_compile_definitions(HAVE_SYS_LIMITS_H)
+    endif ()
 endif ()
 
+#################################
+# Compiler/linker configuration #
+#################################
+
 add_library("${PROJECT_LOWER_NAME}_compiler_flags" INTERFACE)
-target_compile_features("${PROJECT_LOWER_NAME}_compiler_flags" INTERFACE "c_std_90")
+target_compile_features("${PROJECT_LOWER_NAME}_compiler_flags" INTERFACE "c_std_${CMAKE_C_STANDARD}")
 
 # add compiler warning flags just when building this project via
 # the BUILD_INTERFACE genex
@@ -94,10 +109,18 @@ if ((DEFINED CMAKE_C_FLAGS AND NOT CMAKE_C_FLAGS STREQUAL "")
     endif ()
 endif ()
 
-add_subdirectory("acquire")
-add_subdirectory("acquire/acquire_cli")
+########################
+# Subprojects to build #
+########################
+
+add_subdirectory("libacquire")
+add_subdirectory("libacquire/acquire")
+
+######################
+# Test configuration #
+######################
 
 if (CMAKE_PROJECT_NAME STREQUAL "libacquire" AND BUILD_TESTING)
     enable_testing()
-    add_subdirectory("acquire/tests")
+    add_subdirectory("libacquire/tests")
 endif ()

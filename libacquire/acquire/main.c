@@ -1,29 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../stdbool.h"
 
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include <acquire_stdbool.h>
+#endif
+
+#include <acquire_config.h>
 #include <acquire.h>
-#include <config.h>
-#include <errors.h>
+#include <acquire_errors.h>
+
 #include "cli.h"
 
 #ifdef USE_LIBCURL
 
-#include <libcurl.h>
+#include <acquire_libcurl.h>
 
 #elif defined(USE_WININET)
 
-#include "wininet.h"
+#include <acquire_wininet.h>
 
 #elif defined(USE_LIBFETCH)
 
-#include "libfetch.h"
+#include <acquire_libfetch.h>
 
 #elif defined(USE_OPENBSD_FTP)
 
-#include "openbsd_ftp.h"
+#include <acquire_openbsd_ftp.h>
 
 #endif
+
+#if defined(USE_OPENSSL) || defined(USE_LIBRESSL)
+#include <acquire_openssl.h>
+#elif defined(USE_WINCRYPT)
+#include <acquire_wincrypt.h>
+#elif defined(USE_COMMON_CRYPTO)
+#include <acquire_common_crypto.h>
+#endif
+
+
 
 int main(int argc, char *argv[]) {
     struct DocoptArgs args = docopt(argc, argv, /* help */ 1, /* version */ VERSION);

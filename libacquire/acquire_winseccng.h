@@ -1,7 +1,6 @@
 #ifndef LIBACQUIRE_WINSECCNG_H
 #define LIBACQUIRE_WINSECCNG_H
 
-#include <windows.h>
 #include <stdio.h>
 #include <bcrypt.h>
 

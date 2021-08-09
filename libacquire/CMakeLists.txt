@@ -1,0 +1,104 @@
+get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
+
+include(GenerateExportHeader)
+include(../cmake/libacquire_helpers.cmake)
+
+set(Header_Files "acquire.h")
+if(NOT HAS_STDBOOL AND NOT MSVC)
+  list(APPEND Header_Files "acquire_stdbool.h")
+endif()
+source_group("Header Files" FILES "${Header_Files}")
+
+##############################################################
+# CMake options that can be overridden at configuration time #
+##############################################################
+
+option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
+
+set(_Header_Files "")
+
+set_crypto_lib()
+
+set_ssl_lib()
+
+set_http_https_lib()
+
+list(APPEND Header_Files "${_Header_Files}")
+
+################################
+# Configure file (interpolate) #
+################################
+
+configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" @ONLY)
+
+#############################
+# Test and target formation #
+#############################
+
+source_group("Header Files" FILES "${Header_Files}")
+
+add_library("${LIBRARY_NAME}" INTERFACE)
+target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
+
+set(_include_dirs
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
+        "$<INSTALL_INTERFACE:include>")
+
+set(_libs "")
+if (DEFINED CURL_LINK_LIBRARIES)
+  list(APPEND _libs "${CURL_LINK_LIBRARIES}")
+elseif (DEFINED USE_WININET)
+  list(APPEND _libs "wininet")
+  list(APPEND _libs "crypt32")
+elseif (DEFINED USE_LIBFETCH)
+  list(APPEND _libs "fetch")
+endif ()
+
+if (DEFINED OPENSSL_LIBRARIES)
+  list(APPEND _libs "OpenSSL::SSL")
+  list(APPEND _libs "${OPENSSL_LIBRARIES}")
+  list(APPEND _include_dirs "${OPENSSL_INCLUDE_DIR}")
+endif ()
+
+target_include_directories(
+        "${LIBRARY_NAME}"
+        INTERFACE
+        "${_include_dirs}"
+)
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        INTERFACE
+        "${PROJECT_LOWER_NAME}_compiler_flags"
+        "${_libs}"
+)
+
+set_target_properties(
+        "${LIBRARY_NAME}"
+        PROPERTIES
+        LINKER_LANGUAGE
+        C
+)
+
+#######################################
+# Export / installation configuration #
+#######################################
+
+# setup the version numbering
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
+
+# install rules
+set(installable_libs "${LIBRARY_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
+if (TARGET "${DEPENDANT_LIBRARY}")
+  list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
+endif ()
+install(TARGETS ${installable_libs}
+        DESTINATION "bin"
+        EXPORT "${LIBRARY_NAME}Targets")
+install(FILES
+        "${PROJECT_BINARY_DIR}/src/acquire_config.h"
+        "${Header_Files}"
+        DESTINATION
+        "include")

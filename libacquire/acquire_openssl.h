@@ -1,7 +1,7 @@
 #ifndef LIBACQUIRE_OPENSSL_H
 #define LIBACQUIRE_OPENSSL_H
 
-#include "config.h"
+#include "acquire_config.h"
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 

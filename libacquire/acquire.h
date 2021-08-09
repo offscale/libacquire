@@ -4,18 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stdbool.h"
-#include "stringutils.h"
-#include "StringExtras.h"
-#include "fileutils.h"
-#include "config.h"
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
+#include "acquire_string_utils.h"
+#include "acquire_string_extras.h"
+#include "acquire_fileutils.h"
+#include "acquire_config.h"
 
-#include "checksums.h"
+#include "acquire_checksums.h"
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
-#include "openssl.h"
+#include "acquire_openssl.h"
 #elif defined(USE_WINCRYPT)
-#include "wincrypt.h"
+#include "acquire_wincrypt.h"
 #endif
 
 #ifndef MAX_FILENAME
@@ -67,5 +71,12 @@ extern bool is_downloaded(const char *url, enum Checksum checksum,
 extern int download(const char *, enum Checksum, const char *, const char[248], bool, size_t, size_t);
 
 extern int download_many(const char *[], const char *[], enum Checksum[], const char *, bool, size_t, size_t);
+
+/*
+ * TODO: Consider using `#ifdef USE_WINCRYPT` style switches to include the relevant header here,
+ * TODO: Or alternatively output the entire relevant header source here (programmatically);
+ * TODO: Or alternatively amalgamate all headers content here below and allow includer to `#define USE_OPENSSL` &etc.
+ * TODO: So others can just `#include <acquire.h>`
+ */
 
 #endif /* LIBACQUIRE_ACQUIRE_H */

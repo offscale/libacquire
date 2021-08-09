@@ -1,13 +1,21 @@
 #ifndef LIBACQUIRE_WINCRYPT_H
 #define LIBACQUIRE_WINCRYPT_H
 
-#pragma comment(lib, "crypt32.lib")
-
 #include <stdio.h>
-#include <windows.h>
-#include <Wincrypt.h>
-#include "checksums.h"
-#include "stdbool.h"
+
+#include "acquire_config.h"
+
+#include <windef.h>
+#include <WinBase.h>
+
+#include <wincrypt.h>
+
+#include "acquire_checksums.h"
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
 
 #define BUFSIZE 1024
 #define MD5LEN  16

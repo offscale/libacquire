@@ -3,13 +3,13 @@
 
 #include <stddef.h>
 
-#if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#if defined(HAS_STDBOOL) && !defined(bool)
 
 #include <stdbool.h>
 
 #else
 
-#include "../stdbool.h"
+#include <acquire_stdbool.h>
 
 #endif
 

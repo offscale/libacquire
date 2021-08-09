@@ -1,0 +1,11 @@
+#ifndef OSBUILD_VERSION_H
+#define OSBUILD_VERSION_H
+
+#define VERSION "@libacquire_VERSION@"
+#define TMPDIR "@TMPDIR@"
+
+#define CRYPTO_LIB "@CRYPTO_LIB@"
+
+#define _@TARGET_ARCH@_
+
+#endif

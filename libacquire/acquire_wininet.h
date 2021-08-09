@@ -1,15 +1,20 @@
 #ifndef LIBACQUIRE_WININET_H
 #define LIBACQUIRE_WININET_H
 
-#include <windows.h>
-#include <wininet.h>
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
+#include "acquire_config.h"
+
 #include <tchar.h>
-#include "stdbool.h"
+#include <wininet.h>
 
 #define BUFFER_SIZE 4096
 
 const char *get_download_dir() {
-    return ".downloads";
+    return TMPDIR"//.downloads";
 }
 
 int download(const char* url, enum Checksum checksum, const char* hash, const char target_directory[248],

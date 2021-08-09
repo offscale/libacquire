@@ -7,11 +7,27 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "cli.c" "main.c")
 source_group("Source Files" FILES "${Source_Files}")
 
+##############################################################
+# CMake options that can be overridden at configuration time #
+##############################################################
+
+option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
+
+set_crypto_lib()
+
+set_ssl_lib()
+
+set_http_https_lib()
+
+####################
+# Target formation #
+####################
+
 add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
 target_link_libraries("${EXEC_NAME}" PUBLIC "${PROJECT_LOWER_NAME}_compiler_flags")
 
-target_link_libraries("${EXEC_NAME}" PUBLIC "acquire")
+target_link_libraries("${EXEC_NAME}" PUBLIC "libacquire")
 
 set_target_properties(
         "${EXEC_NAME}"
@@ -19,6 +35,10 @@ set_target_properties(
         LINKER_LANGUAGE
         C
 )
+
+#######################################
+# Export / installation configuration #
+#######################################
 
 # setup the version numbering
 set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")

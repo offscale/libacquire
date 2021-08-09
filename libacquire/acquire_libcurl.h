@@ -6,12 +6,20 @@
 
 #include <curl/curl.h>
 
-#include "stdbool.h"
-#include "errors.h"
-#include "stringutils.h"
-#include "StringExtras.h"
-#include "fileutils.h"
-#include "checksums.h"
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
+#endif
+#include "acquire_errors.h"
+#include "acquire_string_utils.h"
+#include "acquire_string_extras.h"
+#include "acquire_fileutils.h"
+#include "acquire_checksums.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>
