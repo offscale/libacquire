@@ -9,3 +9,5 @@ RUN apk add --no-cache gcc cmake make pkgconf musl-dev linux-headers libcurl cur
     cmake --build .
 
 CMD ctest .
+
+ENTRYPOINT ["/libacquire/build/acquire", "--version"]

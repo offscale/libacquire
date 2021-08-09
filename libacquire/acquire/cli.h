@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "acquire_cli_export.h"
+
 #if defined(HAS_STDBOOL) && !defined(bool)
 
 #include <stdbool.h>
@@ -70,7 +72,7 @@
 #endif
 #endif
 
-struct DocoptArgs {
+struct ACQUIRE_CLI_EXPORT DocoptArgs {
 
     /* arguments */
     char *url;
@@ -87,6 +89,6 @@ struct DocoptArgs {
     const char *help_message[16];
 };
 
-struct DocoptArgs docopt(size_t, char *[], bool, const char *);
+struct DocoptArgs ACQUIRE_CLI_EXPORT docopt(size_t, char *[], bool, const char *);
 
 #endif

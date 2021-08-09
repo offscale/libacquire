@@ -1,11 +1,16 @@
 get_filename_component(EXEC_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" EXEC_NAME "${EXEC_NAME}")
 
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
+include(GenerateExportHeader)
+
 set(Header_Files "cli.h")
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "cli.c" "main.c")
-source_group("Source Files" FILES "${Source_Files}")
+set(Source_Files "cli.c")
+source_group("Source Files" FILES "${Source_Files}" "main.c")
 
 ##############################################################
 # CMake options that can be overridden at configuration time #
@@ -19,15 +24,33 @@ set_ssl_lib()
 
 set_http_https_lib()
 
-####################
-# Target formation #
-####################
+############################
+# Library target formation #
+############################
 
-add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+set(LIBRARY_NAME "${EXEC_NAME}_cli")
 
-target_link_libraries("${EXEC_NAME}" PUBLIC "${PROJECT_LOWER_NAME}_compiler_flags")
+add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 
-target_link_libraries("${EXEC_NAME}" PUBLIC "libacquire")
+target_link_libraries("${LIBRARY_NAME}" INTERFACE "${PROJECT_LOWER_NAME}_compiler_flags")
+target_link_libraries("${LIBRARY_NAME}" PUBLIC "libacquire")
+
+set_target_properties(
+        "${LIBRARY_NAME}"
+        PROPERTIES
+        LINKER_LANGUAGE
+        C
+)
+
+###############################
+# Executable target formation #
+###############################
+
+add_executable("${EXEC_NAME}" "main.c")
+
+target_link_libraries("${EXEC_NAME}" INTERFACE "${PROJECT_LOWER_NAME}_compiler_flags")
+
+target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBRARY_NAME}")
 
 set_target_properties(
         "${EXEC_NAME}"
@@ -39,6 +62,9 @@ set_target_properties(
 #######################################
 # Export / installation configuration #
 #######################################
+
+set(_export_file "${CMAKE_CURRENT_SOURCE_DIR}/${LIBRARY_NAME}_export.h")
+generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 # setup the version numbering
 set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")

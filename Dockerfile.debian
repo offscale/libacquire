@@ -2,13 +2,17 @@ FROM debian
 
 COPY . /libacquire
 
-WORKDIR /libacquire
+WORKDIR /libacquire/build
+
+# TODO: Use a better link
+ADD "https://github-releases.githubusercontent.com/537699/f5c0a280-d293-11eb-9cc0-24c1bf98c7d9?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210809%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210809T152518Z&X-Amz-Expires=300&X-Amz-Signature=ac9fe2758d152462125073cb3d2165894ce4901bfd4904ff665258344fe67dc7&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=537699&response-content-disposition=attachment%3B%20filename%3Dcmake-3.20.5-linux-x86_64.sh&response-content-type=application%2Foctet-stream" "/usr/local/bin/cmake"
 
 RUN apt-get update -qq && \
-    apt-get install -y gcc cmake make libc-dev libssl-dev && \
-    mkdir 'cmake-build-docker-debug' && \
-    cd '/libacquire/cmake-build-docker-debug' && \
-    cmake -DCMAKE_BUILD_TYPE='Debug' .. && \
-    cmake --build "$PWD" && chmod +x ./libacquire
+    apt-get install -y gcc make libc-dev libssl-dev && \
+    chmod +x "/usr/local/bin/cmake" && \
+    cmake -DCMAKE_BUILD_TYPE="Debug" .. && \
+    cmake --build .
 
-CMD /libacquire/cmake-build-docker-debug/libacquire
+CMD ctest .
+
+ENTRYPOINT ["/libacquire/build/acquire", "--help"]
