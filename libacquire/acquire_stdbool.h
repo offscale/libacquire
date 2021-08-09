@@ -1,6 +1,17 @@
 /* Modififed from  MUSL */
-#if !defined(_STDBOOL_H) && !defined(bool)
+
+#ifndef _STDBOOL_H
 #define _STDBOOL_H
+
+#ifdef bool
+#undef bool
+#endif
+#ifdef true
+#undef true
+#endif
+#ifdef false
+#undef false
+#endif
 
 #include <stdlib.h>
 

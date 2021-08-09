@@ -5,7 +5,7 @@
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 
-#include "checksums.h"
+#include "acquire_checksums.h"
 
 #ifdef USE_COMMON_CRYPTO
 #include <CommonCrypto/CommonDigest.h>
