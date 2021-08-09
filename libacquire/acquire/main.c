@@ -31,12 +31,10 @@
 
 #endif
 
-#if defined(USE_OPENSSL) || defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) || defined(USE_LIBRESSL) || defined(USE_COMMON_CRYPTO)
 #include <acquire_openssl.h>
 #elif defined(USE_WINCRYPT)
 #include <acquire_wincrypt.h>
-#elif defined(USE_COMMON_CRYPTO)
-#include <acquire_common_crypto.h>
 #endif
 
 
