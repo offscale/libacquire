@@ -3,12 +3,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#if defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include <acquire_stdbool.h>
-#endif
-
 #include "cli.h"
 
 struct Command {
@@ -53,10 +47,10 @@ struct Tokens {
 
 const char usage_pattern[] =
         "Usage:\n"
-        "  libacquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
-        "  libacquire --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
-        "  libacquire --help\n"
-        "  libacquire --version";
+        "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
+        "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
+        "  acquire --help\n"
+        "  acquire --version";
 
 struct Tokens tokens_new(size_t argc, char **argv) {
     struct Tokens ts;
@@ -289,13 +283,13 @@ struct DocoptArgs docopt(size_t argc, char *argv[], const bool help, const char 
     struct DocoptArgs args = {
         NULL, 0, 0, 0, NULL, NULL, NULL,
             usage_pattern,
-            { "libacquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
+            { "acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
               "",
               "Usage:",
-              "  libacquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-              "  libacquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-              "  libacquire --help",
-              "  libacquire --version",
+              "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+              "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+              "  acquire --help",
+              "  acquire --version",
               "",
               "Options:",
               "  -h --help               Show this screen.",

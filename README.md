@@ -78,6 +78,13 @@ acquire \
 
 Want different options for libcurl, OpenSSL, or any of the other dependencies? - CMake has a `CACHE`ing mechanism. - You should be able to explicitly include your settings before including `libacquire`, and it'll use the one already included (with your custom settings).
 
+### CLI interface
+
+Generated with `docopt`, use `python -m pip install docopt-c` then:
+```bash
+$ python -m docopt_c '.docopt' -o 'libacquire/acquire/cli'
+```
+
 ---
 
 ## License
