@@ -15,7 +15,7 @@
 
 #include <stdlib.h>
 
-#define bool size_t
+typedef size_t bool;
 #define true 1
 #define false (!true)
 

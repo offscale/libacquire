@@ -3,15 +3,28 @@
 
 #include <stddef.h>
 
-#include "acquire_cli_export.h"
-
-#if defined(HAS_STDBOOL) && !defined(bool)
+#if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
 #include <stdbool.h>
 
-#else
+#elif !defined(_STDBOOL_H)
+#define _STDBOOL_H
 
-#include <acquire_stdbool.h>
+#include <stdlib.h>
+
+#ifdef true
+#undef true
+#endif
+#ifdef false
+#undef false
+#endif
+#ifdef bool
+#undef bool
+#endif
+
+#define true 1
+#define false (!true)
+typedef size_t bool;
 
 #endif
 
@@ -19,20 +32,12 @@
 
 #include <sys/limits.h>
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) \
- || defined(__OpenBSD__) || defined(__bsdi__) \
- || defined(__DragonFly__) || defined(macintosh) \
- || defined(__APPLE__) || defined(__APPLE_CC__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
+|| defined(__OpenBSD__) || defined(__bsdi__)
+|| defined(__DragonFly__) || defined(macintosh)
+|| defined(__APPLE__) || defined(__APPLE_CC__)
 
-#ifdef __CC_SUPPORTS_WARNING
-#define ____CC_SUPPORTS_WARNING __CC_SUPPORTS_WARNING
-#undef __CC_SUPPORTS_WARNING
 #include <sys/syslimits.h>
-#define __CC_SUPPORTS_WARNING ____CC_SUPPORTS_WARNING
-#undef ____CC_SUPPORTS_WARNING
-#else
-#include <sys/syslimits.h>
-#endif
 
 #elif defined(__HAIKU__)
 
@@ -53,10 +58,15 @@
 
 #endif
 
-#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) \
- || defined(__DragonFly__) || defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__)  || defined(__DragonFly__) || defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
 
 #include <sys/param.h>
+
+#if defined(__APPLE__) || defined(__APPLE_CC__)
+/* ARG_MAX gives a segfault on macOS when used for array size below */
+#undef ARG_MAX
+#undef NCARGS
+#endif
 
 #else
 
@@ -72,8 +82,8 @@
 #endif
 #endif
 
-struct ACQUIRE_CLI_EXPORT DocoptArgs {
-
+struct DocoptArgs {
+    
     /* arguments */
     char *url;
     /* options without arguments */
@@ -89,6 +99,6 @@ struct ACQUIRE_CLI_EXPORT DocoptArgs {
     const char *help_message[16];
 };
 
-struct DocoptArgs ACQUIRE_CLI_EXPORT docopt(size_t, char *[], bool, const char *);
+struct DocoptArgs docopt(int, char *[], bool, const char *);
 
 #endif
