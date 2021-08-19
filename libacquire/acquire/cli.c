@@ -48,6 +48,7 @@ const char usage_pattern[] =
         "Usage:\n"
         "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
         "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...\n"
+        "  acquire --output=<f> <url>...\n"
         "  acquire --help\n"
         "  acquire --version";
 
@@ -230,7 +231,7 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
     for (i = 0; i < elements->n_options; i++) {
         option = &elements->options[i];
         if (help && option->value && strcmp(option->olong, "--help") == 0) {
-            for (j = 0; j < 16; j++)
+            for (j = 0; j < 17; j++)
                 puts(args->help_message[j]);
             return EXIT_FAILURE;
         } else if (version && option->value &&
@@ -254,6 +255,10 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
         } else if (strcmp(option->olong, "--hash") == 0) {
             if (option->argument) {
                 args->hash = (char *) option->argument;
+            }
+        } else if (strcmp(option->olong, "--output") == 0) {
+            if (option->argument) {
+                args->output = (char *) option->argument;
             }
         }
     }
@@ -280,13 +285,14 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
 
 struct DocoptArgs docopt(int argc, char *argv[], const bool help, const char *version) {
     struct DocoptArgs args = {
-        NULL, 0, 0, 0, NULL, NULL, NULL,
+        NULL, 0, 0, 0, NULL, NULL, NULL, NULL,
             usage_pattern,
             { "acquire: The core for your package manager, minus the dependency graph components. Download, verify, and extract.",
               "",
               "Usage:",
               "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
               "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+              "  acquire --output=<f> <url>...",
               "  acquire --help",
               "  acquire --version",
               "",
@@ -294,10 +300,10 @@ struct DocoptArgs docopt(int argc, char *argv[], const bool help, const char *ve
               "  -h --help               Show this screen.",
               "  --version               Show version.",
               "  --check                 Check if already downloaded.",
-              "  --hash<h>               Hash to verify.",
-              "  --checksum<sha>         Checksum algorithm, e.g., SHA256 or SHA512.",
+              "  --hash=<h>              Hash to verify.",
+              "  --checksum=<sha>        Checksum algorithm, e.g., SHA256 or SHA512.",
               "  -d=<d>, --directory=<d> Location to download files to.",
-              "  -o FILE --output=FILE   Output file. If not specified, will derive from URL."}
+              "  -o=<f>, --output=<f>    Output file. If not specified, will derive from URL."}
     };
     struct Command commands[] = {NULL
     };
@@ -310,14 +316,15 @@ struct DocoptArgs docopt(int argc, char *argv[], const bool help, const char *ve
         {NULL, "--version", 0, 0, NULL},
         {NULL, "--checksum", 1, 0, NULL},
         {"-d", "--directory", 1, 0, NULL},
-        {NULL, "--hash", 1, 0, NULL}
+        {NULL, "--hash", 1, 0, NULL},
+        {"-o", "--output", 1, 0, NULL}
     };
     struct Elements elements;
     int return_code = EXIT_SUCCESS;
 
     elements.n_commands = 0;
     elements.n_arguments = 1;
-    elements.n_options = 6;
+    elements.n_options = 7;
     elements.commands = commands;
     elements.arguments = arguments;
     elements.options = options;

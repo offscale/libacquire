@@ -94,9 +94,10 @@ struct DocoptArgs {
     char *checksum;
     char *directory;
     char *hash;
+    char *output;
     /* special */
     const char *usage_pattern;
-    const char *help_message[16];
+    const char *help_message[17];
 };
 
 struct DocoptArgs docopt(int, char *[], bool, const char *);

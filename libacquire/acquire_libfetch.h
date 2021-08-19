@@ -761,7 +761,7 @@ const char *get_download_dir() {
     return ".downloads";
 }
 
-int download(const char *url, enum Checksum checksum, const char *hash, const char target_directory[248],
+int download(const char *url, enum Checksum checksum, const char *hash, const char target_location[NAME_MAX],
              bool follow, size_t retry, size_t verbosity) {
     int result;
 
@@ -769,7 +769,7 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     char full_local_fname[NAME_MAX + 1];
 
     snprintf(full_local_fname, NAME_MAX + 1,
-             "%s/%s", target_directory, file_name);
+             "%s/%s", target_location, file_name);
 
     result = fetch((char*)url, full_local_fname);
     if (result != EXIT_SUCCESS) return result;

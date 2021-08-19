@@ -41,18 +41,18 @@ extern enum Checksum string2checksum(const char *s) {
 }
 
 extern bool is_downloaded(const char *url, enum Checksum checksum,
-                          const char *hash, const char *target_directory) {
+                          const char *hash, const char *target_location) {
     char full_local_fname[NAME_MAX + 1];
     const char *filename = is_url(url) ? get_path_from_url(url) : url;
 
-    if (target_directory == NULL)
-        target_directory = get_download_dir();
+    if (target_location == NULL)
+        target_location = get_download_dir();
 
-    if (filename == NULL || strlen(filename) == 0 || !is_directory(target_directory))
+    if (filename == NULL || strlen(filename) == 0 || !is_directory(target_location))
         return false;
 
     snprintf(full_local_fname, NAME_MAX + 1,
-             "%s/%s", target_directory, filename);
+             "%s/%s", target_location, filename);
 
     if (!is_file(full_local_fname))
         return false;
@@ -68,7 +68,11 @@ extern bool is_downloaded(const char *url, enum Checksum checksum,
     }
 }
 
-extern int download(const char *, enum Checksum, const char *, const char[248], bool, size_t, size_t);
+extern int download(
+        const char *, enum Checksum,
+        const char *, const char[248],
+        bool, size_t, size_t
+);
 
 extern int download_many(const char *[], const char *[], enum Checksum[], const char *, bool, size_t, size_t);
 

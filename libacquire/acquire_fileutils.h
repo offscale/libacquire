@@ -56,4 +56,14 @@ extern bool exists(const char *path) {
                     (path, 0) != -1;
 }
 
+
+extern off_t filesize(const char *filename) {
+    struct stat st;
+
+    if (stat(filename, &st) == 0)
+        return st.st_size;
+
+    return -1;
+}
+
 #endif /* LIBACQUIRE_ACQUIRE_FILEUTILS_H */

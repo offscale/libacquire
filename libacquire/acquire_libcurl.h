@@ -69,7 +69,7 @@ const char *get_download_dir() {
     return ".downloads";
 }
 
-int download_to_stdout(const char *url, const char *checksum, const char *target_directory,
+int download_to_stdout(const char *url, const char *checksum, const char *target_location,
                        bool follow, size_t retry) {
     CURL *curl = curl_easy_init();
     if (curl) {
@@ -204,7 +204,7 @@ size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
 
 
 int download(const char *url, enum Checksum checksum,
-             const char *hash, const char target_directory[248],
+             const char *hash, const char target_location[NAME_MAX],
              bool follow, size_t retry, size_t verbosity) {
     CURL *curl;
     CURLcode cerr = CURLE_OK;
@@ -212,8 +212,13 @@ int download(const char *url, enum Checksum checksum,
     size_t i;
     const char *path;
 
-    if (!is_directory(target_directory)) {
-        fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again`\n", target_directory);
+    if (is_file(target_location)) {
+        if (filesize(target_location) > 0 /* && check checksum */)
+            return EEXIST;
+        else
+            strncpy(dnld_params.dnld_remote_fname, target_location, strlen(target_location));
+    } else if (!is_directory(target_location)) {
+        fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again`\n", target_location);
         return CURLINFO_OS_ERRNO + 2;
     }
 
@@ -229,11 +234,12 @@ int download(const char *url, enum Checksum checksum,
         return EXIT_FAILURE;
     }
 
-    cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
-    if (cerr != CURLE_OK) {
-        fprintf(stderr, "%s: failed with err %d\n", "URL", cerr);
-        goto bail;
+    #define handle_curl_error(cerr,name) if((cerr) != CURLE_OK) {        \
+                fprintf(stderr, "%s: failed with err %d\n", name, cerr); \
+                goto bail;                                               \
     }
+    cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
+    handle_curl_error(cerr, "CURLOPT_URL")
 
     if (url[0] == 'f' && url[1] == 't' && url[2] == 'p' && url[3] == 's')
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
@@ -249,16 +255,10 @@ int download(const char *url, enum Checksum checksum,
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, dnld_header_parse);
-    if (cerr != CURLE_OK) {
-        fprintf(stderr, "%s: failed with err %d\n", "HEADER", cerr);
-        goto bail;
-    }
+    handle_curl_error(cerr, "CURLOPT_HEADERFUNCTION")
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
-    if (cerr != CURLE_OK) {
-        fprintf(stderr, "%s: failed with err %d\n", "HEADER DATA", cerr);
-        goto bail;
-    }
+    handle_curl_error(cerr, "CURLOPT_HEADERDATA")
 
     if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
         path = get_path_from_url(url);
@@ -273,7 +273,7 @@ int download(const char *url, enum Checksum checksum,
     }
 
     snprintf(dnld_params.dnld_full_local_fname, NAME_MAX + 1,
-             "%s/%s", target_directory, dnld_params.dnld_remote_fname);
+             "%s/%s", target_location, dnld_params.dnld_remote_fname);
 
     if (is_file(dnld_params.dnld_full_local_fname)) {
         cerr = CURLE_ALREADY_COMPLETE;
@@ -281,16 +281,10 @@ int download(const char *url, enum Checksum checksum,
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
-    if (cerr != CURLE_OK) {
-        fprintf(stderr, "%s: failed with err %d\n", "WR CB", cerr);
-        goto bail;
-    }
+    handle_curl_error(cerr, "CURLOPT_WRITEFUNCTION")
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
-    if (cerr != CURLE_OK) {
-        fprintf(stderr, "%s: failed with err %d\n", "WR Data", cerr);
-        goto bail;
-    }
+    handle_curl_error(cerr, "CURLOPT_WRITEDATA")
 
     cerr = curl_easy_perform(curl);
     if (cerr != CURLE_OK)
@@ -303,7 +297,7 @@ int download(const char *url, enum Checksum checksum,
         cerr = CURLE_GOT_NOTHING;
     }
 
-    bail:
+bail:
 
     /* always cleanup */
     curl_easy_cleanup(curl);
@@ -315,9 +309,11 @@ int download(const char *url, enum Checksum checksum,
     }
 
     return EXIT_SUCCESS;
+
+#undef handle_curl_error
 }
 
-int download_many(const char *url[], const char *hashes[], enum Checksum checksums[], const char *target_directory,
+int download_many(const char *url[], const char *hashes[], enum Checksum checksums[], const char *target_location,
                   bool follow, size_t retry, size_t verbosity) {
     return UNIMPLEMENTED;
 }

@@ -49,12 +49,18 @@ int main(int argc, char *argv[]) {
     size_t len;
     errno_t err = _dupenv_s(&check, &len, "CHECK");
     if (err) check = NULL;
+#define PATH_SEP "\\"
 #else
     const char *check = getenv("CHECK");
+#define PATH_SEP "/"
 #endif
 
     if (check != NULL && args.check == 0) args.check = (bool) check;
-    if (args.directory == 0) args.directory = TMPDIR;
+    if (args.output != 0) {
+        if (args.directory != 0) snprintf(args.output, NAME_MAX + 1,
+                                          "%s"PATH_SEP"%s", args.directory, args.output);
+    }
+    else if (args.directory == 0) args.output = args.directory = TMPDIR;
     if (args.url == 0) {
         switch (argc) {
             case 2:
@@ -71,15 +77,16 @@ int main(int argc, char *argv[]) {
                     args.url = argv[argc - 1];
                 else
                     return UNIMPLEMENTED;
-                printf("`args.url`:\t\"%s\"\n", args.url);
         }
+        printf("`args.url`:\t\"%s\"\n", args.url);
     }
     if (args.checksum != NULL)
         checksum = string2checksum((const char *) args.checksum);
 
     if (args.check)
-        return is_downloaded(args.url, checksum, args.hash, args.directory) ?
+        return is_downloaded(args.url, checksum, args.hash, args.output) ?
                EXIT_SUCCESS : EXIT_FAILURE;
 
-    return download(args.url, checksum, args.hash, args.directory, false, 0, 0);
+    return download(args.url, checksum, args.hash, args.output, false, 0, 0);
+#undef PATH_SEP
 }

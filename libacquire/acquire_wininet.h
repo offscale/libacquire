@@ -17,7 +17,7 @@ const char *get_download_dir() {
     return TMPDIR"//.downloads";
 }
 
-int download(const char* url, enum Checksum checksum, const char* hash, const char target_directory[248],
+int download(const char* url, enum Checksum checksum, const char* hash, const char target_location[NAME_MAX],
     bool follow, size_t retry, size_t verbosity)
 {
     HINTERNET hInternet, hURL;
