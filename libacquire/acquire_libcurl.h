@@ -172,7 +172,7 @@ size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
 FILE *get_dnld_stream(char const *const fname) {
     FILE *fp = fopen(fname, "wb");
     if (!fp) {
-        fprintf(stderr, "Could not create file %s\n", fname);
+        fprintf(stderr, "Could not create file \"%s\"\n", fname);
         return NULL;
     }
 
@@ -212,19 +212,27 @@ int download(const char *url, enum Checksum checksum,
     size_t i;
     const char *path;
 
+    memset(&dnld_params, 0, sizeof(dnld_params));
+
     if (is_file(target_location)) {
-        if (filesize(target_location) > 0 /* && check checksum */)
-            return EEXIST;
-        else
-            strncpy(dnld_params.dnld_remote_fname, target_location, strlen(target_location));
+        const size_t target_location_n = strlen(target_location);
+        /* This next branch subsumes the `is_downloaded` function? */
+        if (filesize(target_location) > 0 /* && check checksum */) {
+            return EEXIST /*CURLE_ALREADY_COMPLETE*/;
+        } else {
+set_remote_fname_to_target_location:
+            strncpy(dnld_params.dnld_remote_fname, target_location, target_location_n);
+            strncpy(dnld_params.dnld_full_local_fname, target_location, target_location_n);
+        }
+    } else if (is_relative(target_location)) {
+        goto set_remote_fname_to_target_location;
     } else if (!is_directory(target_location)) {
-        fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again`\n", target_location);
+        fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again\n", target_location);
         return CURLINFO_OS_ERRNO + 2;
     }
 
     curl_global_init((size_t) CURL_GLOBAL_ALL);
 
-    memset(&dnld_params, 0, sizeof(dnld_params));
     strncpy(dnld_params.dnld_url, url, strlen(url));
 
     curl = curl_easy_init();
@@ -237,9 +245,9 @@ int download(const char *url, enum Checksum checksum,
     #define handle_curl_error(cerr,name) if((cerr) != CURLE_OK) {        \
                 fprintf(stderr, "%s: failed with err %d\n", name, cerr); \
                 goto bail;                                               \
-    }
+    } else
     cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
-    handle_curl_error(cerr, "CURLOPT_URL")
+    handle_curl_error(cerr, "CURLOPT_URL");
 
     if (url[0] == 'f' && url[1] == 't' && url[2] == 'p' && url[3] == 's')
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
@@ -258,7 +266,7 @@ int download(const char *url, enum Checksum checksum,
     handle_curl_error(cerr, "CURLOPT_HEADERFUNCTION")
 
     cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
-    handle_curl_error(cerr, "CURLOPT_HEADERDATA")
+    handle_curl_error(cerr, "CURLOPT_HEADERDATA");
 
     if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
         path = get_path_from_url(url);
@@ -267,24 +275,27 @@ int download(const char *url, enum Checksum checksum,
         dnld_params.dnld_remote_fname[i + 1] = '\0';
     }
 
-    if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
+    if (dnld_params.dnld_full_local_fname[0] != 0)
+        /*pass*/;
+    else if (strlen(dnld_params.dnld_remote_fname) == 0 || strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
         fprintf(stderr, "unable to derive a filename to save to, from: %s\n", url);
         goto bail;
+    } else {
+        snprintf(dnld_params.dnld_full_local_fname, NAME_MAX + 1,
+                 "%s/%s", target_location, dnld_params.dnld_remote_fname);
     }
 
-    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX + 1,
-             "%s/%s", target_location, dnld_params.dnld_remote_fname);
-
-    if (is_file(dnld_params.dnld_full_local_fname)) {
+    /* fold this condition into one `stat` call? */
+    if (is_file(dnld_params.dnld_full_local_fname) && filesize(dnld_params.dnld_full_local_fname) > 0) {
         cerr = CURLE_ALREADY_COMPLETE;
         goto bail;
     }
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
-    handle_curl_error(cerr, "CURLOPT_WRITEFUNCTION")
+    handle_curl_error(cerr, "CURLOPT_WRITEFUNCTION");
 
     cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
-    handle_curl_error(cerr, "CURLOPT_WRITEDATA")
+    handle_curl_error(cerr, "CURLOPT_WRITEDATA");
 
     cerr = curl_easy_perform(curl);
     if (cerr != CURLE_OK)

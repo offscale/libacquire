@@ -28,7 +28,7 @@ set_http_https_lib()
 # Library target formation #
 ############################
 
-set(LIBRARY_NAME "${EXEC_NAME}_cli")
+set(LIBRARY_NAME "${EXEC_NAME}_lib")
 
 add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 

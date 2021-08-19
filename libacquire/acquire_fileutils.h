@@ -66,4 +66,12 @@ extern off_t filesize(const char *filename) {
     return -1;
 }
 
+extern bool is_relative(const char *filename) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    return PathIsRelativeA(filename);
+#else
+    return filename[0] != '/';
+#endif
+}
+
 #endif /* LIBACQUIRE_ACQUIRE_FILEUTILS_H */
