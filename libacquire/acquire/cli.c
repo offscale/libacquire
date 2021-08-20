@@ -91,7 +91,7 @@ int parse_doubledash(struct Tokens *ts, struct Elements *elements) {
 
 int parse_long(struct Tokens *ts, struct Elements *elements) {
     int i;
-    int len_prefix;
+    size_t len_prefix;
     int n_options = elements->n_options;
     char *eq = strchr(ts->current, '=');
     struct Option *option;
