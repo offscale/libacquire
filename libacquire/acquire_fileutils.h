@@ -11,6 +11,7 @@
 
 #include <Fileapi.h>
 #include <io.h>
+#include <wchar.h>
 
 #else
 
@@ -68,7 +69,7 @@ extern off_t filesize(const char *filename) {
 
 extern bool is_relative(const char *filename) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    return PathIsRelativeA(filename);
+    return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
 #else
     return filename[0] != '/';
 #endif
