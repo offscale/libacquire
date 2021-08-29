@@ -85,6 +85,10 @@ Generated with `docopt`, use `python -m pip install docopt-c` then:
 $ python -m docopt_c '.docopt' -o 'libacquire/acquire/cli'
 ```
 
+## See also
+
+  - https://github.com/SamuelMarks/curl-simple-https
+
 ---
 
 ## License
