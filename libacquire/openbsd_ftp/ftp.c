@@ -61,6 +61,38 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if _MSC_VER
+#include <WS2tcpip.h>
+#include <signal.h>
+
+#define HOST_NAME_MAX 256
+#define close closesocket
+#define sig_t _crt_signal_t
+#define SIGPIPE 13
+#define warn(...) fprintf (stderr, __VA_ARGS__)
+#define warnx(...) fprintf (stderr, __VA_ARGS__)
+
+size_t strlcpy(char *dest, const char *src, size_t len)
+{
+    char *d = dest, *e = dest + len;
+    const char *s = src;
+    for (;*s != '\0' && d < e; *d++ = *s++) {}
+    if (d < e) *d = 0;
+    else if (len > 0) d[-1] = 0;
+    for (;*s != '\0'; s++) {}
+    return s - src;
+}
+
+#else
 #include <sys/socket.h>
 
 #include <netinet/in.h>
@@ -69,17 +101,12 @@
 #include <arpa/ftp.h>
 #include <arpa/telnet.h>
 
-#include <ctype.h>
 #include <err.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include <unistd.h>
+#endif
 
 #include "ftp_var.h"
 
@@ -104,7 +131,12 @@ FILE	*cin, *cout;
 char *
 hookup(char *host, char *port)
 {
-	int s, tos, error;
+#ifdef _MSC_VER
+	size_t
+#else
+    int
+#endif
+    s, tos, error;
 	static char hostnamebuf[HOST_NAME_MAX+1];
 	struct addrinfo hints, *res, *res0;
 #ifndef SMALL

@@ -65,15 +65,8 @@
  * FTP global variables.
  */
 
-#include <sys/signal.h>
 #include <limits.h>
 #include <setjmp.h>
-
-#ifndef SMALL
-#include <histedit.h>
-#endif /* !SMALL */
-
-#include <tls.h>
 
 #include "stringlist.h"
 #include "extern.h"
@@ -81,6 +74,14 @@
 
 #ifdef _MSC_VER
 #define PATH_MAX MAX_PATH
+#else
+#include <sys/signal.h>
+
+#ifndef SMALL
+#include <histedit.h>
+#endif /* !SMALL */
+
+#include <tls.h>
 #endif
 
 #define HASHBYTES	1024

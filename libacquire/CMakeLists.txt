@@ -81,6 +81,8 @@ set_target_properties(
         C
 )
 
+add_subdirectory(openbsd_ftp)
+
 #######################################
 # Export / installation configuration #
 #######################################

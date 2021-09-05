@@ -32,6 +32,11 @@
 #ifndef _STRINGLIST_H
 #define _STRINGLIST_H
 
+#ifdef _MSC_VER
+#define __BEGIN_DECLS
+#define __END_DECLS
+#endif
+
 #include <sys/types.h>
 
 /*

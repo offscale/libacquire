@@ -63,6 +63,10 @@
 
 #include <sys/types.h>
 
+#ifdef _MSC_VER
+#define __dead
+#endif
+
 void	abort_remote(FILE *);
 void	abortpt(int);
 void	abortrecv(int);
