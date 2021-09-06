@@ -215,12 +215,11 @@ int download(const char *url, enum Checksum checksum,
     memset(&dnld_params, 0, sizeof(dnld_params));
 
     if (is_file(target_location)) {
-        const size_t target_location_n = strlen(target_location);
         /* This next branch subsumes the `is_downloaded` function? */
         if (filesize(target_location) > 0 /* && check checksum */) {
             return EEXIST /*CURLE_ALREADY_COMPLETE*/;
-        } else {
-set_remote_fname_to_target_location:
+        } else set_remote_fname_to_target_location: {
+            const size_t target_location_n = strlen(target_location);
             strncpy(dnld_params.dnld_remote_fname, target_location, target_location_n);
             strncpy(dnld_params.dnld_full_local_fname, target_location, target_location_n);
         }

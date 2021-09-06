@@ -8,6 +8,8 @@ set(DESCRIPTION "The core for your package manager. Features: download, verify, 
 
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 ###############################
 # System symbol configuration #

@@ -81,7 +81,11 @@ set_target_properties(
         C
 )
 
-add_subdirectory(openbsd_ftp)
+option(BUILD_OPENBSD_FTP "Build `ftp` binary from OpenBSD" OFF)
+
+if (BUILD_OPENBSD_FTP)
+  add_subdirectory(openbsd_ftp)
+endif (BUILD_OPENBSD_FTP)
 
 #######################################
 # Export / installation configuration #

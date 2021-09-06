@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "acquire_lib_export.h"
+
 #if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
 #include <stdbool.h>
@@ -100,6 +102,6 @@ struct DocoptArgs {
     const char *help_message[17];
 };
 
-struct DocoptArgs docopt(int, char *[], bool, const char *);
+struct DocoptArgs ACQUIRE_LIB_EXPORT docopt(int, char *[], bool, const char *);
 
 #endif
