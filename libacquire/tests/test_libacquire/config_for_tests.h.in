@@ -7,6 +7,10 @@
 
 #define BAD_DIR CMAKE_CURRENT_SOURCE_DIR"_nonexistent"
 
+#define GREATEST_SHA256 "@GREATEST_SHA256@"
+
+#define GREATEST_FILE "@GREATEST_FILE@"
+
 #define _@TARGET_ARCH@_
 
 #endif

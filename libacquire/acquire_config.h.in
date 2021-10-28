@@ -6,6 +6,12 @@
 
 #define CRYPTO_LIB "@CRYPTO_LIB@"
 
+#cmakedefine USE_COMMON_CRYPTO 1
+
+#cmakedefine USE_LIBRESSL 1
+
+#cmakedefine USE_WINCRYPT 1
+
 #define _@TARGET_ARCH@_
 
 #endif
