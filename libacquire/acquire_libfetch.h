@@ -731,7 +731,7 @@ fetch(char *URL, const char *path)
     }
 
     success:
-    r = 0;
+    r = EXIT_SUCCESS;
     if (tmppath != NULL && rename(tmppath, path) == -1) {
         warn("%s: rename()", path);
         goto failure_keep;
