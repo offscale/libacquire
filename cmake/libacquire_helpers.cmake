@@ -73,11 +73,17 @@ endmacro(set_ssl_lib)
 ########################
 
 macro(set_http_https_lib)
-    if ((CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
+    if (DEFINED USE_LIBFETCH
+            OR (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
             OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
             AND USE_LIBCURL STREQUAL "OFF")
         set(USE_LIBFETCH 1)
-        add_compile_definitions(USE_LIBFETCH)
+        add_compile_definitions(USE_LIBFETCH=1)
+        list(APPEND _Header_Files "acquire_libfetch.h")
+    elseif (DEFINED USE_MY_LIBFETCH)
+        set(USE_LIBFETCH 1)
+        set(USE_MY_LIBFETCH 1)
+        add_compile_definitions(USE_MY_LIBFETCH=1)
         list(APPEND _Header_Files "acquire_libfetch.h")
     elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND USE_LIBCURL STREQUAL "OFF")
         set(USE_OPENBSD_FTP 1)

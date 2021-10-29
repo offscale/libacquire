@@ -3,11 +3,12 @@
 
 #include "acquire_string_utils.h"
 #include "acquire_checksums.h"
+#include <sys/ioctl.h>
 
 /*
  * With the exception of `get_download_dir` & `download`; this is all
  * https://svnweb.freebsd.org/base/head/usr.bin/fetch/fetch.c?revision=338572
- * with some unused symbols and the `main` function removed
+ * with some unused symbols and the CLI usage and `main` function removed
  */
 
 /*-
@@ -61,14 +62,16 @@ __FBSDID("$FreeBSD$");
 #include <termios.h>
 #include <unistd.h>
 
+#ifdef USE_MY_LIBFETCH
+#include "freebsd_libfetch/fetch.h"
+#else
 #include <fetch.h>
+#endif
 
-#define MINBUFSIZE	16384
 #define TIMEOUT		120
 
 /* Option flags */
 static int	 A_flag;	/*    -A: do not follow 302 redirects */
-static int	 a_flag;	/*    -a: auto retry */
 static off_t	 B_size;	/*    -B: buffer size */
 static int	 d_flag;	/*    -d: direct connection */
 static int	 F_flag;	/*    -F: restart without checking mtime  */
@@ -85,7 +88,7 @@ static off_t	 S_size;        /*    -S: require size to match */
 static int	 s_flag;        /*    -s: show size, don't fetch */
 static long	 T_secs;	/*    -T: transfer timeout in seconds */
 static int	 U_flag;	/*    -U: do not use high ports */
-static int	 v_level = 1;	/*    -v: verbosity level */
+static int	 v_level = 3;	/*    -v: verbosity level */
 static int	 v_progress;	/*        whether to display progress */
 static pid_t	 pgrp;		/*        our process group */
 static int	 family = PF_UNSPEC;	/* -[46]: address family to use */
@@ -231,13 +234,21 @@ stat_display(struct xferstat *xs, int force)
     fprintf(stderr, "\r%-46.46s", xs->name);
     if (xs->rcvd >= xs->size) {
         stat_bytes(bytes, sizeof bytes, xs->rcvd);
+#if defined(__FreeBSD__) || defined(__NetBSD__) \
+   || defined(__OpenBSD__) || defined(__bsdi__) \
+   || defined(__DragonFly__)
         setproctitle("%s [%s]", xs->name, bytes);
+#endif
         fprintf(stderr, "        %s", bytes);
     } else {
         stat_bytes(bytes, sizeof bytes, xs->size);
+#if defined(__FreeBSD__) || defined(__NetBSD__) \
+   || defined(__OpenBSD__) || defined(__bsdi__) \
+   || defined(__DragonFly__)
         setproctitle("%s [%d%% of %s]", xs->name,
                      (int)((100.0 * xs->rcvd) / xs->size),
                      bytes);
+#endif
         fprintf(stderr, "%3d%% of %s",
                 (int)((100.0 * xs->rcvd) / xs->size),
                 bytes);
@@ -311,6 +322,48 @@ stat_end(struct xferstat *xs)
 }
 
 /*
+ * Ask the user for authentication details
+ */
+static int
+query_auth(struct url *URL)
+{
+    struct termios tios;
+    tcflag_t saved_flags;
+    size_t i;
+    int nopwd;
+
+    fprintf(stderr, "Authentication required for <%s://%s:%d/>!\n",
+            URL->scheme, URL->host, URL->port);
+
+    fprintf(stderr, "Login: ");
+    if (fgets(URL->user, sizeof URL->user, stdin) == NULL)
+        return (-1);
+    for (i = strlen(URL->user); i >= 0; --i)
+        if (URL->user[i] == '\r' || URL->user[i] == '\n')
+            URL->user[i] = '\0';
+
+    fprintf(stderr, "Password: ");
+    if (tcgetattr(STDIN_FILENO, &tios) == 0) {
+        saved_flags = tios.c_lflag;
+        tios.c_lflag &= ~ECHO;
+        tios.c_lflag |= ECHONL|ICANON;
+        tcsetattr(STDIN_FILENO, TCSAFLUSH|TCSASOFT, &tios);
+        nopwd = (fgets(URL->pwd, sizeof URL->pwd, stdin) == NULL);
+        tios.c_lflag = saved_flags;
+        tcsetattr(STDIN_FILENO, TCSANOW|TCSASOFT, &tios);
+    } else {
+        nopwd = (fgets(URL->pwd, sizeof URL->pwd, stdin) == NULL);
+    }
+    if (nopwd)
+        return (-1);
+    for (i = strlen(URL->pwd); i >= 0; --i)
+        if (URL->pwd[i] == '\r' || URL->pwd[i] == '\n')
+            URL->pwd[i] = '\0';
+
+    return (0);
+}
+
+/*
  * Fetch a file
  */
 static int
@@ -370,6 +423,7 @@ fetch(char *URL, const char *path)
             strcat(flags, "4");
             break;
         case PF_INET6:
+        default:
             strcat(flags, "6");
             break;
     }
@@ -731,7 +785,7 @@ fetch(char *URL, const char *path)
     }
 
     success:
-    r = EXIT_SUCCESS;
+    r = 0;
     if (tmppath != NULL && rename(tmppath, path) == -1) {
         warn("%s: rename()", path);
         goto failure_keep;
@@ -758,6 +812,9 @@ fetch(char *URL, const char *path)
     return (r);
 }
 
+
+/* CUSTOM libacquire stuff */
+
 const char *get_download_dir() {
     return ".downloads";
 }
@@ -768,6 +825,9 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
 
     const char* file_name = get_path_from_url(url);
     char full_local_fname[NAME_MAX + 1];
+
+    if (verbosity < v_level)
+        v_level = (int)verbosity;
 
     snprintf(full_local_fname, NAME_MAX + 1,
              "%s/%s", target_location, file_name);
