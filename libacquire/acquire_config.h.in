@@ -12,6 +12,12 @@
 
 #cmakedefine USE_WINCRYPT 1
 
+#cmakedefine USE_WINCRYPT 1
+
+#cmakedefine USE_WININET 1
+
+#cmakedefine USE_LIBCURL 1
+
 #define _@TARGET_ARCH@_
 
 #endif

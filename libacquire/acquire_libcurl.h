@@ -20,6 +20,7 @@
 #include "acquire_string_extras.h"
 #include "acquire_fileutils.h"
 #include "acquire_checksums.h"
+#include "acquire.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>
