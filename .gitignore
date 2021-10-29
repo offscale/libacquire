@@ -5,4 +5,5 @@ bin
 .DS_Store
 Testing
 *_export.h
-libacquire/freebsd_libfetch/{http,ftp}err.h
+libacquire/freebsd_libfetch/httperr.h
+libacquire/freebsd_libfetch/ftperr.h

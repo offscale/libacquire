@@ -11,12 +11,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-set(USE_MY_LIBFETCH 1)
-
 if (DEFINED USE_MY_LIBFETCH) # Experiments
     add_compile_definitions(USE_MY_LIBFETCH=1)
-    #include_directories(/opt/local/include)
-    #link_directories(/opt/local/lib)
 
     if (NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" AND NOT CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
         add_compile_definitions(WITH_SSL=1)
@@ -38,7 +34,7 @@ include(CTest)
 if (CMAKE_C_STANDARD GREATER 90)
     CHECK_INCLUDE_FILE("stdbool.h" HAS_STDBOOL)
     if (HAS_STDBOOL)
-        add_compile_definitions(HAS_STDBOOL)
+        add_compile_definitions(HAS_STDBOOL=1)
     endif ()
 endif ()
 if (NOT _GNU_SOURCE)
@@ -75,12 +71,12 @@ endif ()
 
 check_include_file(limits.h HAVE_LIMITS_H)
 if (HAVE_LIMITS_H)
-    add_compile_definitions(HAVE_LIMITS_H)
-    add_compile_definitions(HAVE_SYS_LIMITS_H)  # Don't actually care if it exists or not, always choose limits.h
+    add_compile_definitions(HAVE_LIMITS_H=1)
+    add_compile_definitions(HAVE_SYS_LIMITS_H=1)  # Don't actually care if it exists or not, always choose limits.h
 else ()
     check_include_file(sys/limits.h HAVE_SYS_LIMITS_H)
     if (HAVE_SYS_LIMITS_H)
-        add_compile_definitions(HAVE_SYS_LIMITS_H)
+        add_compile_definitions(HAVE_SYS_LIMITS_H=1)
     endif ()
 endif ()
 
