@@ -4,4 +4,4 @@ freebsd_instance:
 task:
   install_script: pkg install -y cmake
   script: mkdir cmake-build-debug && cd cmake-build-debug && cmake -DCMAKE_BUILD_TYPE=Debug .. && cmake --build .
-  tests_script: cd cmake-build-debug && ctest .
+  tests_script: cd cmake-build-debug && ctest --rerun-failed --output-on-failure .
