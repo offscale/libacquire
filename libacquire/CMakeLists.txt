@@ -52,10 +52,10 @@ if (DEFINED CURL_LINK_LIBRARIES)
 elseif (DEFINED USE_WININET)
   list(APPEND _libs "wininet")
   list(APPEND _libs "crypt32")
-elseif (DEFINED USE_LIBFETCH)
-  list(APPEND _libs "fetch")
 elseif(DEFINED USE_MY_LIBFETCH)
   list(APPEND _libs "freebsd_libfetch")
+elseif (DEFINED USE_LIBFETCH)
+  list(APPEND _libs "fetch")
 endif ()
 
 if (DEFINED OPENSSL_LIBRARIES)
@@ -91,9 +91,9 @@ endif (BUILD_OPENBSD_FTP)
 
 option(BUILD_FREEBSD_LIBFETCH "Build `libfetch` library from FreeBSD" OFF)
 
-if (BUILD_FREEBSD_LIBFETCH)
+if (BUILD_FREEBSD_LIBFETCH OR USE_MY_LIBFETCH)
   add_subdirectory(freebsd_libfetch)
-endif (BUILD_FREEBSD_LIBFETCH)
+endif (BUILD_FREEBSD_LIBFETCH OR USE_MY_LIBFETCH)
 
 #######################################
 # Export / installation configuration #

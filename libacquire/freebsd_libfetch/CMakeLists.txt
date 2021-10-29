@@ -6,6 +6,62 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 include(GenerateExportHeader)
 
+########################
+# Generate error files #
+########################
+
+function (parse_emit_errors name in_fname out_fname)
+    file(READ "${in_fname}" contents)
+    string(TOUPPER "${name}" upper_name)
+    set(new_contents "static struct fetcherr ${name}_errlist[] = {")
+    set(line "")
+    set(skip_line 0)
+    string(LENGTH "${contents}" _len)
+    math(EXPR len "${_len} - 1")
+    foreach(char_index RANGE ${len})
+        string(SUBSTRING "${contents}" "${char_index}" "1" char)
+        string(LENGTH "${line}" line_len)
+        if (char STREQUAL "\n")
+            if (NOT skip_line AND line_len)
+                string(APPEND new_contents "\"${line}\" },")
+            endif ()
+            set(skip_line 0)
+            set(line "")
+        elseif (char STREQUAL "#")
+            set(skip_line 1)
+        elseif (char STREQUAL "\t")
+            if (line_len)
+                string(LENGTH "${contents}" _l)
+                math(EXPR n "${_l} - 1")
+                foreach (char_idx RANGE ${n})
+                    string(SUBSTRING "${line}" "${char_idx}" "1" ch)
+                    if (ch STREQUAL " ")
+                        string(SUBSTRING "${line}" "0" "${char_idx}" fst_word)
+                        math(EXPR _n "${n} - ${char_idx}")
+                        string(SUBSTRING "${line}" "${char_idx}" "${_n}" snd_word)
+                        string(APPEND new_contents "\n\t{ ${fst_word},${snd_word}, ")
+                        break ()
+                    endif ()
+                endforeach ()
+                set(line "")
+            endif ()
+        else ()
+            string(APPEND line "${char}")
+        endif ()
+    endforeach()
+    string(APPEND new_contents "\n\t{ -1, FETCH_UNKNOWN, \"Unknown ${upper_name} error\" }")
+    string(APPEND new_contents "\n}\n")
+    file(WRITE "${out_fname}" "${new_contents}")
+    message(STATUS "Generated \"${out_fname}\" from \"${in_fname}\"")
+endfunction()
+
+foreach (proto "ftp" "http")
+    parse_emit_errors("${proto}" "${proto}.errors" "${proto}err.h")
+endforeach (proto "ftp" "http")
+
+# /
+
+
 set(Header_Files
         "common.h"
         "fetch.h"

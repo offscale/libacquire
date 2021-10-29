@@ -11,10 +11,12 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
+set(USE_MY_LIBFETCH 1)
+
 if (DEFINED USE_MY_LIBFETCH) # Experiments
     add_compile_definitions(USE_MY_LIBFETCH=1)
-    include_directories(/opt/local/include)
-    link_directories(/opt/local/lib)
+    #include_directories(/opt/local/include)
+    #link_directories(/opt/local/lib)
 
     if (NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" AND NOT CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
         add_compile_definitions(WITH_SSL=1)
