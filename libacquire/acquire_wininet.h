@@ -6,7 +6,7 @@
 #else
 #include "acquire_stdbool.h"
 #endif
-#include "acquire_config.h"
+#include "acquire_checksums.h"
 
 #ifndef NAME_MAX
 #ifdef PATH_MAX
@@ -16,7 +16,7 @@
 #endif
 #endif
 
-#include <stdio>
+#include <stdio.h>
 #include <tchar.h>
 #include <wininet.h>
 #include "acquire_string_utils.h"
@@ -66,7 +66,7 @@ int download(const char* url, enum Checksum checksum, const char* hash, const ch
         InternetReadFile(hURL, buff, BUFFER_SIZE, &nbread);
         fwrite(buff, nbread, 1, fp);
         count += nbread;
-        printf("\r%zu of %lu bytes downloded from %s.", count, file_size, url);
+        printf("\r%zu of %lu bytes downloaded from %s.", count, file_size, url);
     }
     free(buff);
     fclose(fp);
