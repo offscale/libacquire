@@ -16,8 +16,10 @@
 #endif
 #endif
 
+#include <stdio>
 #include <tchar.h>
 #include <wininet.h>
+#include "acquire_string_utils.h"
 
 #define BUFFER_SIZE 4096
 
