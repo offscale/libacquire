@@ -8,6 +8,14 @@
 #endif
 #include "acquire_config.h"
 
+#ifndef NAME_MAX
+#ifdef PATH_MAX
+#define NAME_MAX PATH_MAX
+#else
+#define NAME_MAX 4096
+#endif
+#endif
+
 #include <tchar.h>
 #include <wininet.h>
 
