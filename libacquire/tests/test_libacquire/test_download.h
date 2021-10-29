@@ -14,6 +14,8 @@
 #include <acquire_libcurl.h>
 #elif defined(USE_WININET)
 #include <acquire_wininet.h>
+#elif defined(USE_LIBFETCH)
+#include <acquire_libfetch.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)

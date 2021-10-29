@@ -1,7 +1,8 @@
 #ifndef LIBACQUIRE_LIBFETCH_H
 #define LIBACQUIRE_LIBFETCH_H
 
-#include <stdlib.h>
+#include "acquire_string_utils.h"
+#include "acquire_checksums.h"
 
 /*
  * With the exception of `get_download_dir` & `download`; this is all
