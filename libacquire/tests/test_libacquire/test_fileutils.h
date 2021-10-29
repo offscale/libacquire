@@ -6,6 +6,9 @@
 #ifdef _MSC_VER
 #define NUM_FORMAT "%zu"
 typedef size_t num_type;
+#elif defined(__linux__) || defined(linux) || defined(__linux)
+#define NUM_FORMAT "%d"
+typedef int num_type;
 #else
 #define NUM_FORMAT "%lu"
 typedef unsigned long num_type;

@@ -1,12 +1,17 @@
 FROM debian
 
+ADD 'https://github.com/Kitware/CMake/releases/download/v3.21.4/cmake-3.21.4-linux-x86_64.sh' '/tmp/cmake.sh'
+
+RUN sh /tmp/cmake.sh --prefix='/usr/local' --skip-license
+
+RUN apt-get update -qq && \
+    apt-get install -y gcc make pkg-config libc-dev libssl-dev libcurl4-openssl-dev
+
 COPY . /libacquire
 
 WORKDIR /libacquire/build
 
-RUN apt-get update -qq && \
-    apt-get install -y gcc make cmake libc-dev libssl-dev && \
-    cmake -DCMAKE_BUILD_TYPE="Debug" .. && \
+RUN cmake -DCMAKE_BUILD_TYPE="Debug" .. && \
     cmake --build .
 
 CMD ctest .

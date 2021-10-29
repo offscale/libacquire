@@ -40,7 +40,7 @@ int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
     SHA256_CTX sha256;
     FILE *file = fopen(path, "rb");
     const int bufSize = 32768;
-    unsigned char *buffer = malloc(bufSize);
+    unsigned char *sh256_buffer = malloc(bufSize);
     unsigned short exit_code = EXIT_SUCCESS;
     size_t bytesRead;
 
@@ -51,18 +51,18 @@ int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
 
     SHA256_Init(&sha256);
 
-    if (!buffer) {
+    if (!sh256_buffer) {
         exit_code = ENOMEM;
         goto cleanup;
     }
-    for (; (bytesRead = fread(buffer, 1, bufSize, file)); SHA256_Update(&sha256, buffer, bytesRead)) {}
+    for (; (bytesRead = fread(sh256_buffer, 1, bufSize, file)); SHA256_Update(&sha256, sh256_buffer, bytesRead)) {}
 
 
     SHA256_Final(hash, &sha256);
     sha256_hash_string(hash, outputBuffer);
     cleanup:
     if (file != NULL) fclose(file);
-    free(buffer);
+    free(sh256_buffer);
     return exit_code;
 }
 
