@@ -16,6 +16,8 @@ jobs:
           cmake --build .
       - name: test
         run: ctest .
+      - name: release
+        run: gh release create amalgamation --target master -d cmake-build-"$GITHUB_ACTION"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest
     steps:

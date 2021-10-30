@@ -74,13 +74,13 @@ set_target_properties(
 option(BUILD_OPENBSD_FTP "Build `ftp` binary from OpenBSD" OFF)
 
 if (BUILD_OPENBSD_FTP)
-  add_subdirectory(openbsd_ftp)
+  add_subdirectory("openbsd_ftp")
 endif (BUILD_OPENBSD_FTP)
 
 option(BUILD_FREEBSD_LIBFETCH "Build `libfetch` library from FreeBSD" OFF)
 
 if (BUILD_FREEBSD_LIBFETCH OR USE_MY_LIBFETCH)
-  add_subdirectory(freebsd_libfetch)
+  add_subdirectory("freebsd_libfetch")
 endif (BUILD_FREEBSD_LIBFETCH OR USE_MY_LIBFETCH)
 
 #######################################
