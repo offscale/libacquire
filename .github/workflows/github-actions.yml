@@ -2,6 +2,11 @@ name: CI for Linux, Windows, macOS
 
 on: [push]
 
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+
 jobs:
   build_ubuntu:
     runs-on: ubuntu-latest
@@ -20,6 +25,8 @@ jobs:
         run: |
           gh auth login --with-token "$GITHUB_TOKEN"
           gh release create amalgamation --target master -d cmake-build-"$GITHUB_ACTION"-debug/src/acquire_amalgamation.h
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
   build_macos:
     runs-on: macos-latest
     steps:
