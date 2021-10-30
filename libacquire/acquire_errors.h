@@ -4,4 +4,4 @@
 #define UNEXPECTED_CHILD_STATUS 400
 #define UNIMPLEMENTED 500
 
-#endif
+#endif /* LIBACQUIRE_ERRORS_H */

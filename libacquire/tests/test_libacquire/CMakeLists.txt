@@ -1,14 +1,7 @@
-get_filename_component(EXEC_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" EXEC_NAME "${EXEC_NAME}")
+get_filename_component(exec_name "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 
-include(../../../cmake/FindCurlCustom.cmake)
-include(../../../cmake/libacquire_helpers.cmake)
-
-set(Header_Files "test_fileutils.h" "test_string_extras.h" "test_checksum.h")
-source_group("Header Files" FILES "${Header_Files}")
-
-set(Source_Files "test.c")
-source_group("Source Files" FILES "${Source_Files}")
+include("../../../cmake/FindCurlCustom.cmake")
+include("../../../cmake/libacquire_helpers.cmake")
 
 #######################
 # Dependency download #
@@ -42,36 +35,72 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 # Set libacquire dependencies #
 ###############################
 
-add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+include("../../../cmake/libacquire_helpers.cmake")
 
-target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire")
-target_include_directories(
-        "${EXEC_NAME}"
-        PRIVATE
-        "${PROJECT_BINARY_DIR}/downloads"
-        "${PROJECT_BINARY_DIR}/src"
-)
+set_crypto_lib()
 
-add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
+set_ssl_lib()
 
-#######################################
-# Export / installation configuration #
-#######################################
+set_http_https_lib()
 
-# setup the version numbering
-#set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")
-#set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
+include("../../../cmake/FindLibAcquire.cmake")
 
-# install rules
-set(installable_libs "${EXEC_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
-if (TARGET "${DEPENDANT_LIBRARY}")
-  list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
-install(TARGETS ${installable_libs}
-        DESTINATION "bin"
-        EXPORT "${EXEC_NAME}Targets")
+set(_targets "${exec_name}" "test_amalgamation")
+set(All_Header_Files "${GREATEST_FILE}")
+
+foreach(EXEC_NAME ${_targets})
+  if (EXEC_NAME STREQUAL "test_amalgamation")
+    set(Header_Files "${EXEC_NAME}.h")
+    source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
+
+    set(Source_Files "${EXEC_NAME}.c")
+    source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
+    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}")
+  else ()
+    set(Header_Files "test_fileutils.h" "test_string_extras.h" "test_checksum.h")
+    source_group("Header Files" FILES "${Header_Files}")
+
+    set(Source_Files "test.c")
+    source_group("Source Files" FILES "${Source_Files}")
+
+    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+
+    target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire")
+  endif ()
+
+  target_include_directories(
+          "${EXEC_NAME}"
+          PRIVATE
+          "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
+          "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/downloads>"
+          "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
+          "$<INSTALL_INTERFACE:include>"
+  )
+
+  add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
+
+  #######################################
+  # Export / installation configuration #
+  #######################################
+
+  # setup the version numbering
+  #set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")
+  #set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
+
+  # install rules
+  set(installable_libs "${EXEC_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
+  if (TARGET "${DEPENDANT_LIBRARY}")
+    list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
+  endif ()
+  list(APPEND All_Header_Files "${Header_Files}")
+  install(TARGETS ${installable_libs}
+          DESTINATION "bin"
+          EXPORT "${EXEC_NAME}Targets")
+endforeach()
+
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"
-        "${Header_Files}"
+        "${All_Header_Files}"
         DESTINATION
         "include")

@@ -3,7 +3,6 @@
 ####################
 
 macro(set_crypto_lib)
-
     # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
     if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT DEFINED CRYPTO_LIB)
         check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
@@ -15,7 +14,7 @@ macro(set_crypto_lib)
         add_compile_definitions(USE_COMMON_CRYPTO=1)
     elseif ((CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND NOT DEFINED CRYPTO_LIB) OR CRYPTO_LIB STREQUAL "LibreSSL")
         set(CRYPTO_LIB LibreSSL)
-        include(../cmake/FindLibreSSL.cmake)
+        include("../cmake/FindLibreSSL.cmake")
         set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
         set(USE_LIBRESSL 1)
         add_compile_definitions(USE_LIBRESSL=1)

@@ -143,4 +143,4 @@ char *strcasestr(const char *h, const char *n)
     return 0;
 }
 
-#endif
+#endif /* LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */

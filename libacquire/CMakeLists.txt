@@ -1,11 +1,11 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-include(../cmake/FindCurlCustom.cmake)
-include(../cmake/libacquire_helpers.cmake)
+include("../cmake/FindCurlCustom.cmake")
+include("../cmake/libacquire_helpers.cmake")
 
 set(Header_Files "acquire.h")
-if(NOT HAS_STDBOOL AND NOT MSVC)
+if (NOT HAS_STDBOOL AND NOT MSVC)
   list(APPEND Header_Files "acquire_stdbool.h")
 endif()
 source_group("Header Files" FILES "${Header_Files}")
@@ -41,27 +41,15 @@ source_group("Header Files" FILES "${Header_Files}")
 add_library("${LIBRARY_NAME}" INTERFACE)
 target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
 
+include("../cmake/FindLibAcquire.cmake")
+
 set(_include_dirs
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
         "$<INSTALL_INTERFACE:include>")
 
-set(_libs "")
-if (DEFINED CURL_LINK_LIBRARIES)
-  list(APPEND _libs "${CURL_LINK_LIBRARIES}")
-elseif (DEFINED USE_WININET)
-  list(APPEND _libs "wininet")
-  list(APPEND _libs "crypt32")
-elseif(DEFINED USE_MY_LIBFETCH)
-  list(APPEND _libs "freebsd_libfetch")
-elseif (DEFINED USE_LIBFETCH)
-  list(APPEND _libs "fetch")
-endif ()
-
-if (DEFINED OPENSSL_LIBRARIES)
-  list(APPEND _libs "OpenSSL::SSL")
-  list(APPEND _libs "${OPENSSL_LIBRARIES}")
-  list(APPEND _include_dirs "${OPENSSL_INCLUDE_DIR}")
+if (DEFINED LIBACQUIRE_INCLUDE_DIR)
+  list(APPEND _include_dirs "$<BUILD_INTERFACE:${LIBACQUIRE_INCLUDE_DIR}>")
 endif ()
 
 target_include_directories(
@@ -73,7 +61,7 @@ target_link_libraries(
         "${LIBRARY_NAME}"
         INTERFACE
         "${PROJECT_LOWER_NAME}_compiler_flags"
-        "${_libs}"
+        "${LIBACQUIRE_LIBRARIES}"
 )
 
 set_target_properties(

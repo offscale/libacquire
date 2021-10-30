@@ -1,4 +1,4 @@
-/* Modififed from  MUSL */
+/* Modified from  MUSL */
 
 #if !defined(_STDBOOL_H) && !defined(HAS_STDBOOL)
 #define _STDBOOL_H

@@ -104,4 +104,4 @@ struct DocoptArgs {
 
 struct DocoptArgs ACQUIRE_LIB_EXPORT docopt(int, char *[], bool, const char *);
 
-#endif
+#endif /* DOCOPT_CLI_H */
