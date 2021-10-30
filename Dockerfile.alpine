@@ -4,8 +4,8 @@ COPY . /libacquire
 
 WORKDIR /libacquire/build
 
-RUN apk add --no-cache gcc cmake make pkgconf musl-dev linux-headers libcurl curl-dev openssl-dev && \
-    cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+RUN apk add --no-cache gcc cmake make pkgconf musl-dev linux-headers bsd-compat-headers curl-dev openssl-dev && \
+    cmake -DCMAKE_BUILD_TYPE="Debug" -DUSE_MY_LIBFETCH="1" .. && \
     cmake --build .
 
 CMD ctest .
