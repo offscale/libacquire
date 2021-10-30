@@ -23,7 +23,9 @@ jobs:
         run: ctest .
       - name: release
         run: |
-          gh auth login --with-token "${{ secrets.GITHUB_TOKEN }}"
+          echo "${{ secrets.GITHUB_TOKEN }}" > .token
+          gh auth login --with-token < .token
+          rm .token
           gh release create amalgamation --target master -d cmake-build-"$GITHUB_ACTION"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest
