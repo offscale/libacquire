@@ -16,7 +16,7 @@ jobs:
         run: sudo apt-get install -y libssl-dev libcurl4-openssl-dev
       - name: build
         run: |
-          mkdir cmake-build-"$GITHUB_ACTION"-debug && pushd "$_"
+          mkdir cmake-build-"$RUNNER_OS"-debug && pushd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
           popd
@@ -27,8 +27,9 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
           gh auth login --with-token < .token
           rm .token
-          find cmake-build-"$GITHUB_ACTION"-debug -type f -name '*.h'
-          gh release create amalgamation --target master -d cmake-build-"$GITHUB_ACTION"-debug/src/acquire_amalgamation.h
+          cd "$GITHUB_WORKSPACE"
+          find cmake-build-"$RUNNER_OS"-debug -type f -name '*.h'
+          gh release create amalgamation --target master -d cmake-build-"$RUNNER_OS"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest
     steps:
@@ -37,7 +38,7 @@ jobs:
         run: brew install pkg-config  # openssl
       - name: build
         run: |
-          mkdir cmake-build-"$GITHUB_ACTION"-debug && cd "$_"
+          mkdir cmake-build-"$RUNNER_OS"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE=Debug ..
           cmake --build .
       - name: test
