@@ -1,4 +1,4 @@
-#ifndef LIBACQUIRE_LIBCURL_H
+#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL)
 #define LIBACQUIRE_LIBCURL_H
 
 #include <stdlib.h>
@@ -329,4 +329,4 @@ int download_many(const char *url[], const char *hashes[], enum Checksum checksu
     return UNIMPLEMENTED;
 }
 
-#endif /* LIBACQUIRE_LIBCURL_H */
+#endif /* !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) */

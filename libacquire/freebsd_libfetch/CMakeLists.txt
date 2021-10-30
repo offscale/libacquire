@@ -101,6 +101,14 @@ if (DEFINED WITH_SSL)
     list(APPEND _libs "OpenSSL::SSL")
 endif ()
 
+check_symbol_exists(strnstr "string.h" HAS_STRNSTR)
+
+if (HAS_STRNSTR)
+    add_compile_definitions(HAS_STRNSTR=1)
+else()
+    list(APPEND _libs "libacquire")
+endif ()
+
 target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_libs}")
 
 set_target_properties(

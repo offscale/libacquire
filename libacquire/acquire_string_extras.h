@@ -44,7 +44,7 @@
 
 #if !defined(HAVE_STRNSTR)
 #if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) && defined(__MACH__) \
- || defined(__FreeBSD__) && !defined(__GLIBC__)
+ || defined(__FreeBSD__)
 #define HAVE_STRNSTR 1
 #endif
 #endif
@@ -133,5 +133,14 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 }
 
 #endif
+
+/* from musl */
+
+char *strcasestr(const char *h, const char *n)
+{
+    size_t l = strlen(n);
+    for (; *h; h++) if (!strncasecmp(h, n, l)) return (char *)h;
+    return 0;
+}
 
 #endif

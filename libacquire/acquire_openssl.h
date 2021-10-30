@@ -76,6 +76,6 @@ bool sha256(const char *filename, const char *hash) {
 
 /* bool sha512(const char *, const char *); */
 
-#endif
+#endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
 #endif /* LIBACQUIRE_OPENSSL_H */

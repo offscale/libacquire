@@ -1196,7 +1196,7 @@ DigestCalcResponse(
 	HASH RespHash;
 	HASHHEX HA2Hex;
 
-	// calculate H(A2)
+	/* calculate H(A2) */
 	MD5Init(&Md5Ctx);
 	MD5Update(&Md5Ctx, pszMethod, strlen(pszMethod));
 	MD5Update(&Md5Ctx, ":", 1);
@@ -1208,7 +1208,7 @@ DigestCalcResponse(
 	MD5Final((unsigned char*)HA2, &Md5Ctx);
 	CvtHex(HA2, HA2Hex);
 
-	// calculate response
+	/* calculate response */
 	MD5Init(&Md5Ctx);
 	MD5Update(&Md5Ctx, HA1, HASHHEXLEN);
 	MD5Update(&Md5Ctx, ":", 1);

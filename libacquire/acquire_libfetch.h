@@ -1,9 +1,10 @@
-#ifndef LIBACQUIRE_LIBFETCH_H
+#if !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH)
 #define LIBACQUIRE_LIBFETCH_H
+
+#include <sys/ioctl.h>
 
 #include "acquire_string_utils.h"
 #include "acquire_checksums.h"
-#include <sys/ioctl.h>
 
 /*
  * With the exception of `get_download_dir` & `download`; this is all
@@ -840,4 +841,4 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     return result;
 }
 
-#endif /* LIBACQUIRE_LIBFETCH_H */
+#endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) */

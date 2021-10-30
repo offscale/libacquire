@@ -1,4 +1,4 @@
-#ifndef LIBACQUIRE_WININET_H
+#if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET)
 #define LIBACQUIRE_WININET_H
 
 #if defined(HAS_STDBOOL) && !defined(bool)
@@ -74,4 +74,4 @@ int download(const char* url, enum Checksum checksum, const char* hash, const ch
     return 0;
 }
 
-#endif /* LIBACQUIRE_WININET_H */
+#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) */

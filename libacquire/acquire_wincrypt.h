@@ -1,4 +1,4 @@
-#ifndef LIBACQUIRE_WINCRYPT_H
+#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT)
 #define LIBACQUIRE_WINCRYPT_H
 
 #include <stdio.h>
@@ -209,4 +209,4 @@ DWORD hash_fname_with_checksum(LPCWSTR filename, enum Checksum checksum, const c
     return dwStatus;
 }
 
-#endif /* LIBACQUIRE_WINCRYPT_H */
+#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) */

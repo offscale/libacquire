@@ -133,6 +133,58 @@ endif ()
 add_subdirectory("libacquire")
 add_subdirectory("libacquire/acquire")
 
+################################
+# Generate amalgamation header #
+################################
+
+set(amalgam
+        "libacquire/acquire_stdbool.h"
+        "libacquire/acquire_errors.h"
+        "libacquire/acquire_string_utils.h"
+        "libacquire/acquire_string_extras.h"
+        "libacquire/acquire_fileutils.h"
+        "libacquire/acquire.h"
+
+        # Crypto
+        "libacquire/acquire_openssl.h"
+        "libacquire/acquire_wincrypt.h"
+        # "libacquire/acquire_winseccng.h"
+        "libacquire/acquire_openssl.h"
+
+        # Networking
+        "libacquire/acquire_libcurl.h"
+        "libacquire/acquire_wininet.h"
+        "libacquire/acquire_libfetch.h"
+)
+
+set(amalgam_files "")
+set(all_contents "")
+foreach (_amalgam ${amalgam})
+    string(APPEND amalgam_files " \"${_amalgam}\"")
+    string(APPEND all_contents "\n/* Generated from: ${_amalgam} */\n\n")
+    file(READ "${_amalgam}" contents)
+    string(APPEND all_contents "${contents}")
+endforeach ()
+
+STRING(REGEX REPLACE ";" "\\\\;" all_contents_lines "${all_contents}")
+STRING(REGEX REPLACE "\n" ";" all_contents_lines "${all_contents_lines}")
+
+set(all_contents_filtered "")
+foreach (line ${all_contents_lines})
+    string(LENGTH "${line}" len)
+    if (len GREATER 10)
+        string(SUBSTRING "${line}" "0" "10" _line)
+        if (_line STREQUAL [[#include "]])
+            string(APPEND all_contents_filtered "/* ${line} */\n")
+        else ()
+            string(APPEND all_contents_filtered "${line}\n")
+        endif ()
+    else ()
+        string(APPEND all_contents_filtered "${line}\n")
+    endif ()
+endforeach ()
+file(WRITE "${CMAKE_BINARY_DIR}/acquire_amalgamation.h" "${all_contents_filtered}")
+
 ######################
 # Test configuration #
 ######################

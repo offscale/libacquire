@@ -60,6 +60,10 @@ __FBSDID("$FreeBSD$");
 #include "fetch.h"
 #include "common.h"
 
+#ifndef HAS_STRNSTR
+/* for `strnstr` */
+#include <acquire_string_utils.h>
+#endif
 
 /*** Local data **************************************************************/
 
@@ -175,8 +179,12 @@ fetch_syserr(void)
 	case EPERM:
 	case EACCES:
 	case EROFS:
+#ifdef EAUTH
 	case EAUTH:
-	case ENEEDAUTH:
+#endif
+#ifdef ENEEDAUTH
+    case ENEEDAUTH:
+#endif
 		fetchLastErrCode = FETCH_AUTH;
 		break;
 	case ENOENT:
@@ -277,13 +285,24 @@ conn_t *
 fetch_reopen(int sd)
 {
 	conn_t *conn;
-	int opt = 1;
 
 	/* allocate and fill connection structure */
 	if ((conn = calloc(1, sizeof(*conn))) == NULL)
 		return (NULL);
 	fcntl(sd, F_SETFD, FD_CLOEXEC);
-	setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof opt);
+
+    {
+        int opt = 1;
+        setsockopt(sd, SOL_SOCKET,
+#ifdef SO_NOSIGPIPE
+                   SO_NOSIGPIPE
+#else
+                MSG_NOSIGNAL
+#endif
+                   ,
+                   &opt, sizeof opt);
+    }
+
 	conn->sd = sd;
 	++conn->ref;
 	return (conn);
@@ -799,7 +818,7 @@ fetch_ssl_hname_match(const char *h, size_t hlen, const char *m,
 	if (!(h && *h && m && *m))
 		return (0);
 	if ((wc = strnstr(m, "*", mlen)) == NULL)
-		return (fetch_ssl_hname_equal(h, hlen, m, mlen));
+		return fetch_ssl_hname_equal(h, hlen, m, mlen);
 	wcidx = wc - m;
 	/* hostname should not be just dots and numbers */
 	if (fetch_ssl_hname_is_only_numbers(h, hlen))
@@ -1383,7 +1402,7 @@ fetch_read(conn_t *conn, char *buf, size_t len)
 			fetch_syserr();
 			return (-1);
 		}
-		// assert(rlen == FETCH_READ_WAIT);
+		/* assert(rlen == FETCH_READ_WAIT); */
 		if (fetchTimeout > 0) {
 			gettimeofday(&now, NULL);
 			if (!timercmp(&timeout, &now, >)) {

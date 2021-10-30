@@ -1,6 +1,6 @@
 /* Modififed from  MUSL */
 
-#ifndef _STDBOOL_H
+#if !defined(_STDBOOL_H) && !defined(HAS_STDBOOL)
 #define _STDBOOL_H
 
 #ifdef bool
@@ -19,4 +19,4 @@ typedef size_t bool;
 #define true 1
 #define false (!true)
 
-#endif
+#endif /* !defined(_STDBOOL_H) && !defined(HAS_STDBOOL) */
