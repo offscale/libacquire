@@ -2,10 +2,10 @@ name: CI for Linux, Windows, macOS
 
 on: [push]
 
-permissions:
-  contents: read
-  packages: write
-  deployments: write
+#permissions:
+#  contents: write
+#  packages: write
+#  deployments: write
 
 jobs:
   build_ubuntu:
@@ -17,18 +17,17 @@ jobs:
       - name: build
         run: |
           mkdir cmake-build-"$RUNNER_OS"-debug && pushd "$_"
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
           popd
       - name: test
         run: ctest .
       - name: release
         run: |
+          cd "$GITHUB_WORKSPACE"
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
           gh auth login --with-token < .token
           rm .token
-          cd "$GITHUB_WORKSPACE"
-          find cmake-build-"$RUNNER_OS"-debug -type f -name '*.h'
           gh release create amalgamation --target master -d cmake-build-"$RUNNER_OS"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest
@@ -39,7 +38,7 @@ jobs:
       - name: build
         run: |
           mkdir cmake-build-"$RUNNER_OS"-debug && cd "$_"
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
       - name: test
         run: ctest .
@@ -51,7 +50,7 @@ jobs:
         run: |
           md cmake-build-debug
           cd cmake-build-debug
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
       - name: test
         run: ctest .
