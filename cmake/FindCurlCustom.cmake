@@ -1,3 +1,20 @@
+#[=======================================================================[
+
+get_curl
+--------
+
+Function to get the curl link libraries from various places on the host system
+
+Usage
+^^^^^
+
+Arguments:
+
+LINK_LIBRARIES
+    Replace this argument with the link library name itself (pass by reference)
+
+]=======================================================================]
+
 function(get_curl LINK_LIBRARIES)
     set(CURL_NO_OLDIES ON)
 

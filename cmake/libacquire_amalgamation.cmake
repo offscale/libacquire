@@ -1,3 +1,12 @@
+#[=======================================================================[
+
+generate_amalgamation_header
+----------------------------
+
+Function to generate the amalgamated header.
+
+]=======================================================================]
+
 function (generate_amalgamation_header)
     set(amalgam
             "libacquire/acquire_stdbool.h"
