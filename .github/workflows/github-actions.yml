@@ -1,11 +1,9 @@
 name: CI for Linux, Windows, macOS
 
-on: [push]
-
-#permissions:
-#  contents: write
-#  packages: write
-#  deployments: write
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build_ubuntu:
@@ -28,7 +26,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
           gh auth login --with-token < .token
           rm .token
-          gh release create amalgamation --target master -d cmake-build-"$RUNNER_OS"-debug/src/acquire_amalgamation.h
+          gh release create amalgamation --target master cmake-build-"$RUNNER_OS"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest
     steps:
