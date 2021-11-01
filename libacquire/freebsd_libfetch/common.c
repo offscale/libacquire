@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 
 #ifndef HAS_STRNSTR
 /* for `strnstr` */
-#include <acquire_string_utils.h>
+#include <acquire_url_utils.h>
 #endif
 
 /*** Local data **************************************************************/

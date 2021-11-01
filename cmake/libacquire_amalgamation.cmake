@@ -11,11 +11,11 @@ function (generate_amalgamation_header)
     set(amalgam
             "libacquire/acquire_stdbool.h"
             "libacquire/acquire_errors.h"
-            "libacquire/acquire_string_utils.h"
+            "libacquire/acquire_url_utils.h"
             "libacquire/acquire_string_extras.h"
             "libacquire/acquire_fileutils.h"
             "libacquire/acquire_checksums.h"
-            "libacquire/acquire.h"
+            "libacquire/acquire_all.h"
 
             # Crypto
             "libacquire/acquire_openssl.h"
@@ -24,9 +24,13 @@ function (generate_amalgamation_header)
             "libacquire/acquire_openssl.h"
 
             # Networking
+            "libacquire/acquire_net_common.h"
             "libacquire/acquire_libcurl.h"
             "libacquire/acquire_wininet.h"
             "libacquire/acquire_libfetch.h"
+
+            # Archiving
+            "libacquire/acquire_extract.h"
             )
 
     set(amalgam_files "")
@@ -68,8 +72,8 @@ function (generate_amalgamation_header)
     # I suppose this could be further extended, deduplicating headers and putting them all to the top…
 
     file(WRITE
-            "${CMAKE_CURRENT_BINARY_DIR}/src/acquire_amalgamation.h"
-            "/* SPDX-License-Identifier: (Apache OR MIT)\n"
+            "${CMAKE_CURRENT_BINARY_DIR}/src/acquire.h"
+            "/* SPDX-License-Identifier: (Apache-2.0 OR MIT)\n"
             " * https://github.com/offscale/libacquire */\n"
             "${all_contents_filtered}")
 endfunction (generate_amalgamation_header)

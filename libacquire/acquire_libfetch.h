@@ -1,16 +1,22 @@
+/*
+ * libfetch implementation of libacquire's download API
+ *
+ * fetch is included with some BSDs, notably FreeBSD.
+ *
+ * This project additionally takes the libfetch source-code and ports it to other OSs.
+ *
+ * With the exception of `get_download_dir` & `download`; this is all
+ * https://svnweb.freebsd.org/base/head/usr.bin/fetch/fetch.c?revision=338572
+ * with some unused symbols and the CLI usage and `main` function removed
+ */
+
 #if !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH)
 #define LIBACQUIRE_LIBFETCH_H
 
 #include <sys/ioctl.h>
 
-#include "acquire_string_utils.h"
+#include "acquire_url_utils.h"
 #include "acquire_checksums.h"
-
-/*
- * With the exception of `get_download_dir` & `download`; this is all
- * https://svnweb.freebsd.org/base/head/usr.bin/fetch/fetch.c?revision=338572
- * with some unused symbols and the CLI usage and `main` function removed
- */
 
 /*-
  * SPDX-License-Identifier: BSD-3-Clause

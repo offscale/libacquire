@@ -1,3 +1,9 @@
+/*
+ * openbsd's `ftp` implementation of libacquire's download API
+ *
+ * Very much a WiP
+ * */
+
 #ifndef LIBACQUIRE_OPENBSD_FTP_H
 #define LIBACQUIRE_OPENBSD_FTP_H
 
@@ -9,7 +15,7 @@ const char *get_download_dir() {
 
 int download(const char* url, enum Checksum checksum, const char* hash, const char target_location[NAME_MAX],
              bool follow, size_t retry, size_t verbosity) {
-    sendrequest()
+    sendrequest();
 }
 
 #endif /* LIBACQUIRE_OPENBSD_FTP_H */

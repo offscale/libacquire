@@ -1,5 +1,9 @@
-#ifndef LIBACQUIRE_ACQUIRE_STRING_UTILS_H
-#define LIBACQUIRE_ACQUIRE_STRING_UTILS_H
+/*
+ * Basic URL functions (where URL is `const char*`)
+ * */
+
+#ifndef LIBACQUIRE_ACQUIRE_URL_UTILS_H
+#define LIBACQUIRE_ACQUIRE_URL_UTILS_H
 
 #include <string.h>
 #if defined(HAS_STDBOOL) && !defined(bool)
@@ -35,4 +39,4 @@ bool is_url(const char *maybe_url) {
     return false /* strchr(maybe_url, '/') != NULL */;
 }
 
-#endif /* LIBACQUIRE_ACQUIRE_STRING_UTILS_H */
+#endif /* LIBACQUIRE_ACQUIRE_URL_UTILS_H */

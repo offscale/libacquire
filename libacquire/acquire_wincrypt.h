@@ -1,3 +1,9 @@
+/*
+ * wincrypt implementation of libacquire's checksum API
+ *
+ * This should also work on Windows, ReactOS, and derivatives.
+ * */
+
 #if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT)
 #define LIBACQUIRE_WINCRYPT_H
 

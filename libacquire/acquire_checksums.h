@@ -1,6 +1,10 @@
 /*
-That way you don't need to trust me, just the `diff` on your end,
-*/
+ * Prototype for checksum API
+ *
+ * Always `#include` this when adding new checksum implementations,
+ * to ensure the implementation matches the prototype.
+ * */
+
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 
@@ -20,6 +24,14 @@ enum Checksum {
     LIBACQUIRE_SHA512,
     UNSUPPORTED
 };
+
+extern enum Checksum string2checksum(const char *s) {
+    if (strncasecmp(s, "SHA256", 6) == 0)
+        return LIBACQUIRE_SHA256;
+    else if (strncasecmp(s, "SHA512", 6) == 0)
+        return LIBACQUIRE_SHA512;
+    else return UNSUPPORTED;
+}
 
 extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);
 

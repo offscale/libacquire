@@ -8,7 +8,7 @@
 #endif
 
 #include <acquire_config.h>
-#include <acquire.h>
+#include <acquire_all.h>
 #include <acquire_errors.h>
 
 #include "cli.h"

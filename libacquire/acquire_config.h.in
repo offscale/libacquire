@@ -1,3 +1,9 @@
+/*
+ * Config file
+ *
+ * Useful for version and configuration access
+ * */
+
 #ifndef OSBUILD_VERSION_H
 #define OSBUILD_VERSION_H
 

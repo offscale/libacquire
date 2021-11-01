@@ -1,3 +1,13 @@
+/*
+ * libcurl implementation of libacquire's download API
+ *
+ * Thanks to cmake/FindCurlCustom this should work with:
+ *   - Apple macOS (via `brew`, `port`, system, &etc.)
+ *   - Linux, BSDs, SunOS (via system package manager, &etc.)
+ *   - Windows (via conan, vcpkg, &etc.)
+ *   - Elsewhere that curl supports (not tested, but shouldn't be an issue)
+ * */
+
 #if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL)
 #define LIBACQUIRE_LIBCURL_H
 
@@ -16,11 +26,11 @@
 #endif
 #endif
 #include "acquire_errors.h"
-#include "acquire_string_utils.h"
+#include "acquire_url_utils.h"
 #include "acquire_string_extras.h"
 #include "acquire_fileutils.h"
 #include "acquire_checksums.h"
-#include "acquire.h"
+#include "acquire_all.h"
 
 #if defined(_AIX)
 #include <sys/limits.h>

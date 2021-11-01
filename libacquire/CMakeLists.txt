@@ -4,7 +4,7 @@ string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 include("../cmake/FindCurlCustom.cmake")
 include("../cmake/libacquire_helpers.cmake")
 
-set(Header_Files "acquire.h")
+set(Header_Files "acquire_all.h")
 if (NOT HAS_STDBOOL AND NOT MSVC)
   list(APPEND Header_Files "acquire_stdbool.h")
 endif()

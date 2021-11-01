@@ -1,3 +1,9 @@
+/*
+ * wininet implementation of libacquire's download API
+ *
+ * This should also work on Windows, ReactOS, and derivatives.
+ * */
+
 #if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET)
 #define LIBACQUIRE_WININET_H
 
@@ -19,7 +25,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <wininet.h>
-#include "acquire_string_utils.h"
+#include "acquire_url_utils.h"
 
 #define BUFFER_SIZE 4096
 

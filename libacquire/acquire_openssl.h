@@ -1,3 +1,13 @@
+/*
+ * openssl implementation of libacquire's checksum API
+ *
+ * This should also work with OpenSSL derived distributions also, like:
+ *   - LibreSSL
+ *   - CommonCrypto (macOS)
+ *
+ * YMMV. Any issues, post to source GitHub.
+ * */
+
 #ifndef LIBACQUIRE_OPENSSL_H
 #define LIBACQUIRE_OPENSSL_H
 

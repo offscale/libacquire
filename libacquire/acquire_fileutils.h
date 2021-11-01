@@ -1,3 +1,10 @@
+/*
+ * Cross-platform fileutils API
+ *
+ * Not trying to be fully-featured, just enough cross-platform building blocks
+ * to build basic nvm-style version managers.
+ * */
+
 #ifndef LIBACQUIRE_ACQUIRE_FILEUTILS_H
 #define LIBACQUIRE_ACQUIRE_FILEUTILS_H
 

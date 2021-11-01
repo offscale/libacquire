@@ -1,3 +1,9 @@
+/*
+ * winseccng implementation of libacquire's download API
+ *
+ * This should also work on Windows, ReactOS, and derivatives.
+ * */
+
 #ifndef LIBACQUIRE_WINSECCNG_H
 #define LIBACQUIRE_WINSECCNG_H
 

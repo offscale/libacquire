@@ -1,3 +1,9 @@
+/*
+ * CLI for `acquire`, which links with libacquire
+ *
+ * File is generated. See "README.md" for details.
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,3 +1,9 @@
+/*
+ * CLI for `acquire`, which links with libacquire
+ *
+ * File is generated. See "README.md" for details.
+ * */
+
 #ifndef DOCOPT_CLI_H
 #define DOCOPT_CLI_H
 
