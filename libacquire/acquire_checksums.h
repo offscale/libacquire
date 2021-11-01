@@ -21,7 +21,7 @@ enum Checksum {
     UNSUPPORTED
 };
 
-bool (*get_checksum_function(enum Checksum))(const char *, const char *);
+extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);
 
 bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *) {
     switch (checksum) {

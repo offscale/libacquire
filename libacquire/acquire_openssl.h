@@ -81,7 +81,10 @@ bool sha256(const char *filename, const char *hash) {
     return strcmp(outputBuffer, hash) == 0;
 }
 
-/* bool sha512(const char *, const char *); */
+bool sha512(const char *filename, const char *hash) {
+    fputs("TODO: Implement sha512", stderr);
+    return false;
+}
 
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 

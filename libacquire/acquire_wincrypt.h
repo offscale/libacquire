@@ -116,6 +116,11 @@ bool sha256(const char *filename, const char *hash) {
     return dwStatus;
 }
 
+bool sha512(const char *filename, const char *hash) {
+    fputs("TODO: Implement sha512", stderr);
+    return false;
+}
+
 DWORD hash_fname_with_checksum(LPCWSTR filename, enum Checksum checksum, const char *hash) {
     DWORD dwStatus = 0;
     BOOL bResult = FALSE;

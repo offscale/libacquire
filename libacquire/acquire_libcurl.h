@@ -175,7 +175,7 @@ FILE *get_dnld_stream(char const *const fname) {
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
     fopen_s(&fp, fname, "wb");
 #else
-    fopen(fname, "wb");
+    fp = fopen(fname, "wb");
 #endif
     if (!fp) {
         fprintf(stderr, "Could not create file \"%s\"\n", fname);
