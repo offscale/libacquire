@@ -15,75 +15,140 @@
 #define SHA256_Update CC_SHA256_Update
 #define SHA256_Final CC_SHA256_Final
 #define SHA256_BLOCK_BYTES CC_SHA256_BLOCK_BYTES
+
+#define SHA512_DIGEST_LENGTH CC_SHA512_DIGEST_LENGTH
+#define SHA512_CTX CC_SHA512_CTX
+#define SHA512_Init CC_SHA512_Init
+#define SHA512_Update CC_SHA512_Update
+#define SHA512_Final CC_SHA512_Final
+#define SHA512_BLOCK_BYTES CC_SHA512_BLOCK_BYTES
+
 #elif defined(USE_OPENSSL)
 
 #include <openssl/sha.h>
 
 #define SHA256_BLOCK_BYTES       64          /* block size in bytes */
+#define SHA512_BLOCK_BYTES       (SHA256_BLOCK_BYTES*2)
 #endif
 
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 
+int sha256_file(const char *filename,
+                unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1]) {
+    /* mostly from BSD licensed balrog/zanka-full */
+    FILE					*fp;
+    SHA256_CTX              sha256_context;
+    size_t					bytes;
+    char					buffer[BUFSIZ];
+    static unsigned char	hex[] = "0123456789abcdef";
+    unsigned char			sha[SHA256_DIGEST_LENGTH];
+    int						exit_code=EXIT_SUCCESS;
 
-void sha256_hash_string(unsigned char hash[SHA256_DIGEST_LENGTH], char outputBuffer[65]) {
-    size_t i;
-    for (i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-
-    outputBuffer[SHA256_BLOCK_BYTES] = 0;
-}
-
-int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
-#define BUF_SIZE 32768
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    FILE *file;
-    unsigned short exit_code = EXIT_SUCCESS;
-    unsigned char *sh256_buffer = malloc(BUF_SIZE);
-    size_t bytesRead;
+    /* zero out checksum */
+    memset(sha_output, 0, SHA256_DIGEST_LENGTH * 2 + 1);
 
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-    exit_code = fopen_s(&file, path, "rb");
-    if (exit_code) goto cleanup;
+    fopen_s(&fp, filename, "r");
 #else
-    file = fopen(path, "rb");
-    if (file == NULL) {
+    fp = fopen(filename, "r");
+#endif
+
+    if(!fp) {
+        fprintf(stderr, "Could not open %s: %s", filename, strerror(errno));
         exit_code = ENOENT;
         goto cleanup;
     }
+
+    /* calculate a SHA-1 checksum for files */
+    SHA256_Init(&sha256_context);
+
+    /* the file is small enough, checksum it all */
+    while((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+        SHA256_Update(&sha256_context, buffer, bytes);
+
+    SHA256_Final(sha, &sha256_context);
+
+    /* map into hex characters */
+    {
+        int i;
+        for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+            sha_output[i + i] = hex[sha[i] >> 4];
+            sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+        }
+        sha_output[i+i] = '\0';
+    }
+
+cleanup:
+    fclose(fp);
+
+    return exit_code;
+}
+
+int sha512_file(const char *filename,
+                unsigned char sha_output[SHA512_DIGEST_LENGTH * 2 + 1]) {
+    /* mostly from BSD licensed balrog/zanka-full… should deduplicate with above function */
+    FILE					*fp;
+    SHA512_CTX              sha512_context;
+    size_t					bytes;
+    char					buffer[BUFSIZ];
+    static unsigned char	hex[] = "0123456789abcdef";
+    unsigned char			sha[SHA512_DIGEST_LENGTH];
+    int						exit_code=EXIT_SUCCESS;
+
+    /* zero out checksum */
+    memset(sha_output, 0, SHA512_DIGEST_LENGTH * 2 + 1);
+
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    fopen_s(&fp, filename, "r");
+#else
+    fp = fopen(filename, "r");
 #endif
 
-    SHA256_Init(&sha256);
-
-    if (!sh256_buffer) {
-        exit_code = ENOMEM;
+    if(!fp) {
+        fprintf(stderr, "Could not open %s: %s", filename, strerror(errno));
+        exit_code = ENOENT;
         goto cleanup;
     }
-    for (; (bytesRead = fread(sh256_buffer, 1, BUF_SIZE, file)); SHA256_Update(&sha256, sh256_buffer, bytesRead)) {}
 
+    /* calculate a SHA-1 checksum for files */
+    SHA512_Init(&sha512_context);
 
-    SHA256_Final(hash, &sha256);
-    sha256_hash_string(hash, outputBuffer);
-cleanup:
-    if (file != NULL) fclose(file);
-    free(sh256_buffer);
+    /* the file is small enough, checksum it all */
+    while((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+        SHA512_Update(&sha512_context, buffer, bytes);
+
+    SHA512_Final(sha, &sha512_context);
+
+    /* map into hex characters */
+    {
+        int i;
+        for (i = 0; i < SHA512_DIGEST_LENGTH; i++) {
+            sha_output[i + i] = hex[sha[i] >> 4];
+            sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+        }
+        sha_output[i+i] = '\0';
+    }
+
+    cleanup:
+    fclose(fp);
+
     return exit_code;
-#undef BUF_SIZE
 }
 
 bool sha256(const char *filename, const char *hash) {
-    static char outputBuffer[SHA256_BLOCK_BYTES];
+    unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1];
+    sha256_file(filename, sha_output);
 
-    sha256_file(filename, outputBuffer);
-
-    return strcmp(outputBuffer, hash) == 0;
+    return strcmp((const char*)sha_output, hash) == 0;
 }
 
 bool sha512(const char *filename, const char *hash) {
-    fputs("TODO: Implement sha512", stderr);
-    return false;
+    unsigned char sha_output[SHA512_DIGEST_LENGTH * 2 + 1];
+    sha512_file(filename, sha_output);
+
+    return strcmp((const char*)sha_output, hash) == 0;
 }
 
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
