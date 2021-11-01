@@ -50,7 +50,12 @@ fetchXGetFile(struct url *u, struct url_stat *us, const char *flags)
 	if (us && fetchStatFile(u, us, flags) == -1)
 		return (NULL);
 
+
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+	fopen_s(&f, u->doc, "re");
+#else
 	f = fopen(u->doc, "re");
+#endif
 
 	if (f == NULL) {
 		fetch_syserr();
@@ -77,10 +82,12 @@ fetchPutFile(struct url *u, const char *flags)
 {
 	FILE *f;
 
-	if (CHECK_FLAG('a'))
-		f = fopen(u->doc, "ae");
-	else
-		f = fopen(u->doc, "w+e");
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+		fopen_s(&f, u->doc,
+#else
+		f = fopen(u->doc,
+#endif
+				  CHECK_FLAG('a')?  "ae" :  "w+e");
 
 	if (f == NULL) {
 		fetch_syserr();

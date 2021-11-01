@@ -11,11 +11,9 @@ COPY . /libacquire
 
 WORKDIR /libacquire/build
 
-RUN apt-get install -y ripgrep
+# RUN apt-get install -y ripgrep && cd / && rg -F 'char *strnstr' 2>/dev/null
 
-RUN cd / && rg -F 'char *strnstr' 2>/dev/null
-
-RUN cmake -DCMAKE_BUILD_TYPE="Debug" -DUSE_MY_LIBFETCH="1" .. && \
+RUN cmake -DCMAKE_BUILD_TYPE="Debug" .. && \
     cmake --build .
 
 CMD ctest .

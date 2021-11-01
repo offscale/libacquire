@@ -171,7 +171,12 @@ size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
 }
 
 FILE *get_dnld_stream(char const *const fname) {
-    FILE *fp = fopen(fname, "wb");
+    FILE *fp;
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    fopen_s(&fp, fname, "wb");
+#else
+    fopen(fname, "wb");
+#endif
     if (!fp) {
         fprintf(stderr, "Could not create file \"%s\"\n", fname);
         return NULL;

@@ -600,7 +600,14 @@ fetch(char *URL, const char *path)
                 goto failure;
             }
             /* we got it, open local file */
-            if ((of = fopen(path, "r+")) == NULL) {
+
+            #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+                fopen_s(&of, path, "rb");
+            #else
+                of = fopen(path, "rb");
+            #endif
+
+            if (of == NULL) {
                 warn("%s: fopen()", path);
                 goto failure;
             }
@@ -668,13 +675,22 @@ fetch(char *URL, const char *path)
                     warn("%s: mkstemps()", path);
                     goto failure;
                 }
-                of = fopen(tmppath, "w");
+                #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+                    fopen_s(&of, tmppath, "w");
+                #else
+                    of = fopen(tmppath, "w");
+                #endif
+
                 chown(tmppath, sb.st_uid, sb.st_gid);
                 chmod(tmppath, sb.st_mode & ALLPERMS);
             }
         }
         if (of == NULL)
-            of = fopen(path, "w");
+            #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+                fopen_s(&of, path, "w");
+            #else
+                of = fopen(path, "w");
+            #endif
         if (of == NULL) {
             warn("%s: open()", path);
             goto failure;

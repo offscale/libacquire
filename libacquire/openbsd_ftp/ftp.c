@@ -682,7 +682,11 @@ sendrequest(const char *cmd, const char *local, const char *remote,
 			progress = 0;
 		closefunc = pclose;
 	} else {
-		fin = fopen(local, "r");
+		#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+			fopen_s(&fin, local, "r");
+		#else
+			fin = fopen(local, "r");
+		#endif
 		if (fin == NULL) {
 			warn("local: %s", local);
 			(void)signal(SIGINT, oldintr);
@@ -1056,7 +1060,11 @@ recvrequest(const char *cmd, const char * volatile local, const char *remote,
 		preserve = 0;
 		closefunc = pclose;
 	} else {
-		fout = fopen(local, lmode);
+		#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+			fopen_s(&fout, local, lmode);
+		#else
+			fout = fopen(local, lmode);
+		#endif
 		if (fout == NULL) {
 			warn("local: %s", local);
 			goto abort;

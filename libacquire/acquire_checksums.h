@@ -21,5 +21,19 @@ enum Checksum {
     UNSUPPORTED
 };
 
+bool (*get_checksum_function(enum Checksum))(const char *, const char *);
+
+bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *) {
+    switch (checksum) {
+        case LIBACQUIRE_SHA256:
+            return sha256;
+        case LIBACQUIRE_SHA512:
+            return sha512;
+        case UNSUPPORTED:
+        default:
+            return NULL;
+    }
+}
+
 #endif /* LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
 

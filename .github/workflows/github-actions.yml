@@ -26,6 +26,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
           gh auth login --with-token < .token
           rm .token
+          gh release delete -y amalgamation
           gh release create amalgamation --target master cmake-build-"$RUNNER_OS"-debug/src/acquire_amalgamation.h
   build_macos:
     runs-on: macos-latest

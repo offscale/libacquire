@@ -36,18 +36,24 @@ void sha256_hash_string(unsigned char hash[SHA256_DIGEST_LENGTH], char outputBuf
 }
 
 int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
+#define BUF_SIZE 32768
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
-    FILE *file = fopen(path, "rb");
-    const int bufSize = 32768;
-    unsigned char *sh256_buffer = malloc(bufSize);
+    FILE *file;
     unsigned short exit_code = EXIT_SUCCESS;
+    unsigned char *sh256_buffer = malloc(BUF_SIZE);
     size_t bytesRead;
 
-    if (!file) {
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    exit_code = fopen_s(&file, path, "rb");
+    if (exit_code) goto cleanup;
+#else
+    file = fopen(path, "rb");
+    if (file == NULL) {
         exit_code = ENOENT;
         goto cleanup;
     }
+#endif
 
     SHA256_Init(&sha256);
 
@@ -55,15 +61,16 @@ int sha256_file(const char *path, char outputBuffer[SHA256_BLOCK_BYTES]) {
         exit_code = ENOMEM;
         goto cleanup;
     }
-    for (; (bytesRead = fread(sh256_buffer, 1, bufSize, file)); SHA256_Update(&sha256, sh256_buffer, bytesRead)) {}
+    for (; (bytesRead = fread(sh256_buffer, 1, BUF_SIZE, file)); SHA256_Update(&sha256, sh256_buffer, bytesRead)) {}
 
 
     SHA256_Final(hash, &sha256);
     sha256_hash_string(hash, outputBuffer);
-    cleanup:
+cleanup:
     if (file != NULL) fclose(file);
     free(sh256_buffer);
     return exit_code;
+#undef BUF_SIZE
 }
 
 bool sha256(const char *filename, const char *hash) {
