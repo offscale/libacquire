@@ -19,6 +19,7 @@ function (get_libacquire_header header_file)
     set(json_file "${CMAKE_BINARY_DIR}/libacquire.json")
 
     if (EXISTS "${header_file}")
+        message("STATUS ${header_file} exists; skipping download.")
         return()
     elseif (NOT EXISTS "${json_file}")
         file(DOWNLOAD https://api.github.com/repos/offscale/libacquire/releases "${json_file}"
@@ -68,7 +69,7 @@ function (get_libacquire_header header_file)
             string(JSON name
                     GET "${asset_json}" "name")
 
-            if (asset_name STREQUAL "acquire.h")
+            if (name STREQUAL "acquire.h")
                 string(JSON browser_download_url
                         GET "${asset_json}" "browser_download_url"
                         )
@@ -77,4 +78,6 @@ function (get_libacquire_header header_file)
             endif ()
         endforeach ()
     endforeach ()
+
+    message(FATAL_ERROR "Unable to find downloadable \"acquire.h\"")
 endfunction (get_libacquire_header)

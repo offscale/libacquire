@@ -81,14 +81,16 @@ Want different options for libcurl, OpenSSL, or any of the other dependencies? -
 ### Dependencies
 
   - [CMake](https://cmake.org) (3.19 or later)
-  - C compiler (any that work with CMake, and were released within last 30 years)
+  - C compiler (any that work with CMake, and were released within the last 30 years)
   - Crypto, HTTPS, and unarchiving library (see above for what to override, defaults to OS builtin API)
 
 ### Build
 
-    mkdir build && cd build
-    cmake ..
-    cmake --build .
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
 
 ### CLI interface
 

@@ -30,7 +30,8 @@ extern enum Checksum string2checksum(const char *s) {
         return LIBACQUIRE_SHA256;
     else if (strncasecmp(s, "SHA512", 6) == 0)
         return LIBACQUIRE_SHA512;
-    else return UNSUPPORTED;
+    else
+        return UNSUPPORTED;
 }
 
 extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);

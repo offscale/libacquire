@@ -48,7 +48,7 @@ jobs:
         run: |
           md cmake-build-debug
           cd cmake-build-debug
-          cmake -DCMAKE_BUILD_TYPE="Debug" ..
+          cmake ..
           cmake --build .
       - name: test
         run: ctest .
