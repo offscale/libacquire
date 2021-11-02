@@ -5,8 +5,8 @@
  * to ensure the implementation matches the prototype.
  * */
 
-#ifndef LIBACQUIRE_ACQUIRE_ALL_H
-#define LIBACQUIRE_ACQUIRE_ALL_H
+#ifndef LIBACQUIRE_ACQUIRE_DOWNLOAD_H
+#define LIBACQUIRE_ACQUIRE_DOWNLOAD_H
 
 #include <stdlib.h>
 #include <string.h>
@@ -55,4 +55,4 @@ extern int download_many(
         const char *, bool, size_t, size_t
 );
 
-#endif /* LIBACQUIRE_ACQUIRE_ALL_H */
+#endif /* LIBACQUIRE_ACQUIRE_DOWNLOAD_H */

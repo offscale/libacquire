@@ -3,7 +3,7 @@
 
 #include <config_for_tests.h>
 #include <acquire_config.h>
-#include <acquire_amalgamation.h>
+#include <acquire.h>
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define PATH_SEP "\\"

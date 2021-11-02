@@ -1,7 +1,14 @@
 #ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
-#include "acquire_all.h"
+#include "acquire_string_extras.h"
+#include "acquire_download.h"
+
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#define PATH_SEP "\\"
+#else
+#define PATH_SEP "/"
+#endif
 
 bool is_downloaded(const char *url, enum Checksum checksum,
                    const char *hash, const char *target_location) {
@@ -15,7 +22,7 @@ bool is_downloaded(const char *url, enum Checksum checksum,
         return false;
 
     snprintf(full_local_fname, NAME_MAX + 1,
-             "%s/%s", target_location, filename);
+             "%s"PATH_SEP"%s", target_location, filename);
 
     if (!is_file(full_local_fname))
         return false;

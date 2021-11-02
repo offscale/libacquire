@@ -24,26 +24,51 @@ function (get_libacquire_header header_file)
         file(DOWNLOAD https://api.github.com/repos/offscale/libacquire/releases "${json_file}"
                 HTTPHEADER "Accept: application/vnd.github.v3+json")
     endif ()
+
     file(READ "${json_file}" json_contents)
+    string(LENGTH "${json_contents}" n)
+    if (n EQUAL 0)
+        message(FATAL_ERROR "Unable to download")
+    endif ()
 
-    string(JSON obj_json_n
+    string(JSON json_contents_n
             LENGTH "${json_contents}")
-    math(EXPR obj_json_n "${obj_json_n} - 1")
+    math(EXPR json_contents_n "${json_contents_n} - 1")
 
-    foreach (i RANGE 0 "${obj_json_n}")
+    foreach (i RANGE 0 "${json_contents_n}")
+
+        string(JSON type TYPE "${json_contents}" "${i}")
+        if (NOT type STREQUAL "OBJECT")
+            continue ()
+        endif ()
+
+        string(JSON type TYPE "${json_contents}" "${i}" "assets")
+        if (NOT type STREQUAL "ARRAY")
+            continue ()
+        endif ()
+
         string(JSON assets_json
                 GET "${json_contents}" "${i}" "assets")
 
         string(JSON assets_json_n
                 LENGTH "${assets_json}")
-        math(EXPR asset_json_n "${assets_json_n} - 1")
+        math(EXPR assets_json_n "${assets_json_n} - 1")
 
         foreach (j RANGE 0 "${assets_json_n}")
             string(JSON asset_json
-                    GET "${json_contents}" "${i}" "assets" "${j}")
-            string(JSON asset_name
+                    GET "${assets_json}" "${j}")
+
+            string(JSON type TYPE "${asset_json}")
+            if (NOT type STREQUAL "OBJECT")
+                continue ()
+            endif ()
+
+            string(JSON content_type
+                    GET "${asset_json}" "content_type")
+            string(JSON name
                     GET "${asset_json}" "name")
-            if (asset_name STREQUAL "acquire_amalgamation.h")
+
+            if (asset_name STREQUAL "acquire.h")
                 string(JSON browser_download_url
                         GET "${asset_json}" "browser_download_url"
                         )

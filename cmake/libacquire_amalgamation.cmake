@@ -15,7 +15,6 @@ function (generate_amalgamation_header)
             "libacquire/acquire_string_extras.h"
             "libacquire/acquire_fileutils.h"
             "libacquire/acquire_checksums.h"
-            "libacquire/acquire_all.h"
 
             # Crypto
             "libacquire/acquire_openssl.h"
@@ -24,7 +23,9 @@ function (generate_amalgamation_header)
             "libacquire/acquire_openssl.h"
 
             # Networking
+            "libacquire/acquire_download.h"
             "libacquire/acquire_net_common.h"
+
             "libacquire/acquire_libcurl.h"
             "libacquire/acquire_wininet.h"
             "libacquire/acquire_libfetch.h"
