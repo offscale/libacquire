@@ -9,6 +9,7 @@
 
 #include <acquire_config.h>
 #include <acquire_download.h>
+#include <acquire_net_common.h>
 #include <acquire_errors.h>
 
 #include "cli.h"
