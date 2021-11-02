@@ -78,6 +78,18 @@ acquire \
 
 Want different options for libcurl, OpenSSL, or any of the other dependencies? - CMake has a `CACHE`ing mechanism. - You should be able to explicitly include your settings before including `libacquire`, and it'll use the one already included (with your custom settings).
 
+### Dependencies
+
+  - [CMake](https://cmake.org) (3.19 or later)
+  - C compiler (any that work with CMake, and were released within last 30 years)
+  - Crypto, HTTPS, and unarchiving library (see above for what to override, defaults to OS builtin API)
+
+### Build
+
+    mkdir build && cd build
+    cmake ..
+    cmake --build .
+
 ### CLI interface
 
 Generated with `docopt`, use `python -m pip install docopt-c` then:
