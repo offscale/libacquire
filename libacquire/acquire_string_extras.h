@@ -7,32 +7,43 @@
 #define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+
+#if _MSC_VER < 1900
+
+/* snprintf is implemented in VS 2015 */
+#define HAVE_SNPRINTF_H
+
+#endif /* _MSC_VER < 1900 */
+
+#else
+
+#define HAVE_STRNCASECMP
+
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
+
 #else
 
 #include <sys/param.h>
 
-#endif
+#define HAVE_STRINGS_H
+#define HAVE_STRNSTR_H
+#define HAVE_STRCASESTR_H
+#define HAVE_SNPRINTF_H
+#define HAVE_STRNCASECMP_H
 
-#if defined(__posix__) || defined(__unix__) || defined(__unix)
-#define HAVE_STRINGS_H 1
-#endif
-
-#if !defined(HAVE_STRNSTR)
-#if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) && defined(__MACH__) \
- || defined(__FreeBSD__)
-#define HAVE_STRNSTR 1
-#endif
 #endif
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-#if defined(HAVE_STRINGS_H)
-
+#ifdef HAVE_STRINGS_H
 #include <strings.h>
+#endif /* HAVE_STRINGS_H */
 
-#endif
+#ifndef HAVE_STRNCASECMP_H
 
 /*
  * `snprintf`, `strncasecmp`, `vsnprintf`, `strnstr` taken from:
@@ -45,8 +56,7 @@
  * SPDX-License-Identifier:  BSD-2-Clause
  */
 
-#if defined(_MSC_VER)
-#if _MSC_VER < 1900
+#ifndef HAVE_SNPRINTF_H
 /* snprintf is implemented in VS 2015 */
 inline int snprintf(char* buffer, size_t count, const char* format, ...)
 {
@@ -76,11 +86,12 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
    vsnprintf does not null terminate the buffer. WebKit can rely on the null
    termination. Microsoft's implementation is fixed in VS 2015. */
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
-#endif
+
+#endif /* HAVE_SNPRINTF_H */
 
 extern int strncasecmp(const char *, const char *, size_t);
 
-extern int strcasecmp(const char *, const char *)
+extern int strcasecmp(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
@@ -94,9 +105,9 @@ int strcasecmp(const char *s1, const char *s2) {
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif
+#endif /* ! HAVE_STRNCASECMP_H */
 
-#ifndef STRNSTR
+#ifndef HAVE_STRNSTR_H
 
 extern char *strnstr(const char *, const char *, size_t);
 
@@ -130,7 +141,9 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 }
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* STRNSTR */
+#endif /* ! HAVE_STRNSTR_H */
+
+#ifndef HAVE_STRCASESTR_H
 
 extern char *strcasestr(const char *, const char *);
 
@@ -146,5 +159,7 @@ char *strcasestr(const char *h, const char *n)
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#endif /* ! HAVE_STRCASESTR_H */
 
 #endif /* LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */
