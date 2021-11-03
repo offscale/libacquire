@@ -80,7 +80,7 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
 
 extern int strncasecmp(const char *, const char *, size_t);
 
-edtern int strcasecmp(const char *, const char *)
+extern int strcasecmp(const char *, const char *)
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
@@ -132,15 +132,15 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 
 #endif /* STRNSTR */
 
-/* `strcasestr` from MUSL */
-
 extern char *strcasestr(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
+/* `strcasestr` from MUSL */
+
 char *strcasestr(const char *h, const char *n)
 {
-    size_t l = strlen(n);
+    const size_t l = strlen(n);
     for (; *h; h++) if (!strncasecmp(h, n, l)) return (char *)h;
     return 0;
 }
