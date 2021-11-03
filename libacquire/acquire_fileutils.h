@@ -27,7 +27,18 @@
 
 #endif
 
-extern bool is_directory(const char *path) {
+extern bool is_directory(const char *);
+
+extern bool is_file(const char *);
+
+extern bool exists(const char *);
+
+extern off_t filesize(const char *);
+
+extern bool is_relative(const char *);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
+bool is_directory(const char *path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     const DWORD dwAttrib = GetFileAttributes(path);
 
@@ -41,7 +52,7 @@ extern bool is_directory(const char *path) {
 #endif
 }
 
-extern bool is_file(const char *path) {
+bool is_file(const char *path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     const DWORD dwAttrib = GetFileAttributes(path);
 
@@ -54,7 +65,7 @@ extern bool is_file(const char *path) {
 #endif
 }
 
-extern bool exists(const char *path) {
+bool exists(const char *path) {
     return
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         _access
@@ -64,8 +75,7 @@ extern bool exists(const char *path) {
                     (path, 0) != -1;
 }
 
-
-extern off_t filesize(const char *filename) {
+off_t filesize(const char *filename) {
     struct stat st;
 
     if (stat(filename, &st) == 0)
@@ -74,12 +84,14 @@ extern off_t filesize(const char *filename) {
     return -1;
 }
 
-extern bool is_relative(const char *filename) {
+bool is_relative(const char *filename) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
 #else
     return filename[0] != '/';
 #endif
 }
+
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* LIBACQUIRE_ACQUIRE_FILEUTILS_H */

@@ -19,7 +19,7 @@ function (get_libacquire_header header_file)
     set(json_file "${CMAKE_BINARY_DIR}/libacquire.json")
 
     if (EXISTS "${header_file}")
-        message("STATUS ${header_file} exists; skipping download.")
+        message(STATUS "${header_file} exists; skipping download.")
         return()
     elseif (NOT EXISTS "${json_file}")
         file(DOWNLOAD https://api.github.com/repos/offscale/libacquire/releases "${json_file}"

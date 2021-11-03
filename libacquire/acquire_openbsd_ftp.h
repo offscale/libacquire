@@ -4,7 +4,7 @@
  * Very much a WiP
  * */
 
-#ifndef LIBACQUIRE_OPENBSD_FTP_H
+#if !defined(LIBACQUIRE_OPENBSD_FTP_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_OPENBSD_FTP_H
 
 #include "openbsd.ftp/extern.h"
@@ -18,4 +18,4 @@ int download(const char* url, enum Checksum checksum, const char* hash, const ch
     sendrequest();
 }
 
-#endif /* LIBACQUIRE_OPENBSD_FTP_H */
+#endif /* !defined(LIBACQUIRE_OPENBSD_FTP_H) && defined(LIBACQUIRE_IMPLEMENTATION) */

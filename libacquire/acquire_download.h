@@ -29,8 +29,6 @@
 #include "acquire_wincrypt.h"
 #endif
 
-
-
 extern const char *get_download_dir();
 
 extern bool is_downloaded(

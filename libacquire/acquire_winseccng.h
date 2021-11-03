@@ -1,10 +1,12 @@
 /*
- * winseccng implementation of libacquire's download API
+ * winseccng implementation of libacquire's checksum API
  *
  * This should also work on Windows, ReactOS, and derivatives.
+ *
+ * Very much a WiP
  * */
 
-#ifndef LIBACQUIRE_WINSECCNG_H
+#ifndef !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WINSECCNG_H
 
 #include <stdio.h>
@@ -141,4 +143,4 @@ void __cdecl wmain(
 
 }
 
-#endif /* LIBACQUIRE_WINSECCNG_H */
+#endif /* !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) && defined(LIBACQUIRE_IMPLEMENTATION) */

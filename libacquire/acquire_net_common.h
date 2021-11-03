@@ -2,7 +2,7 @@
  * API that is common between all network libraries… however requires network libs included first
  * */
 
-#ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
+#if !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
 #include "acquire_string_extras.h"
@@ -38,4 +38,4 @@ bool is_downloaded(const char *url, enum Checksum checksum,
     }
 }
 
-#endif /* LIBACQUIRE_ACQUIRE_NET_COMMON_H */
+#endif /* !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_H) && defined(LIBACQUIRE_IMPLEMENTATION) */

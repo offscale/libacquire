@@ -3,6 +3,7 @@
 
 #include <config_for_tests.h>
 #include <acquire_config.h>
+#define LIBACQUIRE_IMPLEMENTATION
 #include <acquire.h>
 
 TEST x_test_file_downloads(void) {

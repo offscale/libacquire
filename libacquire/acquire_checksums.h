@@ -25,6 +25,12 @@ enum Checksum {
     UNSUPPORTED
 };
 
+extern enum Checksum string2checksum(const char *);
+
+extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
+
 extern enum Checksum string2checksum(const char *s) {
     if (strncasecmp(s, "SHA256", 6) == 0)
         return LIBACQUIRE_SHA256;
@@ -33,8 +39,6 @@ extern enum Checksum string2checksum(const char *s) {
     else
         return UNSUPPORTED;
 }
-
-extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);
 
 bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *) {
     switch (checksum) {
@@ -47,6 +51,8 @@ bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *
             return NULL;
     }
 }
+
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
 

@@ -4,7 +4,7 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET)
+#if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WININET_H
 
 #if defined(HAS_STDBOOL) && !defined(bool)
@@ -80,4 +80,4 @@ int download(const char* url, enum Checksum checksum, const char* hash, const ch
     return 0;
 }
 
-#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) */
+#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) && defined(LIBACQUIRE_IMPLEMENTATION) */

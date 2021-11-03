@@ -10,7 +10,7 @@
  * with some unused symbols and the CLI usage and `main` function removed
  */
 
-#if !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH)
+#if !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_LIBFETCH_H
 
 #include <sys/ioctl.h>
@@ -863,4 +863,4 @@ int download(const char *url, enum Checksum checksum, const char *hash, const ch
     return result;
 }
 
-#endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) */
+#endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) && defined(LIBACQUIRE_IMPLEMENTATION) */

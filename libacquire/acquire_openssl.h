@@ -8,7 +8,7 @@
  * YMMV. Any issues, post to source GitHub.
  * */
 
-#ifndef LIBACQUIRE_OPENSSL_H
+#if !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_OPENSSL_H
 
 #include "acquire_config.h"
@@ -163,4 +163,4 @@ bool sha512(const char *filename, const char *hash) {
 
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
-#endif /* LIBACQUIRE_OPENSSL_H */
+#endif /* !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION) */

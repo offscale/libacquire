@@ -4,7 +4,7 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT)
+#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WINCRYPT_H
 
 #include <stdio.h>
@@ -220,4 +220,4 @@ DWORD hash_fname_with_checksum(LPCWSTR filename, enum Checksum checksum, const c
     return dwStatus;
 }
 
-#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) */
+#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) && defined(LIBACQUIRE_IMPLEMENTATION) */

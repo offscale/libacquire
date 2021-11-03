@@ -16,6 +16,12 @@
 #define strdup _strdup
 #endif
 
+extern const char *get_path_from_url(const char *);
+
+extern bool is_url(const char *);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
+
 const char *get_path_from_url(const char *url) {
     size_t i;
     char *end_possible_query = strdup(url);
@@ -38,5 +44,7 @@ bool is_url(const char *maybe_url) {
                || (maybe_url[3] == 's' && maybe_url[4] == ':' && maybe_url[5] == '/' && maybe_url[6] == '/');
     return false /* strchr(maybe_url, '/') != NULL */;
 }
+
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* LIBACQUIRE_ACQUIRE_URL_UTILS_H */

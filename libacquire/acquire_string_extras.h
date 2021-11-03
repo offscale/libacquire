@@ -78,6 +78,12 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
 #endif
 
+extern int strncasecmp(const char *, const char *, size_t);
+
+edtern int strcasecmp(const char *, const char *)
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
+
 int strncasecmp(const char *s1, const char *s2, size_t len) {
     return _strnicmp(s1, s2, len);
 }
@@ -86,10 +92,15 @@ int strcasecmp(const char *s1, const char *s2) {
     return _stricmp(s1, s2);
 }
 
+#endif /* LIBACQUIRE_IMPLEMENTATION */
+
 #endif
 
-#if !defined(STRNSTR)
+#ifndef STRNSTR
 
+extern char *strnstr(const char *, const char *, size_t);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
     /*
        Find the first occurrence of find in s, where the search is limited to the
@@ -117,10 +128,15 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
     }
     return 0;
 }
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif
+#endif /* STRNSTR */
 
 /* `strcasestr` from MUSL */
+
+extern char *strcasestr(const char *, const char *);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
 
 char *strcasestr(const char *h, const char *n)
 {
@@ -128,5 +144,7 @@ char *strcasestr(const char *h, const char *n)
     for (; *h; h++) if (!strncasecmp(h, n, l)) return (char *)h;
     return 0;
 }
+
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */

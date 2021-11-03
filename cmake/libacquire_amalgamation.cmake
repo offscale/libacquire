@@ -78,9 +78,9 @@ function (generate_amalgamation_header)
             "${CMAKE_CURRENT_BINARY_DIR}/src/acquire.h"
             "/* SPDX-License-Identifier: (Apache-2.0 OR MIT)\n"
             " * https://github.com/offscale/libacquire */\n"
-            "#ifndef LIBACQUIRE_ACQUIRE_DOWNLOAD_H\n"
-            "#define LIBACQUIRE_ACQUIRE_DOWNLOAD_H\n"
+            "#ifndef LIBACQUIRE_H\n"
+            "#define LIBACQUIRE_H\n"
             "${all_contents_filtered}\n"
-            "#endif /*LIBACQUIRE_ACQUIRE_DOWNLOAD_H */\n"
+            "#endif /* LIBACQUIRE_H */\n"
             )
 endfunction (generate_amalgamation_header)

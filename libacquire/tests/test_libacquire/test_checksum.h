@@ -4,6 +4,8 @@
 #include <config_for_tests.h>
 #include <acquire_config.h>
 
+#define LIBACQUIRE_IMPLEMENTATION
+
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 #include <acquire_openssl.h>
 #elif defined(USE_WINCRYPT)

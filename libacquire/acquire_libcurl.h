@@ -8,7 +8,7 @@
  *   - Elsewhere that curl supports (not tested, but shouldn't be an issue)
  * */
 
-#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL)
+#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_LIBCURL_H
 
 #include <stdlib.h>
@@ -288,4 +288,4 @@ int download_many(const char *url[], const char *hashes[], enum Checksum checksu
     return UNIMPLEMENTED;
 }
 
-#endif /* !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) */
+#endif /* !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) && defined(LIBACQUIRE_IMPLEMENTATION) */
