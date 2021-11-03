@@ -29,13 +29,7 @@
 #include "acquire_wincrypt.h"
 #endif
 
-#ifndef MAX_FILENAME
-#define MAX_FILENAME 255
-#endif
 
-#ifndef NAME_MAX
-#define NAME_MAX 4096
-#endif
 
 extern const char *get_download_dir();
 

@@ -15,6 +15,7 @@ function (generate_amalgamation_header)
             "libacquire/acquire_string_extras.h"
             "libacquire/acquire_fileutils.h"
             "libacquire/acquire_checksums.h"
+            "libacquire/acquire_common_defs.h"
 
             # Crypto
             "libacquire/acquire_openssl.h"
@@ -24,11 +25,12 @@ function (generate_amalgamation_header)
 
             # Networking
             "libacquire/acquire_download.h"
-            "libacquire/acquire_net_common.h"
 
             "libacquire/acquire_libcurl.h"
             "libacquire/acquire_wininet.h"
             "libacquire/acquire_libfetch.h"
+
+            "libacquire/acquire_net_common.h"
 
             # Archiving
             "libacquire/acquire_extract.h"
@@ -76,5 +78,9 @@ function (generate_amalgamation_header)
             "${CMAKE_CURRENT_BINARY_DIR}/src/acquire.h"
             "/* SPDX-License-Identifier: (Apache-2.0 OR MIT)\n"
             " * https://github.com/offscale/libacquire */\n"
-            "${all_contents_filtered}")
+            "#ifndef LIBACQUIRE_ACQUIRE_DOWNLOAD_H\n"
+            "#define LIBACQUIRE_ACQUIRE_DOWNLOAD_H\n"
+            "${all_contents_filtered}\n"
+            "#endif /*LIBACQUIRE_ACQUIRE_DOWNLOAD_H */\n"
+            )
 endfunction (generate_amalgamation_header)

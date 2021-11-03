@@ -18,12 +18,6 @@
 #include <acquire_libfetch.h>
 #endif
 
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#define PATH_SEP "\\"
-#else
-#define PATH_SEP "/"
-#endif
-
 TEST x_test_file_downloads(void) {
     const int download_resp = download(GREATEST_URL, LIBACQUIRE_SHA256,
                                        GREATEST_SHA256, DOWNLOAD_DIR,

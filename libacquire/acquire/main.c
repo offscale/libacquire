@@ -50,10 +50,8 @@ int main(int argc, char *argv[]) {
     size_t len;
     errno_t err = _dupenv_s(&check, &len, "CHECK");
     if (err) check = NULL;
-#define PATH_SEP "\\"
 #else
     const char *check = getenv("CHECK");
-#define PATH_SEP "/"
 #endif
 
     if (check != NULL && args.check == 0) args.check = (bool) check;

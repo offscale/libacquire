@@ -1,14 +1,14 @@
+/*
+ * API that is common between all network libraries… however requires network libs included first
+ * */
+
 #ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
 #include "acquire_string_extras.h"
 #include "acquire_download.h"
+#include "acquire_common_defs.h"
 
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#define PATH_SEP "\\"
-#else
-#define PATH_SEP "/"
-#endif
 
 bool is_downloaded(const char *url, enum Checksum checksum,
                    const char *hash, const char *target_location) {
