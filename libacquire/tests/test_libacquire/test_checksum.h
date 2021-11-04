@@ -12,13 +12,21 @@
 #include <acquire_wincrypt.h>
 #endif
 
+#ifdef _MSC_VER
+#define NUM_FORMAT "%zu"
+#elif defined(__linux__) || defined(linux) || defined(__linux)
+#define NUM_FORMAT "%d"
+#else
+#define NUM_FORMAT "%lu"
+#endif
+
 TEST x_test_sha256_should_be_true(void) {
     ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));
     PASS();
 }
 
 TEST x_test_sha256_file_should_be_false(void) {
-    printf("sha256(GREATEST_FILE, \"wrong sha256 sum here\"): %zu\n", sha256(GREATEST_FILE, "wrong sha256 sum here"));
+    printf("sha256(GREATEST_FILE, \"wrong sha256 sum here\"): "NUM_FORMAT"\n", sha256(GREATEST_FILE, "wrong sha256 sum here"));
     ASSERT_FALSE(sha256(GREATEST_FILE, "wrong sha256 sum here"));
     PASS();
 }

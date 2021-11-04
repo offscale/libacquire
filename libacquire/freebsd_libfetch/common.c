@@ -50,7 +50,6 @@ __FBSDID("$FreeBSD$");
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 #ifdef WITH_SSL
@@ -62,7 +61,7 @@ __FBSDID("$FreeBSD$");
 
 #ifndef HAS_STRNSTR
 /* for `strnstr` */
-#include <acquire_url_utils.h>
+#include <acquire_string_extras.h>
 #endif
 
 /*** Local data **************************************************************/

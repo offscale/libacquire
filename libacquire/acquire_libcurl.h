@@ -14,9 +14,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <curl/curl.h>
-
 #include "acquire_common_defs.h"
+#include "acquire_string_extras.h"
+
+#include <curl/curl.h>
 
 #include <memory.h>
 

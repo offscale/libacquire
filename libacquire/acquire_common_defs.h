@@ -18,7 +18,6 @@
 #endif
 #include "acquire_errors.h"
 #include "acquire_url_utils.h"
-#include "acquire_string_extras.h"
 #include "acquire_fileutils.h"
 #include "acquire_checksums.h"
 #include "acquire_download.h"

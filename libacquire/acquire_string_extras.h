@@ -28,10 +28,23 @@
 #include <sys/param.h>
 
 #define HAVE_STRINGS_H
+
+#if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#define HAVE_SNPRINTF_H
+#endif
+
+#if defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306) || defined(__linux__) || defined(linux) || defined(__linux)
+#define HAVE_STRNCASECMP_H
 #define HAVE_STRNSTR_H
 #define HAVE_STRCASESTR_H
-#define HAVE_SNPRINTF_H
-#define HAVE_STRNCASECMP_H
+#endif
+
+#ifdef BSD
+/* pass */
+#elif !defined(_GNU_SOURCE) && defined(HAVE_STRCASESTR_H) && defined (HAVE_STRNSTR_H)
+#undef HAVE_STRCASESTR_H
+#undef HAVE_STRNSTR_H
+#endif /* BSD */
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 

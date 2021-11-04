@@ -1,5 +1,4 @@
 #include "shim.h"
-#include <string.h>
 #include <limits.h>
 
 /* stolen from musl */

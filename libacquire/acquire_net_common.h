@@ -7,7 +7,6 @@
 
 #include "acquire_string_extras.h"
 #include "acquire_download.h"
-#include "acquire_common_defs.h"
 
 
 bool is_downloaded(const char *url, enum Checksum checksum,

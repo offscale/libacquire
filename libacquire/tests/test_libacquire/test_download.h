@@ -1,5 +1,4 @@
 #include <greatest.h>
-#include <stdbool.h>
 
 #include <config_for_tests.h>
 #include <acquire_config.h>

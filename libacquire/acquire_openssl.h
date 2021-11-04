@@ -41,7 +41,6 @@
 #define SHA512_BLOCK_BYTES       (SHA256_BLOCK_BYTES*2)
 #endif
 
-#include <string.h>
 #include <stdio.h>
 #include <errno.h>
 

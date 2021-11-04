@@ -37,7 +37,6 @@ __FBSDID("$FreeBSD$");
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "fetch.h"
 #include "common.h"

@@ -1,12 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include <acquire_stdbool.h>
-#endif
-
 #define LIBACQUIRE_IMPLEMENTATION
 
 #include <acquire_config.h>

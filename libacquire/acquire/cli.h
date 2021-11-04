@@ -8,6 +8,7 @@
 #define DOCOPT_CLI_H
 
 #include <stddef.h>
+#include <string.h>
 
 #include "acquire_lib_export.h"
 

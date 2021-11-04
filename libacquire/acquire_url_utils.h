@@ -5,7 +5,6 @@
 #ifndef LIBACQUIRE_ACQUIRE_URL_UTILS_H
 #define LIBACQUIRE_ACQUIRE_URL_UTILS_H
 
-#include <string.h>
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
@@ -14,6 +13,8 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define strdup _strdup
+#else
+#include "acquire_string_extras.h"
 #endif
 
 extern const char *get_path_from_url(const char *);
@@ -24,8 +25,9 @@ extern bool is_url(const char *);
 
 const char *get_path_from_url(const char *url) {
     size_t i;
+    char *end_possible_query;
     if (url[0] == '\0') return NULL;
-    char *end_possible_query = strdup(url);
+    end_possible_query = strdup(url);
     end_possible_query = strrchr(end_possible_query, '/') + 1;
     if (end_possible_query == NULL)
         return end_possible_query;

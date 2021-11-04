@@ -9,7 +9,6 @@
 #define LIBACQUIRE_ACQUIRE_DOWNLOAD_H
 
 #include <stdlib.h>
-#include <string.h>
 
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
@@ -17,7 +16,6 @@
 #include "acquire_stdbool.h"
 #endif
 #include "acquire_url_utils.h"
-#include "acquire_string_extras.h"
 #include "acquire_fileutils.h"
 #include "acquire_config.h"
 
