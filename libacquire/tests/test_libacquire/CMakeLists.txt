@@ -86,7 +86,7 @@ foreach(EXEC_NAME ${_targets})
           "${EXEC_NAME}"
           PRIVATE
           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-          "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/downloads>"
+          "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
           "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
           "$<INSTALL_INTERFACE:include>"
   )
@@ -115,5 +115,6 @@ endforeach()
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"
         "${All_Header_Files}"
+        "${GREATEST_FILE}"
         DESTINATION
         "include")
