@@ -6,14 +6,27 @@ include("../../../cmake/libacquire_helpers.cmake")
 #######################
 # Dependency download #
 #######################
+
 set(GREATEST_SHA256 "1292593d95c35eeccc89ffa1c91d6fe53b49f81cbf2c2b7758842b7f3186fcc2")
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
+
+file(TO_NATIVE_PATH "${DOWNLOAD_DIR}" DOWNLOAD_DIR)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
+  string(REPLACE "\\" "\\\\" DOWNLOAD_DIR "${DOWNLOAD_DIR}")
+endif ()
+
+
 file(MAKE_DIRECTORY "${DOWNLOAD_DIR}")
 set(GREATEST_BASEFILENAME "greatest.h")
-set(GREATEST_FILE "${PROJECT_BINARY_DIR}/downloads/${GREATEST_BASEFILENAME}")
+set(GREATEST_FILE "${DOWNLOAD_DIR}/${GREATEST_BASEFILENAME}")
+file(TO_NATIVE_PATH "${GREATEST_FILE}" GREATEST_FILE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
+  string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
+endif ()
+
 set(GREATEST_URL "https://raw.githubusercontent.com/silentbicycle/greatest/11a6af1/greatest.h")
 file(DOWNLOAD "${GREATEST_URL}" "${GREATEST_FILE}"
-     EXPECTED_HASH "SHA256=${GREATEST_SHA256}")
+        EXPECTED_HASH "SHA256=${GREATEST_SHA256}")
 
 ################################
 # Configure file (interpolate) #

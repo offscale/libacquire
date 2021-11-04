@@ -65,6 +65,16 @@
 
 #ifdef _MSC_VER
 #define __dead
+#define SIGINFO 29
+/* TODO */
+typedef void* EditLine;
+typedef void* History;
+#define IPTOS_LOWDELAY (-1)
+#define IAC (-1)
+#define WILL (-2)
+#define WONT (-3)
+#define DONT (-4)
+#define DO (-5)
 #endif
 
 void	abort_remote(FILE *);

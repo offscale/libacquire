@@ -74,6 +74,7 @@
 
 #ifdef _MSC_VER
 #define PATH_MAX MAX_PATH
+typedef unsigned long int nfds_t;
 #else
 #include <sys/signal.h>
 

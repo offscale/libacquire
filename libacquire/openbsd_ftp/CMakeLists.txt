@@ -12,6 +12,25 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "ftp.c" "main.c")
 source_group("Source Files" FILES "${Source_Files}")
 
+##############################
+# Sometimes dependent target #
+##############################
+
+include(CheckSymbolExists)
+
+check_symbol_exists(asprintf "stdio.h" HAVE_ASPRINTF)
+if (HAVE_ASPRINTF)
+    add_compile_definitions(HAVE_ASPRINTF)
+endif (HAVE_ASPRINTF)
+check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
+if (HAVE_VA_COPY)
+    add_compile_definitions(HAVE_VA_COPY)
+endif (HAVE_VA_COPY)
+
+if (HAVE_ASPRINTF)
+    add_subdirectory("morestd")
+endif ()
+
 ###############################
 # Executable target formation #
 ###############################

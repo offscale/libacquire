@@ -70,14 +70,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if _MSC_VER
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <WS2tcpip.h>
 #include <signal.h>
+#include  <io.h>
 
 #define HOST_NAME_MAX 256
 #define close closesocket
+#define pclose _pclose
+#define popen _popen
+#define fseeko fseek
 #define sig_t _crt_signal_t
-#define SIGPIPE 13
+#define SIGPIPE (13)
+#define TYPE_A ('A')
+#define TYPE_I ('I')
+#define CONTINUE (-2)
 #define warn(...) fprintf (stderr, __VA_ARGS__)
 #define warnx(...) fprintf (stderr, __VA_ARGS__)
 

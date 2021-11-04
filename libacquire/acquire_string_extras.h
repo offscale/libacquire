@@ -10,12 +10,12 @@
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 
-#if _MSC_VER < 1900
+#if _MSC_VER >= 1900
 
 /* snprintf is implemented in VS 2015 */
 #define HAVE_SNPRINTF_H
 
-#endif /* _MSC_VER < 1900 */
+#endif /* _MSC_VER >= 1900 */
 
 #else
 
@@ -33,7 +33,7 @@
 #define HAVE_SNPRINTF_H
 #define HAVE_STRNCASECMP_H
 
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -57,7 +57,7 @@
  */
 
 #ifndef HAVE_SNPRINTF_H
-/* snprintf is implemented in VS 2015 */
+
 inline int snprintf(char* buffer, size_t count, const char* format, ...)
 {
     int result;

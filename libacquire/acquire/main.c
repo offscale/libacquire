@@ -90,5 +90,4 @@ int main(int argc, char *argv[]) {
                EXIT_SUCCESS : EXIT_FAILURE;
 
     return download(args.url, checksum, args.hash, args.output, false, 0, 0);
-#undef PATH_SEP
 }

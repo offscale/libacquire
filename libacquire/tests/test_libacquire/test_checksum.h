@@ -18,6 +18,7 @@ TEST x_test_sha256_should_be_true(void) {
 }
 
 TEST x_test_sha256_file_should_be_false(void) {
+    printf("sha256(GREATEST_FILE, \"wrong sha256 sum here\"): %zu\n", sha256(GREATEST_FILE, "wrong sha256 sum here"));
     ASSERT_FALSE(sha256(GREATEST_FILE, "wrong sha256 sum here"));
     PASS();
 }

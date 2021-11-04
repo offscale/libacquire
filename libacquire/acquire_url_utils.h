@@ -24,8 +24,11 @@ extern bool is_url(const char *);
 
 const char *get_path_from_url(const char *url) {
     size_t i;
+    if (url[0] == '\0') return NULL;
     char *end_possible_query = strdup(url);
     end_possible_query = strrchr(end_possible_query, '/') + 1;
+    if (end_possible_query == NULL)
+        return end_possible_query;
     for (i = 0; i < strlen(end_possible_query); i++)
         if (end_possible_query[i] == '?' || end_possible_query[i] == '#') {
             end_possible_query[i] = '\0';

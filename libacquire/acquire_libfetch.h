@@ -109,6 +109,22 @@ static long	 http_timeout = TIMEOUT;/* default timeout for HTTP transfers */
 static char	*buf;		/* transfer buffer */
 
 
+#if defined(__linux__) || defined(linux) || defined(__linux) \
+    || defined(__FreeBSD__) || defined(__NetBSD__) \
+    || defined(__OpenBSD__) || defined(__bsdi__) \
+    || defined(__DragonFly__) || defined(macintosh) \
+    || defined(__APPLE__) || defined(__APPLE_CC__)
+#define HAVE_ASPRINTF 1
+#endif
+
+#ifdef HAVE_ASPRINTF
+
+#include <stdio.h>
+
+#else
+#include <bsd-asprintf.h>
+#endif
+
 /*
  * Signal handler
  */

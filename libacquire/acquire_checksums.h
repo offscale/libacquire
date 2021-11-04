@@ -14,6 +14,7 @@
 #include "acquire_stdbool.h"
 #endif
 #include "acquire_config.h"
+#include "acquire_string_extras.h"
 
 extern bool sha256(const char *, const char *);
 
