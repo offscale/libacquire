@@ -28,6 +28,40 @@ Supports:
   - simple API, easy to integrate in your C project (or really any language, they all have nice FFI back to C or a C intermediary language)
   - default cipher selection >= TLS 1.2
 
+## Library dependencies
+
+Dynamically links to shared libraries, defaulting to what's already installed on your OS by default.
+
+*† default on that OS*
+
+*\* WiP, not usable yet*
+
+### Cryptography
+
+  | API     | Package enable flag | OS support |
+  | ------- | ------------------- | ---------- |
+  | [`wincrypt.h`](https://docs.microsoft.com/en-us/windows/win32/api/wincrypt) | `USE_WINCRYPT`  | Windows †
+  | [OpenSSL](https://openssl.org) | `USE_COMMON_CRYPTO` | macOS † |
+  | [OpenSSL](https://openssl.org) | `USE_LIBRESSL`      | All that [LibreSSL](https://libressl.org) supports  |
+  | [OpenSSL](https://openssl.org) | `USE_OPENSSL`       | All that [OpenSSL](https://openssl.org) supports; default † on non macOS and Windows |
+
+### Networking
+
+  | API     | Package enable flag | OS support |
+  | ------- | ------------------- | ---------- |
+  | [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet) | `USE_WININET` | Windows † | 
+  | [libfetch](https://www.freebsd.org/cgi/man.cgi?fetch(3)) | `USE_LIBFETCH`  | FreeBSD † & derivatives; other OS support WiP (try `BUILD_FREEBSD_LIBFETCH`)
+  | \* [OpenBSD's `ftp`](https://man.openbsd.org/ftp.1) | `USE_OPENBSD_FTP`  | OpenBSD † (try `BUILD_OPENBSD_FTP`)
+  | [libcurl](https://curl.se/libcurl)  | `USE_LIBCURL`  | All that [`curl`](https://curl.se) supports; default † on non macOS and Windows
+
+### Extraction
+
+  | API     | Package enable flag | OS support |
+  | ------- | ------------------- | ---------- |
+  | \* [`compressapi.h`](https://docs.microsoft.com/en-us/windows/win32/api/_cmpapi) | `USE_WINCOMPRESSAPI` | Windows †
+  | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † on macOS, Linux, BSD, and SunOS
+  | \* [libarchive](https://libarchive.org) | `USE_LIBARCHIVE` | All that libarchive supports
+
 ## Docker
 
 `Dockerfile`s are provided for convenience, try them out, e.g., by running:
@@ -82,7 +116,7 @@ Want different options for libcurl, OpenSSL, or any of the other dependencies? -
 
   - [CMake](https://cmake.org) (3.19 or later)
   - C compiler (any that work with CMake, and were released within the last 30 years)
-  - Crypto, HTTPS, and unarchiving library (see above for what to override, defaults to OS builtin API)
+  - Crypto, HTTPS, and unarchiving library (see above for what to override and OS support; defaults to OS builtin API)
 
 ### Build
 
