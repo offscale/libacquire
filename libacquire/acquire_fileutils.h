@@ -37,6 +37,8 @@ extern off_t filesize(const char *);
 
 extern bool is_relative(const char *);
 
+extern const char* get_extension(const char *);
+
 #ifdef LIBACQUIRE_IMPLEMENTATION
 bool is_directory(const char *path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -90,6 +92,32 @@ bool is_relative(const char *filename) {
 #else
     return filename[0] != '/';
 #endif
+}
+
+const char* get_extension(const char *filename) {
+    /* Retrieves the file extension(s) from filename
+     *
+     * Redevelopment note: could build a huge set from this, and see if middle extension fits:
+     * https://en.wikipedia.org/wiki/List_of_archive_formats
+     *
+     * Currently: just does anything with .tar.<something> and single extension
+     * */
+
+    char *ext1, *ext0;
+    {
+        char *saveptr1, *split;
+        unsigned short j;
+
+        for (j = 1, split = strdup(filename); ; j++, split = NULL) {
+            char *token = strtok_r(split, ".", &saveptr1);
+            if (token == NULL)
+                break;
+            ext0 = ext1;
+            ext1 = token;
+        }
+    }
+
+    return filename + strlen(filename) - (1 + strlen(ext1) + ((strcmp(ext0, "tar") == 0) ? strlen(ext0) : -1)) - 1;
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
