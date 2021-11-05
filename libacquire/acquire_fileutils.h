@@ -107,7 +107,7 @@ const char* get_extension(const char *filename) {
      * Currently: just does anything with .tar.<something> and single extension
      * */
 
-    char *ext1, *ext0;
+    char *ext1=NULL, *ext0;
     {
         char *saveptr1, *split;
         unsigned short j;
