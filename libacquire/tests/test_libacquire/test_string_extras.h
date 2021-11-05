@@ -1,5 +1,5 @@
-#include <greatest.h>
 #include <acquire_string_extras.h>
+#include <greatest.h>
 #include "config_for_tests.h"
 
 static const char *buffer = "hello world";

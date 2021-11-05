@@ -13,6 +13,7 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define strdup _strdup
+#include <string.h>
 #else
 #include "acquire_string_extras.h"
 #endif
