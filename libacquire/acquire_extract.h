@@ -13,7 +13,7 @@
 enum Archive {
     LIBACQUIRE_ZIP,
     LIBACQUIRE_INFER,
-    UNSUPPORTED
+    LIBACQUIRE_UNSUPPORTED_ARCHIVE
 };
 
 extern int extract_archive(enum Archive, const char *);

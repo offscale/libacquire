@@ -31,7 +31,7 @@ bool is_downloaded(const char *url, enum Checksum checksum,
             return sha256(full_local_fname, hash);
         case LIBACQUIRE_SHA512:
             /* return sha512(full_local_fname, hash); */
-        case UNSUPPORTED:
+        case LIBACQUIRE_UNSUPPORTED_CHECKSUM:
         default:
             return false;
     }

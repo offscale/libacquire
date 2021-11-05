@@ -20,6 +20,10 @@
 #include <io.h>
 #include <wchar.h>
 
+#ifndef strtok_r
+#define strtok_r strtok_s
+#endif /* strtok_r */
+
 #else
 
 #include <sys/stat.h>
