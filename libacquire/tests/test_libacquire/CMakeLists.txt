@@ -50,11 +50,16 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 
 include("../../../cmake/libacquire_helpers.cmake")
 
+message(CRYPTO_LIB = ${CRYPTO_LIB})
 set_crypto_lib()
 
 set_ssl_lib()
 
-set_http_https_lib()
+set(EXTRACT_LIB "")
+set(EXTRACTION_API "")
+set_extract_lib(EXTRACT_LIB EXTRACTION_API)
+
+message(STATUS "test_libacquire/CMakeLists.txt EXTRACT_LIB = ${EXTRACT_LIB}")
 
 include("../../../cmake/FindLibAcquire.cmake")
 
@@ -105,12 +110,12 @@ foreach(EXEC_NAME ${_targets})
   set(installable_libs "${EXEC_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
   if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-  endif ()
+  endif (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND All_Header_Files "${Header_Files}")
   install(TARGETS ${installable_libs}
           DESTINATION "bin"
           EXPORT "${EXEC_NAME}Targets")
-endforeach()
+endforeach(EXEC_NAME ${_targets})
 
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"

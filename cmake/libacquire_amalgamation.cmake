@@ -34,6 +34,7 @@ function (generate_amalgamation_header)
 
             # Archiving
             "libacquire/acquire_extract.h"
+            "libacquire/acquire_zlib.h"
             )
 
     set(amalgam_files "")

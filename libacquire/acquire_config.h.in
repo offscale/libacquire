@@ -28,6 +28,12 @@
 
 #cmakedefine USE_LIBFETCH 1
 
+/* Extraction API */
+
+#cmakedefine USE_PUFF 1
+
+#define EXTRACT_LIB "@EXTRACT_LIB@"
+
 /* Architecture (needed by MSVC) */
 
 #define _@TARGET_ARCH@_

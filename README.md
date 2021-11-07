@@ -32,6 +32,8 @@ Supports:
 
 Dynamically links to shared libraries, defaulting to what's already installed on your OS by default.
 
+If your OS doesn't have the dependency, an optimised dependency free version will be `add_library`'d and depended upon.
+
 *† default on that OS*
 
 *\* WiP, not usable yet*
@@ -61,6 +63,7 @@ Dynamically links to shared libraries, defaulting to what's already installed on
   | \* [`compressapi.h`](https://docs.microsoft.com/en-us/windows/win32/api/_cmpapi) | `USE_WINCOMPRESSAPI` | Windows †
   | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † on macOS, Linux, BSD, and SunOS
   | \* [libarchive](https://libarchive.org) | `USE_LIBARCHIVE` | All that libarchive supports
+  | \* [puff](https://github.com/madler/zlib/tree/master/contrib/puff) | `USE_PUFF` | Supported everywhere; default † fallback
 
 ## Docker
 

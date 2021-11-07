@@ -24,11 +24,19 @@ set_ssl_lib()
 
 set_http_https_lib()
 
+set(EXTRACT_LIB "")
+set(EXTRACTION_API "")
+set_extract_lib(EXTRACT_LIB EXTRACTION_API)
+
 list(APPEND Header_Files "${_Header_Files}")
+
+message(STATUS "libacquire/CMakeLists.txt EXTRACT_LIB = ${EXTRACT_LIB}")
 
 ################################
 # Configure file (interpolate) #
 ################################
+
+message(STATUS "USE_PUFF = ${USE_PUFF}")
 
 configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" @ONLY)
 
