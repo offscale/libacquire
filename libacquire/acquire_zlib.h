@@ -2,7 +2,7 @@
  * WiP, based off https://nachtimwald.com/2019/09/08/making-minizip-easier-to-use
  */
 
-#ifndef !defined(LIBACQUIRE_ACQUIRE_ZLIB_H) && defined(USE_ZLIB) && defined(LIBACQUIRE_IMPLEMENTATION)
+#if !defined(LIBACQUIRE_ACQUIRE_ZLIB_H) && defined(USE_ZLIB) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_ACQUIRE_ZLIB_H
 
 #if defined(HAS_STDBOOL) && !defined(bool)

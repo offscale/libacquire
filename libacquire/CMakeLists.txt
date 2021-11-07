@@ -30,7 +30,9 @@ set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
 list(APPEND Header_Files "${_Header_Files}")
 
-message(STATUS "libacquire/CMakeLists.txt EXTRACT_LIB = ${EXTRACT_LIB}")
+message(STATUS "HTTPS_LIB:\t${HTTPS_LIB}")
+message(STATUS "CRYPTO_LIB:\t${CRYPTO_LIB}")
+message(STATUS "EXTRACT_LIB:\t${EXTRACT_LIB}")
 
 ################################
 # Configure file (interpolate) #

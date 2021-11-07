@@ -55,6 +55,8 @@ set_crypto_lib()
 
 set_ssl_lib()
 
+set_http_https_lib()
+
 set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)

@@ -23,6 +23,12 @@ LIBACQUIRE_LIBRARIES
 # Networking libraries #
 ########################
 
+if (DEFINED HTTPS_LIB)
+    set("USE_${HTTPS_LIB}" 1)
+else ()
+    message(FATAL_ERROR "At least one HTTPS library must be specified for linkage")
+endif ()
+
 if (DEFINED USE_LIBCURL AND DEFINED CURL_LINK_LIBRARIES)
     set(LIBACQUIRE_LIBRARIES "${CURL_LINK_LIBRARIES}")
 elseif (DEFINED USE_WININET)
@@ -47,7 +53,6 @@ if (DEFINED OPENSSL_LIBRARIES)
 endif (DEFINED OPENSSL_LIBRARIES)
 
 if (NOT DEFINED LIBACQUIRE_LIBRARIES)
-    message()
     message(FATAL_ERROR "At least one network library must be specified for linkage")
 endif (NOT DEFINED LIBACQUIRE_LIBRARIES)
 
