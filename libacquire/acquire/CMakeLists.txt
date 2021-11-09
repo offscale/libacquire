@@ -12,24 +12,6 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "cli.c")
 source_group("Source Files" FILES "${Source_Files}" "main.c")
 
-##############################################################
-# CMake options that can be overridden at configuration time #
-##############################################################
-
-option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
-
-set_crypto_lib()
-
-set_ssl_lib()
-
-set_http_https_lib()
-
-set(EXTRACT_LIB "")
-set(EXTRACTION_API "")
-set_extract_lib(EXTRACT_LIB EXTRACTION_API)
-
-include("../../cmake/FindLibAcquire.cmake")
-
 ############################
 # Library target formation #
 ############################

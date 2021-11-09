@@ -19,6 +19,6 @@ int main(int argc, char **argv) {
     RUN_SUITE(fileutils_suite);
     RUN_SUITE(strnstr_suite);
     RUN_SUITE(downloads_suite);
-    RUN_SUITE(miniz_suite);
+    /* RUN_SUITE(miniz_suite); TODO */
     GREATEST_MAIN_END();
 }

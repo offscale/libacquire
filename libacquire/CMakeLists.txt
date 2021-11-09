@@ -18,6 +18,10 @@ option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
 
 set(_Header_Files "")
 
+# Set libacquire dependencies
+
+include("../cmake/libacquire_helpers.cmake")
+
 set_crypto_lib()
 
 set_ssl_lib()
@@ -27,8 +31,6 @@ set_http_https_lib()
 set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
-
-list(APPEND Header_Files "${_Header_Files}")
 
 include("../cmake/FindLibAcquire.cmake")
 

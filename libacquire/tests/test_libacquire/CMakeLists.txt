@@ -54,21 +54,13 @@ include("../../../cmake/libacquire_helpers.cmake")
 
 set_crypto_lib()
 
-message(STATUS "set_crypto_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
-
 set_ssl_lib()
 
-message(STATUS "set_ssl_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
-
 set_http_https_lib()
-
-message(STATUS "set_http_https_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
-
-message(STATUS "set_extract_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 include("../../../cmake/FindLibAcquire.cmake")
 
@@ -87,7 +79,6 @@ foreach(EXEC_NAME ${_targets})
     set(Source_Files "${EXEC_NAME}.c")
     source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-    message(STATUS "LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
     target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "miniz")
   else ()
     set(Header_Files "test_fileutils.h" "test_string_extras.h" "test_checksum.h")
