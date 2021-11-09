@@ -65,22 +65,36 @@ endif (DEFINED USE_WINCRYPT)
 # Compression libraries #
 #########################
 
+macro (download_extract_miniz download_dir)
+    set(MINIZ_VERSION "2.2.0")
+    set(MINIZ_BASENAME "miniz-${MINIZ_VERSION}.zip")
+    get_filename_component(MINIZ_BASENAME_NO_EXT "${MINIZ_BASENAME}" NAME_WLE)
+    set(MINIZ_ZIP_FILE "${download_dir}/${MINIZ_BASENAME}")
+    if (NOT EXISTS "${ZLIB_ZIP_FILE}")
+        file(DOWNLOAD
+                "https://github.com/richgel999/miniz/releases/download/${MINIZ_VERSION}/miniz-${MINIZ_VERSION}.zip"
+                "${MINIZ_ZIP_FILE}"
+                EXPECTED_HASH "SHA256=e4aa5078999c7f7466fa6b8f9848e39ddfff9a4bafc50215764aebe1f13b3841")
+        file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
+                DESTINATION "${download_dir}")
+    endif ()
+
+    file(TO_NATIVE_PATH "${MINIZ_ZIP_FILE}" MINIZ_ZIP_FILE)
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
+        string(REPLACE "\\" "\\\\" MINIZ_ZIP_FILE "${MINIZ_ZIP_FILE}")
+    endif ()
+endmacro (download_extract_miniz download_dir)
+
 function (download_unarchiver library)
-    ###########################################################################
-    # Download and setup puff, a zero-dependency zlib alt from zlib's contrib #
-    ###########################################################################
-    set(LIBRARY_NAME "puff")
+    ###############################################################
+    # Download and setup miniz, a modern zero-dependency zlib alt #
+    ###############################################################
+    set(LIBRARY_NAME "miniz")
 
     if (NOT TARGET "${LIBRARY_NAME}")
         set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/third_party/${LIBRARY_NAME}")
-        file(DOWNLOAD
-                "https://raw.githubusercontent.com/madler/zlib/1005690/contrib/puff/puff.h"
-                "${DOWNLOAD_DIR}/${LIBRARY_NAME}.h"
-                EXPECTED_HASH "SHA256=969b7be2a930db0cdcb19b0e5b29ae6741f5a8f663b6dba6d647e12ec60cfa8e")
-
-        file(DOWNLOAD "https://raw.githubusercontent.com/madler/zlib/03614c5/contrib/puff/puff.c"
-                "${DOWNLOAD_DIR}/${LIBRARY_NAME}.c"
-                EXPECTED_HASH "SHA256=6d0eef92e115a42e570b79d8b07a04af5ccbd6b3f3fbca9cbc61c49db9c9df43")
+        download_extract_miniz("${DOWNLOAD_DIR}")
 
         set(Header_Files "${DOWNLOAD_DIR}/${LIBRARY_NAME}.h")
         source_group("Header Files" FILES "${Header_Files}")
@@ -103,15 +117,20 @@ function (download_unarchiver library)
     set(${library} "${LIBRARY_NAME}" PARENT_SCOPE)
 endfunction (download_unarchiver library)
 
-macro (set_download_unarchiver)
+function (set_download_unarchiver libraries)
     set(archive_lib "")
     download_unarchiver(archive_lib)
-    list(APPEND LIBACQUIRE_LIBRARIES "${archive_lib}")
+    message(STATUS "set_download_unarchiver::b4 libraries = ${libraries}")
+    list(APPEND libraries "${archive_lib}")
+    message(STATUS "set_download_unarchiver::l8 libraries = ${libraries}")
     unset(USE_ZLIB)
+    unset(USE_ZLIB PARENT_SCOPE)
     remove_definitions(-DUSE_ZLIB)
-    set(USE_PUFF 1)
-    set(USE_PUFF "${USE_PUFF}" PARENT_SCOPE)
-endmacro (set_download_unarchiver)
+    set(USE_MINIZ 1)
+    set(USE_MINIZ "${USE_MINIZ}" PARENT_SCOPE)
+    set(EXTRACT_LIB "MINIZ")
+    set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
+endfunction (set_download_unarchiver)
 
 if (DEFINED USE_ZLIB)
     include(FindZLIB)
@@ -125,22 +144,23 @@ if (DEFINED USE_ZLIB)
                 list(APPEND LIBACQUIRE_LIBRARIES "${UNZIP_LIBRARIES}")
                 set(MINIZIP 1)
             else ()
-                set_download_unarchiver()
+                set_download_unarchiver("${LIBACQUIRE_LIBRARIES}")
             endif (UNZIP_FOUND)
         else ()
-            set_download_unarchiver()
+            set_download_unarchiver("${LIBACQUIRE_LIBRARIES}")
         endif (PKG_CONFIG_FOUND)
     else ()
-        set_download_unarchiver()
+        set_download_unarchiver("${LIBACQUIRE_LIBRARIES}")
     endif (ZLIB_FOUND)
+
+    if (EXTRACT_LIB STREQUAL "MINIZ")
+        string(TOLOWER "${EXTRACT_LIB}" EXTRACT_LIB_LOWER)
+        list(APPEND LIBACQUIRE_LIBRARIES "${EXTRACT_LIB_LOWER}")
+    endif ()
 endif (DEFINED USE_ZLIB)
 
-
-message(STATUS "FindLibAcquire.cmake EXTRACT_LIB = ${EXTRACT_LIB}")
 if (DEFINED EXTRACT_LIB)
-    set("USE_${EXTRACT_LIB}" 1)
     set("USE_${EXTRACT_LIB}" "1" PARENT_SCOPE)
-    message(STATUS "USE_${EXTRACT_LIB} is ${USE_${EXTRACT_LIB}}")
 else ()
     message(FATAL_ERROR "Compression API not set, did you run `set_extract_lib()`?")
 endif ()

@@ -17,6 +17,12 @@
 
 #define GREATEST_FILE "@GREATEST_FILE@"
 
+#define ZLIB_ZIP_FILE "@ZLIB_ZIP_FILE@"
+
+#define MINIZ_ZIP_FILE "@MINIZ_ZIP_FILE@"
+
+#define MINIZ_BASENAME_NO_EXT "@MINIZ_BASENAME_NO_EXT@"
+
 #define _@TARGET_ARCH@_
 
 #endif

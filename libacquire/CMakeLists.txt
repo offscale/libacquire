@@ -30,15 +30,15 @@ set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
 list(APPEND Header_Files "${_Header_Files}")
 
-message(STATUS "HTTPS_LIB:\t${HTTPS_LIB}")
-message(STATUS "CRYPTO_LIB:\t${CRYPTO_LIB}")
-message(STATUS "EXTRACT_LIB:\t${EXTRACT_LIB}")
+include("../cmake/FindLibAcquire.cmake")
+
+foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
+  message(STATUS "[libacquire] ${_library}_LIB:\t${${_library}_LIB}")
+endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
 ################################
 # Configure file (interpolate) #
 ################################
-
-message(STATUS "USE_PUFF = ${USE_PUFF}")
 
 configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" @ONLY)
 
@@ -50,8 +50,6 @@ source_group("Header Files" FILES "${Header_Files}")
 
 add_library("${LIBRARY_NAME}" INTERFACE)
 target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
-
-include("../cmake/FindLibAcquire.cmake")
 
 set(_include_dirs
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"

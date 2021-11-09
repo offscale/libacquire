@@ -16,6 +16,6 @@ enum Archive {
     LIBACQUIRE_UNSUPPORTED_ARCHIVE
 };
 
-extern int extract_archive(enum Archive, const char *);
+extern int extract_archive(enum Archive, const char *, const char *);
 
 #endif /* LIBACQUIRE_ACQUIRE_EXTRACT_H */

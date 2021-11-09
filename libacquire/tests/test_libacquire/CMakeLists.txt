@@ -3,9 +3,9 @@ get_filename_component(exec_name "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 include("../../../cmake/FindCurlCustom.cmake")
 include("../../../cmake/libacquire_helpers.cmake")
 
-#######################
-# Dependency download #
-#######################
+#########################
+# Dependencies download #
+#########################
 
 set(GREATEST_SHA256 "1292593d95c35eeccc89ffa1c91d6fe53b49f81cbf2c2b7758842b7f3186fcc2")
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
@@ -14,7 +14,6 @@ file(TO_NATIVE_PATH "${DOWNLOAD_DIR}" DOWNLOAD_DIR)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
   string(REPLACE "\\" "\\\\" DOWNLOAD_DIR "${DOWNLOAD_DIR}")
 endif ()
-
 
 file(MAKE_DIRECTORY "${DOWNLOAD_DIR}")
 set(GREATEST_BASEFILENAME "greatest.h")
@@ -35,11 +34,14 @@ file(DOWNLOAD "${GREATEST_URL}" "${GREATEST_FILE}"
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" _CMAKE_CURRENT_SOURCE_DIR)
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_LIST_FILE}" _CMAKE_CURRENT_LIST_FILE)
 file(TO_NATIVE_PATH "${GREATEST_FILE}" GREATEST_FILE)
+download_extract_miniz("${DOWNLOAD_DIR}")
+file(TO_NATIVE_PATH "${ZLIB_ZIP_FILE}" ZLIB_ZIP_FILE)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
   string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_SOURCE_DIR "${_CMAKE_CURRENT_SOURCE_DIR}")
   string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_LIST_FILE "${_CMAKE_CURRENT_LIST_FILE}")
   string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
+  string(REPLACE "\\" "\\\\" ZLIB_ZIP_FILE "${ZLIB_ZIP_FILE}")
 endif ()
 
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
@@ -50,23 +52,32 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 
 include("../../../cmake/libacquire_helpers.cmake")
 
-message(CRYPTO_LIB = ${CRYPTO_LIB})
 set_crypto_lib()
+
+message(STATUS "set_crypto_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 set_ssl_lib()
 
+message(STATUS "set_ssl_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+
 set_http_https_lib()
+
+message(STATUS "set_http_https_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
-message(STATUS "test_libacquire/CMakeLists.txt EXTRACT_LIB = ${EXTRACT_LIB}")
+message(STATUS "set_extract_lib LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 include("../../../cmake/FindLibAcquire.cmake")
 
 set(_targets "${exec_name}" "test_amalgamation")
 set(All_Header_Files "${GREATEST_FILE}")
+
+foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
+  message(STATUS "[test_libacquire] ${_library}_LIB: \t${${_library}_LIB}")
+endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
 foreach(EXEC_NAME ${_targets})
   if (EXEC_NAME STREQUAL "test_amalgamation")
@@ -76,7 +87,8 @@ foreach(EXEC_NAME ${_targets})
     set(Source_Files "${EXEC_NAME}.c")
     source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-    target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}")
+    message(STATUS "LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+    target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "miniz")
   else ()
     set(Header_Files "test_fileutils.h" "test_string_extras.h" "test_checksum.h")
     source_group("Header Files" FILES "${Header_Files}")
