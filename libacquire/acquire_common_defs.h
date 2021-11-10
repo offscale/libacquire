@@ -10,19 +10,16 @@
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
-#if defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
 #include "acquire_stdbool.h"
 #endif /* defined(HAS_STDBOOL) && !defined(bool) */
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+
 #include "acquire_errors.h"
 #include "acquire_url_utils.h"
 #include "acquire_fileutils.h"
 #include "acquire_checksums.h"
 #include "acquire_download.h"
 
-#if defined(_AIX)
+#ifdef _AIX
 #include <sys/limits.h>
 #elif defined(__FreeBSD__) || defined(__NetBSD__) \
  || defined(__OpenBSD__) || defined(__bsdi__) \
@@ -59,12 +56,16 @@
 
 #endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 22) */
 
+#endif /* _AIX */
+
 #ifndef NAME_MAX
+
 #ifdef PATH_MAX
 #define NAME_MAX PATH_MAX
 #else
 #define NAME_MAX 4096
 #endif /* PATH_MAX */
+
 #endif /* NAME_MAX */
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
