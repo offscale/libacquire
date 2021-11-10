@@ -1,7 +1,7 @@
 get_filename_component(exec_name "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 
-include("../../../cmake/FindCurlCustom.cmake")
-include("../../../cmake/libacquire_helpers.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/FindCurlCustom.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 
 #########################
 # Dependencies download #
@@ -50,7 +50,7 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 # Set libacquire dependencies #
 ###############################
 
-include("../../../cmake/libacquire_helpers.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 
 set_crypto_lib()
 
@@ -62,7 +62,7 @@ set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
-include("../../../cmake/FindLibAcquire.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
 set(_targets "${exec_name}" "test_amalgamation")
 set(All_Header_Files "${GREATEST_FILE}")

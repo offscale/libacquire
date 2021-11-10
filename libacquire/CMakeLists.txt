@@ -1,8 +1,8 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-include("../cmake/FindCurlCustom.cmake")
-include("../cmake/libacquire_helpers.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/FindCurlCustom.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 
 set(Header_Files "acquire_download.h")
 if (NOT HAS_STDBOOL AND NOT MSVC)
@@ -20,7 +20,7 @@ set(_Header_Files "")
 
 # Set libacquire dependencies
 
-include("../cmake/libacquire_helpers.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 
 set_crypto_lib()
 
@@ -32,7 +32,7 @@ set(EXTRACT_LIB "")
 set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
-include("../cmake/FindLibAcquire.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
 foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
   message(STATUS "[libacquire] ${_library}_LIB:\t${${_library}_LIB}")

@@ -30,8 +30,8 @@ function (set_networking_lib HTTPS_LIBRARY)
         message(FATAL_ERROR "At least one HTTPS library must be specified for linkage")
     endif ()
 
-    message(USE_LIBCURL = ${USE_LIBCURL})
-    message(CURL_LINK_LIBRARIES = ${CURL_LINK_LIBRARIES})
+    message("USE_LIBCURL = ${USE_LIBCURL}")
+    message("CURL_LINK_LIBRARIES = ${CURL_LINK_LIBRARIES}")
 
     if (DEFINED USE_LIBCURL AND DEFINED CURL_LINK_LIBRARIES)
         set(HTTPS_LIBRARY "${CURL_LINK_LIBRARIES}" PARENT_SCOPE)

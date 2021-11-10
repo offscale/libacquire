@@ -137,7 +137,7 @@ add_subdirectory("libacquire/acquire")
 # Generate amalgamation header #
 ################################
 
-include("cmake/libacquire_amalgamation.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_amalgamation.cmake")
 
 generate_amalgamation_header()
 
