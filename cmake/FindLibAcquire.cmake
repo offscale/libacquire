@@ -47,8 +47,7 @@ function (set_networking_lib HTTPS_LIBRARY)
     endif ()
 endfunction (set_networking_lib HTTPS_LIBRARY)
 
-set(HTTPS_LIBRARY "")
-set_networking_lib("${HTTPS_LIBRARY}")
+set_networking_lib(HTTPS_LIBRARY)
 
 if (DEFINED HTTPS_LIBRARY AND NOT HTTPS_LIBRARY STREQUAL "")
     list(APPEND LIBACQUIRE_LIBRARIES "${HTTPS_LIBRARY}")
@@ -61,7 +60,7 @@ message(STATUS "net LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 # Cryptographic libraries #
 ###########################
 
-function (set_cryptography_lib)
+function (set_cryptography_lib CRYPTO_LIBRARIES)
     if (NOT DEFINED CRYPTO_LIB)
         message(FATAL_ERROR "Crypto library could not be inferred so must be specified for linkage")
     endif ()
@@ -78,9 +77,10 @@ function (set_cryptography_lib)
         list(APPEND CRYPTO_LIBRARIES "advapi32")
         list(APPEND CRYPTO_LIBRARIES "crypt32")
     endif (DEFINED USE_WINCRYPT)
+    set(CRYPTO_LIBRARIES "${CRYPTO_LIBRARIES}" PARENT_SCOPE)
 endfunction (set_cryptography_lib)
 
-set_cryptography_lib()
+set_cryptography_lib(CRYPTO_LIBRARIES)
 
 if (DEFINED CRYPTO_LIBRARIES AND NOT CRYPTO_LIBRARIES STREQUAL "")
     list(APPEND LIBACQUIRE_LIBRARIES "${CRYPTO_LIBRARIES}")

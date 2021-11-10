@@ -28,8 +28,6 @@ set_ssl_lib()
 
 set_http_https_lib()
 
-set(EXTRACT_LIB "")
-set(EXTRACTION_API "")
 set_extract_lib(EXTRACT_LIB EXTRACTION_API)
 
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
