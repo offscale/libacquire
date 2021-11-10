@@ -78,13 +78,16 @@ function (set_cryptography_lib)
         list(APPEND CRYPTO_LIBRARIES "advapi32")
         list(APPEND CRYPTO_LIBRARIES "crypt32")
     endif (DEFINED USE_WINCRYPT)
-
-    if (DEFINED CRYPTO_LIBRARIES AND NOT CRYPTO_LIBRARIES STREQUAL "")
-        list(APPEND LIBACQUIRE_LIBRARIES "${CRYPTO_LIBRARIES}")
-    else ()
-        message(FATAL_ERROR "CRYPTO_LIBRARIES not set for linkage")
-    endif ()
 endfunction (set_cryptography_lib)
+
+set_cryptography_lib()
+
+if (DEFINED CRYPTO_LIBRARIES AND NOT CRYPTO_LIBRARIES STREQUAL "")
+    list(APPEND LIBACQUIRE_LIBRARIES "${CRYPTO_LIBRARIES}")
+elseif (NOT DEFINED USE_COMMON_CRYPTO)  # Link not needed
+    message(FATAL_ERROR "CRYPTO_LIBRARIES not set for linkage")
+endif ()
+
 message(STATUS "crypt LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 #########################
@@ -198,7 +201,6 @@ function (set_extraction_api EXTRACT_LIBRARIES)
         set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
         set(EXTRACT_LIBRARIES "miniz" PARENT_SCOPE)
     endif (DEFINED USE_ZLIB)
-    message("EXTRACT_LIBRARIES within func: ${EXTRACT_LIBRARIES}")
 endfunction (set_extraction_api)
 
 set_extraction_api("${EXTRACT_LIBRARIES}")
