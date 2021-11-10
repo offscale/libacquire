@@ -155,4 +155,4 @@ FREEBSD_LIBFETCH_EXPORT extern int		 fetchRestartCalls;
 /* Extra verbosity */
 FREEBSD_LIBFETCH_EXPORT extern int		 fetchDebug;
 
-#endif
+#endif /* ! _FETCH_H_INCLUDED */

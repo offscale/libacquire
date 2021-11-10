@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 #include "acquire_url_utils.h"
 #include "acquire_fileutils.h"
 #include "acquire_config.h"
@@ -25,7 +25,7 @@
 #include "acquire_openssl.h"
 #elif defined(USE_WINCRYPT)
 #include "acquire_wincrypt.h"
-#endif
+#endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
 extern const char *get_download_dir();
 
@@ -45,4 +45,4 @@ extern int download_many(
         const char *, bool, size_t, size_t
 );
 
-#endif /* LIBACQUIRE_ACQUIRE_DOWNLOAD_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_DOWNLOAD_H */

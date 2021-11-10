@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
-#endif
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 #include "acquire_errors.h"
 #include "acquire_url_utils.h"
 #include "acquire_fileutils.h"
@@ -37,7 +37,7 @@
 #undef ____CC_SUPPORTS_WARNING
 #else
 #include <sys/syslimits.h>
-#endif
+#endif /* __CC_SUPPORTS_WARNING */
 
 #elif defined(__HAIKU__)
 #include <system/user_runtime.h>
@@ -46,36 +46,39 @@
 #include <linux/version.h>
 
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 22)
+
 #include <linux/limits.h>
-#endif
+
 #elif defined(sun) || defined(__sun) || defined(__SVR4) || defined(__svr4__)
+
 #include <sys/param.h>
+
 #else
 
 #include <limits.h>
 
-#endif
+#endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 22) */
 
 #ifndef NAME_MAX
 #ifdef PATH_MAX
 #define NAME_MAX PATH_MAX
 #else
 #define NAME_MAX 4096
-#endif
-#endif
+#endif /* PATH_MAX */
+#endif /* NAME_MAX */
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define PATH_SEP "\\"
 #else
 #define PATH_SEP "/"
-#endif
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
 #ifndef MAX_FILENAME
 #define MAX_FILENAME 255
-#endif
+#endif /* ! MAX_FILENAME */
 
 #ifndef NAME_MAX
 #define NAME_MAX 4096
-#endif
+#endif /* ! NAME_MAX */
 
-#endif /* LIBACQUIRE_ACQUIRE_COMMON_DEFS_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_COMMON_DEFS_H */

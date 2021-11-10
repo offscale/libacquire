@@ -18,4 +18,4 @@ enum Archive {
 
 extern int extract_archive(enum Archive, const char *, const char *);
 
-#endif /* LIBACQUIRE_ACQUIRE_EXTRACT_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_EXTRACT_H */

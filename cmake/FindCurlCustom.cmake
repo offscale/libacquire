@@ -18,6 +18,14 @@ LINK_LIBRARIES
 function(get_curl LINK_LIBRARIES)
     set(CURL_NO_OLDIES ON)
 
+    if (VCPKG_TOOLCHAIN)  # Overly specific, should be same for conan, Buckaroo, Hunter, &etc.
+        find_package(CURL CONFIG QUIET)
+        if (CURL_FOUND)
+            set(${LINK_LIBRARIES} "CURL::libcurl" PARENT_SCOPE)
+            return()
+        endif ()
+    endif ()
+
     # curl version >=7.57 can have config files
     find_package(CURL QUIET COMPONENTS libcurl CONFIG)
 

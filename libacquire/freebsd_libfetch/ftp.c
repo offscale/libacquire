@@ -259,7 +259,7 @@ ftp_pwd(conn_t *conn, char *pwd, size_t pwdlen)
 	*dst = '\0';
 #if 0
 	DEBUGF("pwd: [%s]\n", pwd);
-#endif
+#endif /* 0 */
 	return (FTP_OK);
 }
 
@@ -292,7 +292,7 @@ ftp_cwd(conn_t *conn, const char *file)
 #if 0
 		DEBUGF("have: [%.*s|%s]\n", i, pwd, pwd + i);
 		DEBUGF("want: [%.*s|%s]\n", i, file, file + i);
-#endif
+#endif /* 0 */
 		/* Keep going up a dir until we have a matching prefix. */
 		if (pwd[i] == '\0' && (file[i - 1] == '/' || file[i] == '/'))
 			break;

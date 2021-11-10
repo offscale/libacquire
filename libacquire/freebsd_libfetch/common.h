@@ -37,7 +37,7 @@
 
 #ifndef INFTIM
 #define INFTIM (-1)
-#endif
+#endif /* ! INFTIM */
 
 #define FTP_DEFAULT_PORT	21
 #define HTTP_DEFAULT_PORT	80
@@ -50,7 +50,7 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#endif
+#endif /* WITH_SSL */
 
 /* Connection */
 typedef struct fetchconn conn_t;
@@ -65,7 +65,7 @@ struct fetchconn {
 	SSL_CTX		*ssl_ctx;	/* SSL context */
 	X509		*ssl_cert;	/* server certificate */
 	const SSL_METHOD *ssl_meth;	/* SSL method */
-#endif
+#endif /* WITH_SSL */
 	int		 ref;		/* reference count */
 };
 
@@ -126,7 +126,7 @@ conn_t		*fetch_reopen(int);
 conn_t		*fetch_ref(conn_t *);
 #ifdef WITH_SSL
 int		 fetch_ssl_cb_verify_crt(int, X509_STORE_CTX*);
-#endif
+#endif /* WITH_SSL */
 int		 fetch_ssl(conn_t *, const struct url *, int);
 ssize_t		 fetch_read(conn_t *, char *, size_t);
 int		 fetch_getln(conn_t *);
@@ -156,7 +156,7 @@ int		 fetch_no_proxy_match(const char *);
 	do {								\
 		/* nothing */						\
 	} while (0)
-#endif
+#endif /* ! NDEBUG */
 
 /*
  * I don't really like exporting http_request() and ftp_request(),

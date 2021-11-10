@@ -10,15 +10,15 @@
 #include <acquire_openssl.h>
 #elif defined(USE_WINCRYPT)
 #include <acquire_wincrypt.h>
-#endif
+#endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
-#if defined(USE_LIBCURL)
+#ifdef USE_LIBCURL
 #include <acquire_libcurl.h>
 #elif defined(USE_WININET)
 #include <acquire_wininet.h>
 #elif defined(USE_LIBFETCH)
 #include <acquire_libfetch.h>
-#endif
+#endif /* USE_LIBCURL */
 
 TEST x_test_file_downloads(void) {
     const int download_resp = download(GREATEST_URL, LIBACQUIRE_SHA256,

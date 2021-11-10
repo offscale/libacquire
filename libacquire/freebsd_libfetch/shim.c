@@ -13,7 +13,7 @@ char *strchrnul(const char *s, int c)
 #ifdef __GNUC__
     typedef size_t __attribute__((__may_alias__)) word;
     const word *w;
-#endif
+#endif /* __GNUC__ */
     c = (unsigned char)c;
     if (!c) return (char *)s + strlen(s);
 
@@ -27,7 +27,7 @@ char *strchrnul(const char *s, int c)
         }
     }
     s = (void *)w;
-#endif
+#endif /* __GNUC__ */
     for (; *s && *(unsigned char *)s != c; s++);
     return (char *)s;
 }
@@ -57,4 +57,4 @@ reallocarray(void *optr, size_t nmemb, size_t size)
     }
     return realloc(optr, size * nmemb);
 }
-#endif /* HAVE_REALLOCARRAY */
+#endif /* ! HAVE_REALLOCARRAY */

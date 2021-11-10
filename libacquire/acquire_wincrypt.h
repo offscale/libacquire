@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 
 #define SHA256_BLOCK_BYTES       64          /* block size in bytes */
 #define SHA512_BLOCK_BYTES       (SHA256_BLOCK_BYTES*2)

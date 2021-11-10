@@ -35,7 +35,7 @@
 #ifdef _MSC_VER
 #define __BEGIN_DECLS
 #define __END_DECLS
-#endif
+#endif /* _MSC_VER */
 
 #include <sys/types.h>
 
@@ -55,7 +55,7 @@ void		 sl_free(StringList *, int);
 char		*sl_find(StringList *, char *);
 __END_DECLS
 
-#endif /* _STRINGLIST_H */
+#endif /* ! _STRINGLIST_H */
 
-#endif /* !SMALL */
+#endif /* ! SMALL */
 

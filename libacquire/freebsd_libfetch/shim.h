@@ -23,4 +23,4 @@ reallocarray(void *optr, size_t nmemb, size_t size);
 #define __DECONST(type, var)    __CAST_AWAY_QUALIFIER(var, const, type)
 #endif
 
-#endif /* LIBACQUIRE_SHIM_H */
+#endif /* ! LIBACQUIRE_SHIM_H */

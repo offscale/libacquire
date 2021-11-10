@@ -47,7 +47,7 @@ __FBSDID("$FreeBSD$");
 
 #ifndef IPPORT_MAX
 #define        IPPORT_MAX              65535
-#endif
+#endif /* ! IPPORT_MAX */
 
 /* end custom shim */
 

@@ -12,7 +12,7 @@ typedef int num_type;
 #else
 #define NUM_FORMAT "%lu"
 typedef unsigned long num_type;
-#endif
+#endif /* _MSC_VER */
 
 TEST x_is_directory_should_be_true(void) {
     const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);

@@ -55,5 +55,5 @@ bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
 

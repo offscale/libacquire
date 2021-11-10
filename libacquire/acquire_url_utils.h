@@ -9,14 +9,14 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define strdup _strdup
 #include <string.h>
 #else
 #include "acquire_string_extras.h"
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
 extern const char *get_path_from_url(const char *);
 
@@ -53,4 +53,4 @@ bool is_url(const char *maybe_url) {
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* LIBACQUIRE_ACQUIRE_URL_UTILS_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_URL_UTILS_H */

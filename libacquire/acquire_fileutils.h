@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
@@ -22,14 +22,14 @@
 
 #ifndef strtok_r
 #define strtok_r strtok_s
-#endif /* strtok_r */
+#endif /* ! strtok_r */
 
 #else
 
 #include <sys/stat.h>
 #include <unistd.h>
 
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
 extern bool is_directory(const char *);
 
@@ -55,7 +55,7 @@ bool is_directory(const char *path) {
     if (stat(path, &statbuf) != 0)
         return false;
     return S_ISDIR(statbuf.st_mode);
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 }
 
 bool is_file(const char *path) {
@@ -68,7 +68,7 @@ bool is_file(const char *path) {
     if (stat(path, &statbuf) != 0)
         return false;
     return S_ISREG(statbuf.st_mode);
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 }
 
 bool exists(const char *path) {
@@ -77,7 +77,7 @@ bool exists(const char *path) {
         _access
 #else
             access
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
                     (path, 0) != -1;
 }
 
@@ -95,7 +95,7 @@ bool is_relative(const char *filename) {
     return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
 #else
     return filename[0] != '/';
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 }
 
 const char* get_extension(const char *filename) {
@@ -126,4 +126,4 @@ const char* get_extension(const char *filename) {
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* LIBACQUIRE_ACQUIRE_FILEUTILS_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_FILEUTILS_H */

@@ -39,7 +39,8 @@
 
 #define SHA256_BLOCK_BYTES       64          /* block size in bytes */
 #define SHA512_BLOCK_BYTES       (SHA256_BLOCK_BYTES*2)
-#endif
+
+#endif /* USE_COMMON_CRYPTO */
 
 #include <stdio.h>
 #include <errno.h>
@@ -62,7 +63,7 @@ int sha256_file(const char *filename,
     fopen_s(&fp, filename, "r");
 #else
     fp = fopen(filename, "r");
-#endif
+#endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
     if(!fp) {
         fprintf(stderr, "Could not open %s: %s", filename, strerror(errno));
@@ -113,7 +114,7 @@ int sha512_file(const char *filename,
     fopen_s(&fp, filename, "r");
 #else
     fp = fopen(filename, "r");
-#endif
+#endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
     if(!fp) {
         fprintf(stderr, "Could not open %s: %s", filename, strerror(errno));

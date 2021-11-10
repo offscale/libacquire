@@ -83,6 +83,6 @@ function (generate_amalgamation_header)
             "#ifndef LIBACQUIRE_H\n"
             "#define LIBACQUIRE_H\n"
             "${all_contents_filtered}\n"
-            "#endif /* LIBACQUIRE_H */\n"
+            "#endif /* ! LIBACQUIRE_H */\n"
             )
 endfunction (generate_amalgamation_header)

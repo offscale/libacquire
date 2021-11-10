@@ -72,7 +72,7 @@ __FBSDID("$FreeBSD$");
 #include "freebsd_libfetch/fetch.h"
 #else
 #include <fetch.h>
-#endif
+#endif /* USE_MY_LIBFETCH */
 
 #define TIMEOUT		120
 
@@ -121,8 +121,10 @@ static char	*buf;		/* transfer buffer */
 #include <stdio.h>
 
 #else
+
 #include <bsd-asprintf.h>
-#endif
+
+#endif /* HAVE_ASPRINTF */
 
 /*
  * Signal handler
@@ -626,7 +628,7 @@ fetch(char *URL, const char *path)
                 fopen_s(&of, path, "rb");
             #else
                 of = fopen(path, "rb");
-            #endif
+            #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
             if (of == NULL) {
                 warn("%s: fopen()", path);

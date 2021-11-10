@@ -86,7 +86,7 @@ __FBSDID("$FreeBSD$");
 #define MD5Final(md, c) MD5_Final(md, c)
 #else
 #include <md5.h>
-#endif
+#endif /* WITH_SSL */
 
 #include <netinet/in.h>
 #include <netinet/tcp.h>

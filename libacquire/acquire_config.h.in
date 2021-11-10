@@ -38,4 +38,4 @@
 
 #define _@TARGET_ARCH@_
 
-#endif /* LIBACQUIRE_VERSION_H */
+#endif /* ! LIBACQUIRE_VERSION_H */

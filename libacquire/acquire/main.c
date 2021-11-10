@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     if (check != NULL && args.check == 0) args.check = (bool) check;
     if (args.output != 0) {
         if (args.directory != 0) snprintf(args.output, NAME_MAX + 1,
-                                          "%s"PATH_SEP"%s", args.directory, args.output);
+                                          "%s"PATH_SEP"%s", args.directory, strdup(args.output));
     }
     else if (args.directory == 0) args.output = args.directory = TMPDIR;
     if (args.url == 0) {

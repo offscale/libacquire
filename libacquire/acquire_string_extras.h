@@ -173,4 +173,4 @@ char *strcasestr(const char *h, const char *n)
 
 #endif /* ! HAVE_STRCASESTR_H */
 
-#endif /* LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */
+#endif /* ! LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */
