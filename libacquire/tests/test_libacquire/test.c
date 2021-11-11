@@ -8,7 +8,7 @@
 #include "test_download.h"
 #include "test_fileutils.h"
 #include "test_string_extras.h"
-#include "test_miniz.h"
+/* #include "test_miniz.h" TODO */
 
 /* Add definitions that need to be in the test runner's main file. */
 GREATEST_MAIN_DEFS();
