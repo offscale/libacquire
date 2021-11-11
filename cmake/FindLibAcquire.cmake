@@ -98,13 +98,32 @@ macro (download_extract_miniz download_dir)
     set(MINIZ_BASENAME "miniz-${MINIZ_VERSION}.zip")
     get_filename_component(MINIZ_BASENAME_NO_EXT "${MINIZ_BASENAME}" NAME_WLE)
     set(MINIZ_ZIP_FILE "${download_dir}/${MINIZ_BASENAME}")
-    if (NOT EXISTS "${ZLIB_ZIP_FILE}")
+    if (NOT EXISTS "${MINIZ_ZIP_FILE}")
         file(DOWNLOAD
                 "https://github.com/richgel999/miniz/releases/download/${MINIZ_VERSION}/miniz-${MINIZ_VERSION}.zip"
                 "${MINIZ_ZIP_FILE}"
                 EXPECTED_HASH "SHA256=e4aa5078999c7f7466fa6b8f9848e39ddfff9a4bafc50215764aebe1f13b3841")
         file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
                 DESTINATION "${download_dir}")
+    endif ()
+
+    if (NOT EXISTS "${download_dir}/zip.h")
+        file(DOWNLOAD
+                "https://raw.githubusercontent.com/kuba--/zip/5b3f387/src/zip.h"
+                "${download_dir}/zip.h"
+                EXPECTED_HASH "SHA256=f2f9ecb2a5c9d9fa489c278c011aedb4752567b17d41912b57eb148f05774e4e")
+
+        # My C89 compatible PR
+        file(DOWNLOAD
+                "https://raw.githubusercontent.com/kuba--/zip/42dc4ce/src/zip.c"
+                "${download_dir}/zip.c"
+                EXPECTED_HASH "SHA256=ceafe6f3a7788697eb639ccc17788f2d9618ff6a573b96a6fb9db044eb19a7b7")
+
+        # Looks like they changed miniz, but are still on 2.2.0
+        file(DOWNLOAD
+                "https://raw.githubusercontent.com/kuba--/zip/5b3f387/src/miniz.h"
+                "${download_dir}/miniz.h"
+                EXPECTED_HASH "SHA256=ce02b94490b7a24cc24d2426869a04239ff47dd29d133f9a57625afc0f4a0e87")
     endif ()
 
     file(TO_NATIVE_PATH "${MINIZ_ZIP_FILE}" MINIZ_ZIP_FILE)
@@ -125,10 +144,10 @@ function (download_unarchiver EXTRACT_LIB)
         set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}")
         download_extract_miniz("${DOWNLOAD_DIR}")
 
-        set(Header_Files "${DOWNLOAD_DIR}/${EXTRACT_LIB}.h")
+        set(Header_Files "${DOWNLOAD_DIR}/${EXTRACT_LIB}.h" "${DOWNLOAD_DIR}/zip.h")
         source_group("Header Files" FILES "${Header_Files}")
 
-        set(Source_Files "${DOWNLOAD_DIR}/${EXTRACT_LIB}.c")
+        set(Source_Files "${DOWNLOAD_DIR}/zip.c")
         source_group("Source Files" FILES "${Source_Files}")
 
         add_library("${EXTRACT_LIB}" "${Header_Files}" "${Source_Files}")

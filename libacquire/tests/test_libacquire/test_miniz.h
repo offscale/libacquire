@@ -9,14 +9,19 @@
 #include <acquire_fileutils.h>
 
 TEST x_test_should_extract_zip_with_miniz(void) {
-    ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, DOWNLOAD_DIR) != EXIT_SUCCESS);
+    ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, DOWNLOAD_DIR PATH_SEP "examples") != EXIT_SUCCESS);
+
+#define EXTRACT_DIR DOWNLOAD_DIR PATH_SEP "examples" PATH_SEP
 
     /* Could do the whole `find zlib-1.2.11 -type f | sha256sum` test to be proper */
-    ASSERT_FALSE(!is_file(DOWNLOAD_DIR PATH_SEP MINIZ_BASENAME_NO_EXT "readme.md"));
-    ASSERT_FALSE(!is_file(DOWNLOAD_DIR PATH_SEP MINIZ_BASENAME_NO_EXT "miniz.h"));
-    ASSERT_FALSE(!is_file(DOWNLOAD_DIR PATH_SEP MINIZ_BASENAME_NO_EXT "miniz.c"));
-    ASSERT_FALSE(!is_file(DOWNLOAD_DIR PATH_SEP MINIZ_BASENAME_NO_EXT "ChangeLog.md"));
-    ASSERT_FALSE(!is_file(DOWNLOAD_DIR PATH_SEP MINIZ_BASENAME_NO_EXT "LICENSE"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR "readme.md"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR "miniz.h"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR "miniz.c"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR "ChangeLog.md"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR "LICENSE"));
+    ASSERT_FALSE(!is_directory(EXTRACT_DIR "examples"));
+
+#undef EXTRACT_DIR
 
     PASS();
 }

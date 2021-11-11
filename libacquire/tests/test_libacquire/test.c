@@ -8,7 +8,7 @@
 #include "test_download.h"
 #include "test_fileutils.h"
 #include "test_string_extras.h"
-/* #include "test_miniz.h" TODO */
+#include "test_miniz.h"
 
 /* Add definitions that need to be in the test runner's main file. */
 GREATEST_MAIN_DEFS();
@@ -19,6 +19,6 @@ int main(int argc, char **argv) {
     RUN_SUITE(fileutils_suite);
     RUN_SUITE(strnstr_suite);
     RUN_SUITE(downloads_suite);
-    /* RUN_SUITE(miniz_suite); TODO */
+    RUN_SUITE(miniz_suite);
     GREATEST_MAIN_END();
 }

@@ -61,9 +61,9 @@ If your OS doesn't have the dependency, an optimised dependency free version wil
   | API     | Package enable flag | OS support |
   | ------- | ------------------- | ---------- |
   | \* [`compressapi.h`](https://docs.microsoft.com/en-us/windows/win32/api/_cmpapi) | `USE_WINCOMPRESSAPI` | Windows †
-  | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † on macOS, Linux, BSD, and SunOS
+  | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † (if installed) on macOS, Linux, BSD, and SunOS
   | \* [libarchive](https://libarchive.org) | `USE_LIBARCHIVE` | All that libarchive supports
-  | \* [puff](https://github.com/madler/zlib/tree/master/contrib/puff) | `USE_PUFF` | Supported everywhere; default † fallback
+  | [miniz](https://github.com/richgel999/miniz) with [zip](https://github.com/kuba--/zip) API | `USE_MINIZ` | All that miniz + zip supports; default † fallback
 
 ## Docker
 
