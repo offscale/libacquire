@@ -37,7 +37,7 @@ endif ()
 
 add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
-target_link_libraries("${EXEC_NAME}" INTERFACE "${PROJECT_LOWER_NAME}_compiler_flags")
+target_link_libraries("${EXEC_NAME}" INTERFACE "${PROJECT_NAME}_compiler_flags")
 
 #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBRARY_NAME}")
 
@@ -60,7 +60,7 @@ set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
-set(installable_libs "${EXEC_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
+set(installable_libs "${EXEC_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif ()

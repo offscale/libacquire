@@ -34,7 +34,7 @@ function (generate_amalgamation_header)
 
             # Archiving
             "libacquire/acquire_extract.h"
-            "libacquire/acquire_miniz.h"
+            # "libacquire/acquire_miniz.h" TODO
             "libacquire/acquire_zlib.h"
             )
 

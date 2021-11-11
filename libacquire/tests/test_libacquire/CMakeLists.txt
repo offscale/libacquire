@@ -94,8 +94,8 @@ foreach(EXEC_NAME ${_targets})
           "${EXEC_NAME}"
           PRIVATE
           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-          "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
           "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
+          "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
           "$<INSTALL_INTERFACE:include>"
   )
 
@@ -110,7 +110,7 @@ foreach(EXEC_NAME ${_targets})
   #set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
 
   # install rules
-  set(installable_libs "${EXEC_NAME}" "${PROJECT_LOWER_NAME}_compiler_flags")
+  set(installable_libs "${EXEC_NAME}")
   if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
   endif (TARGET "${DEPENDANT_LIBRARY}")

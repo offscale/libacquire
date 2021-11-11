@@ -19,6 +19,8 @@ LIBACQUIRE_LIBRARIES
 
 ]=======================================================================]
 
+include(CMakePrintHelpers)
+
 ########################
 # Networking libraries #
 ########################
@@ -29,9 +31,6 @@ function (set_networking_lib HTTPS_LIBRARY)
     else ()
         message(FATAL_ERROR "At least one HTTPS library must be specified for linkage")
     endif ()
-
-    message("USE_LIBCURL = ${USE_LIBCURL}")
-    message("CURL_LINK_LIBRARIES = ${CURL_LINK_LIBRARIES}")
 
     if (DEFINED USE_LIBCURL AND DEFINED CURL_LINK_LIBRARIES)
         set(HTTPS_LIBRARY "${CURL_LINK_LIBRARIES}" PARENT_SCOPE)
@@ -115,53 +114,56 @@ macro (download_extract_miniz download_dir)
     endif ()
 endmacro (download_extract_miniz download_dir)
 
-function (download_unarchiver library)
+function (download_unarchiver EXTRACT_LIB)
     ###############################################################
     # Download and setup miniz, a modern zero-dependency zlib alt #
     ###############################################################
-    set(LIBRARY_NAME "miniz")
+    set(EXTRACT_LIB "miniz")
+    set(EXTRACT_LIB "miniz" PARENT_SCOPE)
 
-    if (NOT TARGET "${LIBRARY_NAME}")
-        set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/third_party/${LIBRARY_NAME}")
+    if (NOT TARGET "${EXTRACT_LIB}")
+        set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}")
         download_extract_miniz("${DOWNLOAD_DIR}")
 
-        set(Header_Files "${DOWNLOAD_DIR}/${LIBRARY_NAME}.h")
+        set(Header_Files "${DOWNLOAD_DIR}/${EXTRACT_LIB}.h")
         source_group("Header Files" FILES "${Header_Files}")
 
-        set(Source_Files "${DOWNLOAD_DIR}/${LIBRARY_NAME}.c")
+        set(Source_Files "${DOWNLOAD_DIR}/${EXTRACT_LIB}.c")
         source_group("Source Files" FILES "${Source_Files}")
 
-        add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
+        add_library("${EXTRACT_LIB}" "${Header_Files}" "${Source_Files}")
 
-        target_link_libraries("${LIBRARY_NAME}" INTERFACE "${PROJECT_LOWER_NAME}_compiler_flags")
+        target_link_libraries("${EXTRACT_LIB}" INTERFACE "${PROJECT_NAME}_compiler_flags")
 
         set_target_properties(
-                "${LIBRARY_NAME}"
+                "${EXTRACT_LIB}"
                 PROPERTIES
                 LINKER_LANGUAGE
                 C
         )
     endif ()
+endfunction (download_unarchiver EXTRACT_LIB)
 
-    set(${library} "${LIBRARY_NAME}" PARENT_SCOPE)
-endfunction (download_unarchiver library)
+function(foo bar)
+    set(bar "haz" PARENT_SCOPE)
+endfunction()
 
-function (set_download_unarchiver libraries)
-    set(archive_lib "")
-    download_unarchiver(archive_lib)
-    message(STATUS "set_download_unarchiver::b4 libraries = ${libraries}")
-    list(APPEND libraries "${archive_lib}")
-    message(STATUS "set_download_unarchiver::l8 libraries = ${libraries}")
+function(boo hoo)
+    set(hoo "haz" PARENT_SCOPE)
+endfunction()
+
+function (set_download_unarchiver EXTRACT_LIB)
+    download_unarchiver(EXTRACT_LIB)
+    if (NOT DEFINED EXTRACT_LIB)
+        message(FATAL_ERROR "EXTRACT_LIB is not defined")
+    endif ()
+    set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
     unset(USE_ZLIB)
     unset(USE_ZLIB PARENT_SCOPE)
     remove_definitions(-DUSE_ZLIB)
     set(USE_MINIZ 1)
     set(USE_MINIZ "${USE_MINIZ}" PARENT_SCOPE)
-    set(EXTRACT_LIB "MINIZ")
-    set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
-endfunction (set_download_unarchiver)
-
-set(EXTRACT_LIBRARIES "")
+endfunction (set_download_unarchiver EXTRACT_LIB)
 
 if (DEFINED EXTRACT_LIB)
     set("USE_${EXTRACT_LIB}" "1" PARENT_SCOPE)
@@ -178,32 +180,31 @@ function (set_extraction_api EXTRACT_LIBRARIES)
             if (PKG_CONFIG_FOUND)
                 pkg_check_modules(UNZIP minizip)
                 if (UNZIP_FOUND)
-                    list(APPEND EXTRACT_LIBRARIES "ZLIB::ZLIB")
-                    list(APPEND EXTRACT_LIBRARIES "${UNZIP_LIBRARIES}")
+                    list(APPEND extract_libraries "ZLIB::ZLIB")
+                    list(APPEND extract_libraries "${UNZIP_LIBRARIES}")
                     set(MINIZIP 1)
                 else ()
-                    set_download_unarchiver("${EXTRACT_LIBRARIES}")
+                    set_download_unarchiver(EXTRACT_LIB)
                 endif (UNZIP_FOUND)
             else ()
-                set_download_unarchiver("${EXTRACT_LIBRARIES}")
+                set_download_unarchiver(EXTRACT_LIB)
             endif (PKG_CONFIG_FOUND)
         else ()
-            set_download_unarchiver("${EXTRACT_LIBRARIES}")
+            set_download_unarchiver(EXTRACT_LIB)
         endif (ZLIB_FOUND)
-
-        if (EXTRACT_LIB STREQUAL "MINIZ")
-            string(TOLOWER "${EXTRACT_LIB}" EXTRACT_LIB_LOWER)
-            list(APPEND EXTRACT_LIBRARIES "${EXTRACT_LIB_LOWER}")
-        endif ()
-        set(EXTRACT_LIBRARIES "${EXTRACT_LIBRARIES}" PARENT_SCOPE)
     else()
-        set_download_unarchiver("${EXTRACT_LIBRARIES}")
-        set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
-        set(EXTRACT_LIBRARIES "miniz" PARENT_SCOPE)
+        set_download_unarchiver(EXTRACT_LIB)
+        set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
     endif (DEFINED USE_ZLIB)
+    if (DEFINED EXTRACT_LIBRARIES AND NOT EXTRACT_LIBRARIES STREQUAL "" AND NOT EXTRACT_LIBRARIES STREQUAL "EXTRACT_LIBRARIES")
+        list(APPEND EXTRACT_LIBRARIES "${EXTRACT_LIB}")
+    else ()
+        set(EXTRACT_LIBRARIES "${EXTRACT_LIB}")
+    endif ()
+    set(EXTRACT_LIBRARIES "${EXTRACT_LIBRARIES}" PARENT_SCOPE)
 endfunction (set_extraction_api)
 
-set_extraction_api("${EXTRACT_LIBRARIES}")
+set_extraction_api(EXTRACT_LIBRARIES)
 
 if (DEFINED EXTRACT_LIBRARIES AND NOT EXTRACT_LIBRARIES STREQUAL "")
     list(APPEND LIBACQUIRE_LIBRARIES "${EXTRACT_LIBRARIES}")
