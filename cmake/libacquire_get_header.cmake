@@ -19,19 +19,22 @@ function (get_libacquire_header header_file)
     set(json_file "${CMAKE_BINARY_DIR}/libacquire.json")
 
     if (EXISTS "${header_file}")
-        message(STATUS "${header_file} exists; skipping download.")
+        string(LENGTH "${CMAKE_SOURCE_DIR}" source_dir_length)
+        math(EXPR source_dir_length "${source_dir_length} + 1")
+        string(SUBSTRING "${header_file}" "${source_dir_length}" -1 header_file_relative)
+        message(STATUS "\"${header_file_relative}\" exists; skipping download.")
         return()
     elseif (NOT EXISTS "${json_file}")
         file(DOWNLOAD https://api.github.com/repos/offscale/libacquire/releases "${json_file}"
                 HTTPHEADER "Accept: application/vnd.github.v3+json")
     endif ()
 
-    file(READ "${json_file}" json_contents)
-    string(LENGTH "${json_contents}" n)
-    if (n EQUAL 0)
-        message(FATAL_ERROR "Unable to download")
+    string(LENGTH "${json_file}" json_filesize)
+    if (json_filesize EQUAL 0)
+        message(FATAL_ERROR "Unable to download \"${json_file}\"")
     endif ()
 
+    file(READ "${json_file}" json_contents)
     string(JSON json_contents_n
             LENGTH "${json_contents}")
     math(EXPR json_contents_n "${json_contents_n} - 1")
