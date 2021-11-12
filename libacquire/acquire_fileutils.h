@@ -101,27 +101,18 @@ bool is_relative(const char *filename) {
 const char* get_extension(const char *filename) {
     /* Retrieves the file extension(s) from filename
      *
-     * Redevelopment note: could build a huge set from this, and see if middle extension fits:
-     * https://en.wikipedia.org/wiki/List_of_archive_formats
-     *
-     * Currently: just does anything with .tar.<something> and single extension
+     * "tar" seems to be the only format serving as a middle extension (from Nov 11 2021 rev of:
+     * https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression )
      * */
-
-    char *ext1=NULL, *ext0;
-    {
-        char *saveptr1, *split;
-        unsigned short j;
-
-        for (j = 1, split = strdup(filename); ; j++, split = NULL) {
-            char *token = strtok_r(split, ".", &saveptr1);
-            if (token == NULL)
-                break;
+    const char *ext0 = filename + strlen(filename), *ext1 = ext0;
+    size_t i;
+    for (i = 0; filename[i] != '\0'; i++)
+        if (filename[i] == '.') {
             ext0 = ext1;
-            ext1 = token;
+            ext1 = filename + i;
         }
-    }
 
-    return filename + strlen(filename) - (1 + strlen(ext1) + ((strcmp(ext0, "tar") == 0) ? strlen(ext0) : -1)) - 1;
+    return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
