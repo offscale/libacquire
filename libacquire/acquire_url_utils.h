@@ -13,10 +13,10 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define strdup _strdup
-#include <string.h>
 #else
 #include "acquire_string_extras.h"
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
+#include <string.h>
 
 extern const char *get_path_from_url(const char *);
 
