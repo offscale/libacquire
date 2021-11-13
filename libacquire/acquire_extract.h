@@ -18,4 +18,15 @@ enum Archive {
 
 extern int extract_archive(enum Archive, const char *, const char *);
 
+extern enum Archive extension2archive(const char *);
+
+extern enum Archive extension2archive(const char *s) {
+    if (strncasecmp(s, ".zip", 6) == 0)
+        return LIBACQUIRE_ZIP;
+    else if (strlen(s) == 0)
+        return LIBACQUIRE_UNSUPPORTED_ARCHIVE;
+    else
+        return LIBACQUIRE_INFER;
+}
+
 #endif /* ! LIBACQUIRE_ACQUIRE_EXTRACT_H */

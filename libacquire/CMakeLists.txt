@@ -7,7 +7,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 set(Header_Files "acquire_download.h")
 if (NOT HAS_STDBOOL AND NOT MSVC)
   list(APPEND Header_Files "acquire_stdbool.h")
-endif()
+endif ()
 source_group("Header Files" FILES "${Header_Files}")
 
 ##############################################################

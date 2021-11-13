@@ -30,7 +30,13 @@
 
 /* Extraction API */
 
-#cmakedefine USE_PUFF 1
+#cmakedefine USE_WINCOMPRESSAPI 1
+
+#cmakedefine USE_LIBEXTRACT 1
+
+#cmakedefine USE_ZLIB 1
+
+#cmakedefine USE_MINIZ 1
 
 #define EXTRACT_LIB "@EXTRACT_LIB@"
 

@@ -11,7 +11,7 @@ Functions to reuse crypto, network, and https libraries
 # crypto libraries #
 ####################
 
-macro(set_crypto_lib)
+macro (set_crypto_lib)
     # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
     if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT DEFINED CRYPTO_LIB)
         check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
@@ -42,13 +42,13 @@ macro(set_crypto_lib)
     elseif (CMAKE_SYSTEM_NAME STREQUAL "SunOS" AND NOT DEFINED CRYPTO_LIB)
         message(FATAL_ERROR "TODO")
     endif ()
-endmacro(set_crypto_lib)
+endmacro (set_crypto_lib)
 
 #################
 # SSL libraries #
 #################
 
-macro(set_ssl_lib)
+macro (set_ssl_lib)
     if (CRYPTO_LIB STREQUAL "OpenSSL")
         if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
                 AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
@@ -73,13 +73,13 @@ macro(set_ssl_lib)
     else ()
         message(FATAL_ERROR "Not implemented CRYPTO_LIB of '${CRYPTO_LIB}'")
     endif ()
-endmacro(set_ssl_lib)
+endmacro (set_ssl_lib)
 
 ########################
 # HTTP/HTTPS libraries #
 ########################
 
-macro(set_http_https_lib)
+macro (set_http_https_lib)
     if (DEFINED USE_LIBFETCH
             OR (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
             OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
@@ -111,13 +111,13 @@ macro(set_http_https_lib)
         list(APPEND _Header_Files "acquire_libcurl.h")
         set(HTTPS_LIB "LIBCURL")
     endif ()
-endmacro(set_http_https_lib)
+endmacro (set_http_https_lib)
 
 ########################
 # Extraction libraries #
 ########################
 
-function(set_extract_lib)
+function (set_extract_lib)
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED USE_ZLIB AND NOT DEFINED USE_LIBARCHIVE)
         set(USE_WINCOMPRESSAPI 1 PARENT_SCOPE)
         set(EXTRACT_LIB "WINCOMPRESSAPI" PARENT_SCOPE)
@@ -130,4 +130,4 @@ function(set_extract_lib)
         set(EXTRACT_LIB "ZLIB" PARENT_SCOPE)
         list(APPEND _Header_Files "acquire_zlib.h")
     endif ()
-endfunction(set_extract_lib)
+endfunction (set_extract_lib)

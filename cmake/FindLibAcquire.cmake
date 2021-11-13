@@ -19,8 +19,6 @@ LIBACQUIRE_LIBRARIES
 
 ]=======================================================================]
 
-include(CMakePrintHelpers)
-
 ########################
 # Networking libraries #
 ########################
@@ -53,6 +51,7 @@ if (DEFINED HTTPS_LIBRARY AND NOT HTTPS_LIBRARY STREQUAL "")
 else ()
     message(FATAL_ERROR "HTTPS_LIBRARY not set for linkage")
 endif ()
+
 message(STATUS "net LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
 ###########################
@@ -217,4 +216,5 @@ if (DEFINED EXTRACT_LIBRARIES AND NOT EXTRACT_LIBRARIES STREQUAL "")
 else ()
     message(FATAL_ERROR "EXTRACT_LIBRARIES not set for linkage")
 endif ()
+
 message(STATUS "compress LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")

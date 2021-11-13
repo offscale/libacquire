@@ -15,7 +15,7 @@ LINK_LIBRARIES
 
 ]=======================================================================]
 
-function(get_curl LINK_LIBRARIES)
+function (get_curl LINK_LIBRARIES)
     set(CURL_NO_OLDIES ON)
 
     if (VCPKG_TOOLCHAIN)  # Overly specific, should be same for conan, Buckaroo, Hunter, &etc.
@@ -111,4 +111,4 @@ function(get_curl LINK_LIBRARIES)
     endif ()
 
     set("${LINK_LIBRARIES}" "${CURL_LINK_LIBRARIES}" PARENT_SCOPE)
-endfunction()
+endfunction (get_curl LINK_LIBRARIES)

@@ -69,7 +69,7 @@ foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
   message(STATUS "[test_libacquire] ${_library}_LIB: \t${${_library}_LIB}")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
-foreach(EXEC_NAME ${_targets})
+foreach (EXEC_NAME ${_targets})
   if (EXEC_NAME STREQUAL "test_amalgamation")
     set(Header_Files "${EXEC_NAME}.h")
     source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
@@ -118,7 +118,7 @@ foreach(EXEC_NAME ${_targets})
   install(TARGETS ${installable_libs}
           DESTINATION "bin"
           EXPORT "${EXEC_NAME}Targets")
-endforeach(EXEC_NAME ${_targets})
+endforeach (EXEC_NAME ${_targets})
 
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"

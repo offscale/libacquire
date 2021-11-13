@@ -106,11 +106,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-if(APPLE)
+if (APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
-elseif(UNIX)
+elseif (UNIX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-endif()
+endif ()
 
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
