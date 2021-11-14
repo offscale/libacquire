@@ -51,6 +51,7 @@
 
 /* This is for mkdir(); this may need to be changed for some platforms. */
 #include <sys/stat.h>  /* For mkdir() */
+#include <errno.h>
 
 #ifdef _MSC_VER
 #define NUM_FORMAT "zu"
@@ -156,8 +157,8 @@ verify_checksum(const char *p)
     return (u == parseoct(p + 148, 8));
 }
 
-/* Extract a tar archive. */
-static void
+/* Extract an archive. */
+int
 extract_file(FILE *a, const char *path)
 {
 #define BUF_SIZE 512
@@ -165,6 +166,7 @@ extract_file(FILE *a, const char *path)
     FILE *f = NULL;
     size_t bytes_read;
     off_t filesize;
+    int exit_code = EXIT_SUCCESS;
 
     printf("Extracting from %s\n", path);
     for (;;) {
@@ -173,15 +175,18 @@ extract_file(FILE *a, const char *path)
             fprintf(stderr,
                     "Short read on %s: expected " STR(BUF_SIZE) ", got %"NUM_FORMAT"\n",
                     path, bytes_read);
-            return;
+            exit_code = EXIT_FAILURE;
+            goto cleanup;
         }
         if (is_end_of_archive(buff)) {
             printf("End of %s\n", path);
-            return;
+            exit_code = EOF;
+            goto cleanup;
         }
         if (!verify_checksum(buff)) {
             fprintf(stderr, "Checksum failure\n");
-            return;
+            exit_code = EXIT_FAILURE;
+            goto cleanup;
         }
         filesize = parseoct(buff + 124, 12);
         switch (buff[156]) {
@@ -216,7 +221,8 @@ extract_file(FILE *a, const char *path)
                 fprintf(stderr,
                         "Short read on %s: Expected " STR(BUF_SIZE) ", got %"NUM_FORMAT"\n",
                         path, bytes_read);
-                return;
+                exit_code = EXIT_FAILURE;
+                goto cleanup;
             }
             if (filesize < BUF_SIZE)
                 bytes_read = filesize;
@@ -236,6 +242,13 @@ extract_file(FILE *a, const char *path)
             f = NULL;
         }
     }
+cleanup:
+    if (f != NULL) {
+        fclose(f);
+        f = NULL;
+    }
+
+    return exit_code;
 #undef BUF_SIZE
 }
 
@@ -251,7 +264,19 @@ extract_file(FILE *a, const char *path)
 
 
 int extract_archive(enum Archive archive, const char *archive_filepath, const char *output_folder) {
-    return EXIT_FAILURE;
+    FILE *fp;
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    fopen_s(&fp, filename, "r");
+#else
+    fp = fopen(archive_filepath, "r");
+#endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
+
+    if(!fp) {
+        fprintf(stderr, "Could not open %s: %s", archive_filepath, strerror(errno));
+        return ENOENT;
+    }
+    extract_file(fp, output_folder);
+    return EXIT_SUCCESS;
 }
 
 int _extract_archive(enum Archive archive, const char *archive_filepath, const char *output_folder) {

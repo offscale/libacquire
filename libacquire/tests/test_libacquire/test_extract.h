@@ -18,16 +18,7 @@
 
 #define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
-#ifdef ON_libarchive
-#define USE_LIBARCHIVE 1
-#include <acquire_libarchive.h>
-#elif defined(ON_miniz)
-#define USE_MINIZ 1
-#include <acquire_miniz.h>
-#elif defined(ON_zlib)
-#define USE_ZLIB 1
-#include <acquire_zlib>
-#endif /* ON_libarchive */
+#include ARCHIVE_LIB_NAME
 
 TEST x_test_extract_archive(void) {
     ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, DOWNLOAD_DIR PATH_SEP "examples") != EXIT_SUCCESS);

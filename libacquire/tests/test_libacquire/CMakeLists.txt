@@ -71,19 +71,15 @@ foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
 macro (test_wrapper)
-    message(STATUS "Wrapping test ${EXEC_NAME} with CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
-
     target_include_directories(
             "${EXEC_NAME}"
             PRIVATE
             "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
             "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
-            # "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${PROJECT_NAME}>"
             "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
             "$<INSTALL_INTERFACE:include>"
     )
 
-    message(STATUS "Adding test: ${EXEC_NAME}")
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
 
     #######################################
@@ -108,7 +104,6 @@ endmacro (test_wrapper)
 
 foreach (EXEC_NAME ${_targets})
     if (EXEC_NAME STREQUAL "${exec_name}")
-        message(STATUS "BUILDING ${EXEC_NAME}")
         math(EXPR "${exec_name}_count" "${${exec_name}_count} + 1")
         set(Header_Files
                 "${CMAKE_CURRENT_SOURCE_DIR}/test_fileutils.h"
@@ -136,12 +131,12 @@ foreach (EXEC_NAME ${_targets})
             source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
 
             add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-            message(STATUS "BUILDING ${EXEC_NAME}")
+            string(TOUPPER "${ARCHIVE_LIB}" ARCHIVE_LIB_UPPER)
             target_compile_definitions(
                     "${EXEC_NAME}"
                     PRIVATE
                     "ARCHIVE_LIB=${ARCHIVE_LIB}"
-                    "ON_${ARCHIVE_LIB}=1"
+                    "USE_${ARCHIVE_LIB_UPPER}=1"
                     "ARCHIVE_LIB_NAME=<acquire_${ARCHIVE_LIB}.h>"
             )
             set(_libs "${LIBACQUIRE_LIBRARIES}")
@@ -152,7 +147,7 @@ foreach (EXEC_NAME ${_targets})
                 target_include_directories("${EXEC_NAME}" PRIVATE ${LibArchive_INCLUDE_DIRS})
                 set(archive_lib "${LibArchive_LIBRARIES}")
             endif ()
-            # target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
+            #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
             target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "${archive_lib}")
             test_wrapper()
         endforeach (ARCHIVE_LIB ${_archives})
