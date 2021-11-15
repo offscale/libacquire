@@ -132,10 +132,14 @@ foreach (EXEC_NAME ${_targets})
 
             add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
             string(TOUPPER "${ARCHIVE_LIB}" ARCHIVE_LIB_UPPER)
+            set(_dir "${DOWNLOAD_DIR}/${EXTRACT_DIR}extract/${ARCHIVE_LIB}")
+            if (NOT IS_DIRECTORY "${_dir}")
+                file(MAKE_DIRECTORY "${_dir}")
+            endif ()
             target_compile_definitions(
                     "${EXEC_NAME}"
                     PRIVATE
-                    "ARCHIVE_LIB=${ARCHIVE_LIB}"
+                    "ARCHIVE_LIB=\"${ARCHIVE_LIB}\""
                     "USE_${ARCHIVE_LIB_UPPER}=1"
                     "ARCHIVE_LIB_NAME=<acquire_${ARCHIVE_LIB}.h>"
             )
@@ -143,8 +147,8 @@ foreach (EXEC_NAME ${_targets})
             if (ARCHIVE_LIB STREQUAL "miniz")
                 set(archive_lib "${ARCHIVE_LIB}")
             elseif (ARCHIVE_LIB STREQUAL "libarchive")
-                find_package(libarchive REQUIRED)
-                target_include_directories("${EXEC_NAME}" PRIVATE ${LibArchive_INCLUDE_DIRS})
+                find_package(LibArchive REQUIRED)
+                target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
                 set(archive_lib "${LibArchive_LIBRARIES}")
             endif ()
             #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")

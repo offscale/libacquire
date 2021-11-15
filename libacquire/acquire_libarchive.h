@@ -84,14 +84,14 @@ parseoct(const char *p, size_t n)
 }
 
 /* Returns true if this is 512 zero bytes. */
-static int
+static bool
 is_end_of_archive(const char *p)
 {
-    int n;
+    unsigned short n;
     for (n = 511; n >= 0; --n)
         if (p[n] != '\0')
-            return (0);
-    return (1);
+            return false;
+    return true;
 }
 
 /* Create a directory, including parent directories as necessary. */
@@ -127,7 +127,12 @@ static FILE *
 create_file(char *pathname, int mode)
 {
     FILE *f;
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    fopen_s(&f, pathname, "wb+");
+#else
     f = fopen(pathname, "wb+");
+#endif
+
     if (f == NULL) {
         /* Try creating parent dir and then creating file. */
         char *p = strrchr(pathname, '/');
@@ -135,17 +140,21 @@ create_file(char *pathname, int mode)
             *p = '\0';
             create_dir(pathname, 0755);
             *p = '/';
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+            fopen_s(&f, pathname, "wb+");
+#else
             f = fopen(pathname, "wb+");
+#endif
         }
     }
-    return (f);
+    return f;
 }
 
 /* Verify the tar checksum. */
 static int
 verify_checksum(const char *p)
 {
-    int n, u = 0;
+    unsigned short n, u = 0;
     for (n = 0; n < 512; ++n) {
         if (n < 148 || n > 155)
             /* Standard tar checksum adds unsigned bytes. */
@@ -180,38 +189,37 @@ extract_file(FILE *a, const char *path)
         }
         if (is_end_of_archive(buff)) {
             printf("End of %s\n", path);
-            exit_code = EOF;
-            goto cleanup;
+            break;
         }
         if (!verify_checksum(buff)) {
-            fprintf(stderr, "Checksum failure\n");
+            fputs("Checksum failure", stderr);
             exit_code = EXIT_FAILURE;
             goto cleanup;
         }
         filesize = parseoct(buff + 124, 12);
         switch (buff[156]) {
             case '1':
-                printf(" Ignoring hardlink %s\n", buff);
+                printf("Ignoring hardlink %s\n", buff);
                 break;
             case '2':
-                printf(" Ignoring symlink %s\n", buff);
+                printf("Ignoring symlink %s\n", buff);
                 break;
             case '3':
-                printf(" Ignoring character device %s\n", buff);
+                printf("Ignoring character device %s\n", buff);
                 break;
             case '4':
-                printf(" Ignoring block device %s\n", buff);
+                printf("Ignoring block device %s\n", buff);
                 break;
             case '5':
-                printf(" Extracting dir %s\n", buff);
+                printf("Extracting dir %s\n", buff);
                 create_dir(buff, parseoct(buff + 100, 8));
                 filesize = 0;
                 break;
             case '6':
-                printf(" Ignoring FIFO %s\n", buff);
+                printf("Ignoring FIFO %s\n", buff);
                 break;
             default:
-                printf(" Extracting file %s\n", buff);
+                printf("Extracting file %s\n", buff);
                 f = create_file(buff, parseoct(buff + 100, 8));
                 break;
         }
@@ -227,9 +235,7 @@ extract_file(FILE *a, const char *path)
             if (filesize < BUF_SIZE)
                 bytes_read = filesize;
             if (f != NULL) {
-                if (fwrite(buff, 1, bytes_read, f)
-                    != bytes_read)
-                {
+                if (fwrite(buff, 1, bytes_read, f) != bytes_read) {
                     fprintf(stderr, "Failed write\n");
                     fclose(f);
                     f = NULL;
@@ -265,18 +271,25 @@ cleanup:
 
 int extract_archive(enum Archive archive, const char *archive_filepath, const char *output_folder) {
     FILE *fp;
+    int exit_code;
+    puts("acquire_libarchive.h");
+    if (archive == LIBACQUIRE_UNSUPPORTED_ARCHIVE) return EXIT_FAILURE;
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-    fopen_s(&fp, filename, "r");
+    fopen_s(&fp, filename, "rb");
 #else
-    fp = fopen(archive_filepath, "r");
+    fp = fopen(archive_filepath, "rb");
 #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
     if(!fp) {
         fprintf(stderr, "Could not open %s: %s", archive_filepath, strerror(errno));
         return ENOENT;
     }
-    extract_file(fp, output_folder);
-    return EXIT_SUCCESS;
+    exit_code = extract_file(fp, output_folder);
+    if (fclose(fp) == EOF) {
+        fprintf(stderr, "Error closing input file. and errno = %d, and error = %s\n", errno, strerror(errno));
+        return exit_code == EXIT_SUCCESS ? EXIT_FAILURE : exit_code;
+    }
+    return exit_code;
 }
 
 int _extract_archive(enum Archive archive, const char *archive_filepath, const char *output_folder) {
@@ -286,7 +299,11 @@ int _extract_archive(enum Archive archive, const char *archive_filepath, const c
     static char buff[BLOCK_SIZE];
     struct archive_entry *ae;
 
-    struct archive *a = archive_read_new();
+    struct archive *a;
+
+    printf("archive_filepath: \"%s\"\n", archive_filepath);
+    a = archive_read_new();
+
     archive_read_support_filter_all(a);
     archive_read_support_format_raw(a);
     r = archive_read_open_filename(a, archive_filepath, BLOCK_SIZE);

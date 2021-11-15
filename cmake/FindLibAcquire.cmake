@@ -102,8 +102,8 @@ macro (download_extract_miniz download_dir)
                 "https://github.com/richgel999/miniz/releases/download/${MINIZ_VERSION}/miniz-${MINIZ_VERSION}.zip"
                 "${MINIZ_ZIP_FILE}"
                 EXPECTED_HASH "SHA256=e4aa5078999c7f7466fa6b8f9848e39ddfff9a4bafc50215764aebe1f13b3841")
-        file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
-                DESTINATION "${download_dir}")
+        #file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
+        #        DESTINATION "${download_dir}")
     endif ()
 
     if (NOT EXISTS "${download_dir}/zip.h")
