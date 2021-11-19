@@ -11,6 +11,8 @@ By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `winine
 
 By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DUSE_OPENSSL`.
 
+By default—for decompression—this uses `compressapi.h` on Windows; then, in order of precedence tries: libarchive, zlib, or downloads miniz.
+
 Supports:
 
   - [ ] Linux
