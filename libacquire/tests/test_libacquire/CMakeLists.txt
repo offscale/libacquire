@@ -62,8 +62,8 @@ set_extract_lib()
 
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
-set(_targets "${exec_name}" "test_amalgamation" "test_extract")
-set(_archives "libarchive" "miniz")
+set(_targets "${exec_name}" "test_amalgamation")
+set(_archives "libarchive" "miniz") # "zlib"
 set(All_Header_Files "${GREATEST_FILE}")
 
 foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
@@ -99,64 +99,62 @@ macro (test_wrapper)
     install(TARGETS ${installable_libs}
             DESTINATION "bin"
             EXPORT "${EXEC_NAME}Targets")
-
 endmacro (test_wrapper)
 
 foreach (EXEC_NAME ${_targets})
-    if (EXEC_NAME STREQUAL "${exec_name}")
-        math(EXPR "${exec_name}_count" "${${exec_name}_count} + 1")
-        set(Header_Files
-                "${CMAKE_CURRENT_SOURCE_DIR}/test_fileutils.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/test_string_extras.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/test_checksum.h"
-        )
-        source_group("Header Files" FILES "${Header_Files}")
+    math(EXPR "${exec_name}_count" "${${exec_name}_count} + 1")
+    set(Header_Files
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_fileutils.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_string_extras.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_checksum.h"
+    )
+    source_group("Header Files" FILES "${Header_Files}")
 
-        set(Source_Files "${CMAKE_CURRENT_SOURCE_DIR}/test.c")
-        source_group("Source Files" FILES "${Source_Files}")
+    set(Source_Files "${CMAKE_CURRENT_SOURCE_DIR}/test.c")
+    source_group("Source Files" FILES "${Source_Files}")
 
-        add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
-        target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire")
-        test_wrapper()
-    elseif (EXEC_NAME STREQUAL "test_extract")
-        foreach (ARCHIVE_LIB ${_archives})
-            set(EXEC_NAME "test_extract")
-            set(Header_Files "${CMAKE_CURRENT_SOURCE_DIR}/test_extract.h")
-            set(Source_Files "${CMAKE_CURRENT_SOURCE_DIR}/test_extract.c")
-
-            set(EXEC_NAME "${EXEC_NAME}_${ARCHIVE_LIB}")
-
-            source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
-            source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
-
-            add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-            string(TOUPPER "${ARCHIVE_LIB}" ARCHIVE_LIB_UPPER)
-            set(_dir "${DOWNLOAD_DIR}/${EXTRACT_DIR}extract/${ARCHIVE_LIB}")
-            if (NOT IS_DIRECTORY "${_dir}")
-                file(MAKE_DIRECTORY "${_dir}")
-            endif ()
-            target_compile_definitions(
-                    "${EXEC_NAME}"
-                    PRIVATE
-                    "ARCHIVE_LIB=\"${ARCHIVE_LIB}\""
-                    "USE_${ARCHIVE_LIB_UPPER}=1"
-                    "ARCHIVE_LIB_NAME=<acquire_${ARCHIVE_LIB}.h>"
-            )
-            set(_libs "${LIBACQUIRE_LIBRARIES}")
-            if (ARCHIVE_LIB STREQUAL "miniz")
-                set(archive_lib "${ARCHIVE_LIB}")
-            elseif (ARCHIVE_LIB STREQUAL "libarchive")
-                find_package(LibArchive REQUIRED)
-                target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
-                set(archive_lib "${LibArchive_LIBRARIES}")
-            endif ()
-            #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
-            target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "${archive_lib}")
-            test_wrapper()
-        endforeach (ARCHIVE_LIB ${_archives})
-    endif (EXEC_NAME STREQUAL "${exec_name}")
+    target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire")
+    test_wrapper()
 endforeach (EXEC_NAME ${_targets})
+
+set(EXEC_NAME "test_extract")
+foreach (ARCHIVE_LIB ${_archives})
+    set(EXEC_NAME "test_extract")
+    set(Header_Files "${CMAKE_CURRENT_SOURCE_DIR}/test_extract.h")
+    set(Source_Files "${CMAKE_CURRENT_SOURCE_DIR}/test_extract.c")
+
+    set(EXEC_NAME "${EXEC_NAME}_${ARCHIVE_LIB}")
+
+    source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
+    source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
+
+    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    string(TOUPPER "${ARCHIVE_LIB}" ARCHIVE_LIB_UPPER)
+    set(_dir "${DOWNLOAD_DIR}/${EXTRACT_DIR}extract/${ARCHIVE_LIB}")
+    if (NOT IS_DIRECTORY "${_dir}")
+        file(MAKE_DIRECTORY "${_dir}")
+    endif (NOT IS_DIRECTORY "${_dir}")
+    target_compile_definitions(
+            "${EXEC_NAME}"
+            PRIVATE
+            "ARCHIVE_LIB=\"${ARCHIVE_LIB}\""
+            "USE_${ARCHIVE_LIB_UPPER}=1"
+            "ARCHIVE_LIB_NAME=<acquire_${ARCHIVE_LIB}.h>"
+    )
+    set(_libs "${LIBACQUIRE_LIBRARIES}")
+    if (ARCHIVE_LIB STREQUAL "miniz")
+        set(archive_lib "${ARCHIVE_LIB}")
+    elseif (ARCHIVE_LIB STREQUAL "libarchive")
+        find_package(LibArchive REQUIRED)
+        target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
+        set(archive_lib "${LibArchive_LIBRARIES}")
+    endif ()
+    #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
+    target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "${archive_lib}")
+    test_wrapper()
+endforeach (ARCHIVE_LIB ${_archives})
 
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"

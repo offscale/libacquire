@@ -15,10 +15,12 @@
 
 #include <config_for_tests.h>
 #include <acquire_config.h>
+#include <acquire_extract.h>
 
 #define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
 #include ARCHIVE_LIB_NAME
+#undef LIBACQUIRE_IMPLEMENTATION
 
 TEST x_test_extract_archive(void) {
 #define EXTRACT_DIR DOWNLOAD_DIR PATH_SEP "extract" PATH_SEP ARCHIVE_LIB
