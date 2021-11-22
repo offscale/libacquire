@@ -52,7 +52,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/Microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg install libarchive
+          .\vcpkg\vcpkg install libarchive
       - name: build
         run: |
           md cmake-build-debug
