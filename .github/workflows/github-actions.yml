@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: deps
-        run: sudo apt-get install -y libssl-dev libcurl4-openssl-dev
+        run: sudo apt-get install -y libssl-dev libcurl4-openssl-dev libarchive-dev
       - name: build
         run: |
           mkdir cmake-build-"$RUNNER_OS"-debug && pushd "$_"
@@ -32,9 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: deps
-        run: brew install pkg-config  # openssl
+        run: brew install pkg-config libarchive  # openssl
       - name: build
         run: |
+          prefix="$(brew --prefix libarchive)"
+          export LDFLAGS="-L${prefix}/lib"
+          export CPPFLAGS="-I${prefix}/include"
+          export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
           mkdir cmake-build-"$RUNNER_OS"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
@@ -44,11 +48,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: build
+      - name: get dependencies and build
         run: |
+          git clone --depth=1 https://github.com/Microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg install libarchive
           md cmake-build-debug
           cd cmake-build-debug
-          cmake ..
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake
           cmake --build .
+        shell: cmd
       - name: test
         run: ctest .
