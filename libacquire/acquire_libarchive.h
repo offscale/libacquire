@@ -32,12 +32,13 @@ copy_data(struct archive *ar, struct archive *aw)
 
 int extract_archive(enum Archive archive, const char *archive_filepath, const char *output_folder) {
     if (archive == LIBACQUIRE_UNSUPPORTED_ARCHIVE) return EXIT_FAILURE;
-    {
+    else {
         struct archive *a;
         struct archive *ext;
         struct archive_entry *entry;
         int flags;
         la_ssize_t r;
+        const size_t output_folder_n = strlen(output_folder);
 
         /* Select which attributes we want to restore. */
         flags = ARCHIVE_EXTRACT_TIME;
@@ -61,21 +62,33 @@ int extract_archive(enum Archive archive, const char *archive_filepath, const ch
                 fputs(archive_error_string(a), stderr);
             if (r < ARCHIVE_WARN)
                 return EXIT_FAILURE;
-            r = archive_write_header(ext, entry);
-            if (r < ARCHIVE_OK)
-                fputs(archive_error_string(ext), stderr);
-            else if (archive_entry_size(entry) > 0) {
-                r = copy_data(a, ext);
+            {
+                const char *current_file = archive_entry_pathname(entry);
+                const size_t new_pathname_n = output_folder_n + strlen(current_file) + /* PATH_SEP + '\0' */ 2;
+                char *new_pathname = malloc(new_pathname_n);
+                snprintf(new_pathname, new_pathname_n,
+                         "%s"PATH_SEP"%s", output_folder, current_file);
+                archive_entry_set_pathname(entry, new_pathname);
+
+                r = archive_write_header(ext, entry);
+                if (r < ARCHIVE_OK)
+                    fputs(archive_error_string(ext), stderr);
+                else if (archive_entry_size(entry) > 0) {
+                    r = copy_data(a, ext);
+                    if (r < ARCHIVE_OK)
+                        fputs(archive_error_string(ext), stderr);
+                    if (r < ARCHIVE_WARN) {
+                        free(new_pathname);
+                        return EXIT_FAILURE;
+                    }
+                }
+                r = archive_write_finish_entry(ext);
+                free(new_pathname);
                 if (r < ARCHIVE_OK)
                     fputs(archive_error_string(ext), stderr);
                 if (r < ARCHIVE_WARN)
                     return EXIT_FAILURE;
             }
-            r = archive_write_finish_entry(ext);
-            if (r < ARCHIVE_OK)
-                fputs(archive_error_string(ext), stderr);
-            if (r < ARCHIVE_WARN)
-                return EXIT_FAILURE;
         }
         archive_read_close(a);
         archive_read_free(a);
