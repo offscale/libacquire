@@ -18,7 +18,7 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
       - name: test
-        run: ctest .
+        run: cd cmake-build-"$RUNNER_OS"-debug && ctest .
       - name: release
         run: |
           cd "$GITHUB_WORKSPACE"
@@ -43,20 +43,23 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE="Debug" ..
           cmake --build .
       - name: test
-        run: ctest .
+        run: cd cmake-build-"$RUNNER_OS"-debug && ctest .
   build_windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: get dependencies and build
+      - name: install dependencies
         run: |
           git clone --depth=1 https://github.com/Microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg install libarchive
+      - name: build
+        run: |
           md cmake-build-debug
           cd cmake-build-debug
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="..\vcpkg\scripts\buildsystems\vcpkg.cmake"
           cmake --build .
         shell: cmd
       - name: test
         run: ctest .
+        working-directory: cmake-build-debug
