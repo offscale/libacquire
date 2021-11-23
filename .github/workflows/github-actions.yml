@@ -65,9 +65,9 @@ jobs:
           cd "%GITHUB_WORKSPACE%"
           cd ..
           IF NOT EXIST "vcpkg" (
-              git clone --depth=360 https://github.com/microsoft/vcpkg &&
-              cd vcpkg &&
-              git reset --hard 4a78558 &&
+              git clone --depth=360 https://github.com/microsoft/vcpkg
+              cd vcpkg
+              git reset --hard 4a78558
               .\bootstrap-vcpkg.bat
           )
         shell: cmd
