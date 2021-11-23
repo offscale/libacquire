@@ -60,25 +60,28 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - uses: actions/checkout@v2
-        with:
-          repository: 'microsoft/vcpkg'
-          ref: '4a7855818a9d1c8c3611a4b084d36f47a391a25f'
+      - name: clone vcpkg
+        run: |
+          set
+          cd "%GITHUB_WORKSPACE%" && cd ..
+          git clone --depth=360 https://github.com/microsoft/vcpkg
+          git reset --hard 4a78558
+        shell: cmd
       - name: Install dependencies
         run: |
-          cd "%GITHUB_WORKSPACE%"
-          cd "..\vcpkg"
+          cd "%GITHUB_WORKSPACE%" && cd "..\vcpkg"
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install libarchive
         shell: cmd
       - name: build
         run: |
-          cd "%GITHUB_WORKSPACE%"
-          cd "..\libacquire"
-          echo "%GITHUB_WORKSPACE%"
+          cd "%GITHUB_WORKSPACE%" && cd ".."
+          set vcpkg="%cd%/vcpkg"
+          dir "%vcpkg%"
+          cd libacquire
           md cmake-build-debug
           cd cmake-build-debug
-          cmake -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\scripts\buildsystems\vcpkg.cmake" ..
+          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" ..
           cmake --build .
         shell: cmd
       - name: test
