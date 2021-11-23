@@ -67,13 +67,12 @@ jobs:
           git clone --depth=360 https://github.com/microsoft/vcpkg
           cd vcpkg
           git reset --hard 4a78558
-          .\vcpkg\bootstrap-vcpkg.bat
+          .\bootstrap-vcpkg.bat
         shell: cmd
       - name: Install dependencies with vcpkg
         run: |
           cd "%GITHUB_WORKSPACE%"
           cd ..\vcpkg
-          dir
           .\vcpkg install libarchive
         shell: cmd
       - name: build
