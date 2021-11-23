@@ -23,13 +23,11 @@ LIBARCHIVE_FOUND
 LibArchive_INCLUDE_DIRS
     The LibArchive include directory.
 LIBARCHIVE_LIBRARY
-    The LibArchive library.
-LIBARCHIVE_SSL_LIBRARY
-    The LibArchive SSL library.
-LIBARCHIVE_TLS_LIBRARY
-    The LibArchive TLS library.
+    The LibArchive library, like:
+      /Applications/Xcode.app/Contents/Developer/Platforms/
+       MacOSX.platform/Developer/SDKs/MacOSX12.0.sdk/usr/lib/libarchive.tbd
 LIBARCHIVE_LIBRARIES
-    All LibArchive libraries.
+    "archive"
 LIBARCHIVE_VERSION
     This is set to $major.$minor.$revision (e.g. 2.6.8).
 
@@ -40,8 +38,6 @@ LibArchive_INCLUDEDIR=/usr/local/Cellar/libarchive/3.5.2/include
 LibArchive_INCLUDE_DIRS=/usr/local/Cellar/libarchive/3.5.2/include
 LibArchive_LDFLAGS=-L/usr/local/Cellar/libarchive/3.5.2/lib;-larchive
 LibArchive_LIBDIR=/usr/local/Cellar/libarchive/3.5.2/lib
-LibArchive_LIBRARIES=archive
-LibArchive_LIBRARY=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.0.sdk/usr/lib/libarchive.tbd
 LibArchive_LIBRARY_DIRS=/usr/local/Cellar/libarchive/3.5.2/lib
 LibArchive_LINK_LIBRARIES=/usr/local/Cellar/libarchive/3.5.2/lib/libarchive.dylib
 LibArchive_MODULE_NAME=LibArchive
