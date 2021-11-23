@@ -76,8 +76,8 @@ jobs:
           set
           IF NOT EXIST "buildtrees\libarchive" (
               .\vcpkg --version
-              .\vcpkg install --help
-              .\vcpkg install libarchive
+              echo ".\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%" libarchive"
+              .\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%" libarchive
           )
         shell: cmd
       - name: build
