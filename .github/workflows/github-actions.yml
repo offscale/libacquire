@@ -70,7 +70,11 @@ jobs:
         shell: cmd
       - name: Install dependencies
         run: |
-          cd "%GITHUB_WORKSPACE%" && cd "..\vcpkg"
+          dir "%GITHUB_WORKSPACE%"
+          cd "%GITHUB_WORKSPACE%"
+          cd ..
+          dir
+          cd "vcpkg"
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install libarchive
         shell: cmd
