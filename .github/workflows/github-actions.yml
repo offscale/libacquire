@@ -54,7 +54,7 @@ jobs:
         env:
           cache-name: cache-vcpkg
         with:
-          path: ${{ github.workspace }}/vcpkg
+          path: ${{ github.workspace }}/../vcpkg
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/vcpkg.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -64,16 +64,20 @@ jobs:
         run: |
           cd "%GITHUB_WORKSPACE%"
           cd ..
-          git clone --depth=360 https://github.com/microsoft/vcpkg
-          cd vcpkg
-          git reset --hard 4a78558
-          .\bootstrap-vcpkg.bat
+          IF NOT EXIST "vcpkg" (
+              git clone --depth=360 https://github.com/microsoft/vcpkg &&
+              cd vcpkg &&
+              git reset --hard 4a78558 &&
+              .\bootstrap-vcpkg.bat
+          )
         shell: cmd
       - name: Install dependencies with vcpkg
         run: |
           cd "%GITHUB_WORKSPACE%"
-          cd ..\vcpkg
-          .\vcpkg install libarchive
+          cd "..\vcpkg"
+          IF NOT EXIST "buildtrees\libarchive" (
+              .\vcpkg install libarchive
+          )
         shell: cmd
       - name: build
         run: |
@@ -81,9 +85,9 @@ jobs:
           cd ..
           set vcpkg="%cd%\vcpkg"
           dir "%vcpkg%"
-          cd libacquire
-          md cmake-build-debug
-          cd cmake-build-debug
+          cd "libacquire"
+          md "cmake-build-debug"
+          cd "cmake-build-debug"
           cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" ..
           cmake --build .
         shell: cmd
@@ -91,5 +95,5 @@ jobs:
         run: |
           cd "%GITHUB_WORKSPACE%"
           cd "..\libacquire\cmake-build-debug"
-          ctest .
+          ctest -C "Debug" .
         shell: cmd
