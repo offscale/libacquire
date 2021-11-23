@@ -66,20 +66,24 @@ jobs:
           ref: '4a7855818a9d1c8c3611a4b084d36f47a391a25f'
       - name: Install dependencies
         run: |
-          cd "%GITHUB_WORKSPACE%\vcpkg"
+          cd "%GITHUB_WORKSPACE%"
+          cd "..\vcpkg"
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install libarchive
         shell: cmd
       - name: build
         run: |
-          cd "%GITHUB_WORKSPACE%\libacquire"
+          cd "%GITHUB_WORKSPACE%"
+          cd "..\libacquire"
+          echo "%GITHUB_WORKSPACE%"
           md cmake-build-debug
           cd cmake-build-debug
-          cmake -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake" ..
+          cmake -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\scripts\buildsystems\vcpkg.cmake" ..
           cmake --build .
         shell: cmd
       - name: test
         run: |
-          cd "%GITHUB_WORKSPACE%\libacquire\cmake-build-debug"
+          cd "%GITHUB_WORKSPACE%"
+          cd "..\libacquire\cmake-build-debug"
           ctest .
         shell: cmd
