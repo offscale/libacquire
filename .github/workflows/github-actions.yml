@@ -73,10 +73,11 @@ jobs:
           dir "%GITHUB_WORKSPACE%"
           cd "%GITHUB_WORKSPACE%"
           cd ..
+          cd vcpkg
+          cd
           dir
-          cd "vcpkg"
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install libarchive
+          .\vcpkg install libarchive
         shell: cmd
       - name: build
         run: |
