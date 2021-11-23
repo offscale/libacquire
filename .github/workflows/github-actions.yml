@@ -60,29 +60,27 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - name: clone vcpkg
+      - name: clone and bootstrap vcpkg
         run: |
-          set
-          cd "%GITHUB_WORKSPACE%" && cd ..
+          cd "%GITHUB_WORKSPACE%"
+          cd ..
           git clone --depth=360 https://github.com/microsoft/vcpkg
           cd vcpkg
           git reset --hard 4a78558
-        shell: cmd
-      - name: Install dependencies
-        run: |
-          dir "%GITHUB_WORKSPACE%"
-          cd "%GITHUB_WORKSPACE%"
-          cd ..
-          cd vcpkg
-          cd
-          dir
           .\vcpkg\bootstrap-vcpkg.bat
+        shell: cmd
+      - name: Install dependencies with vcpkg
+        run: |
+          cd "%GITHUB_WORKSPACE%"
+          cd ..\vcpkg
+          dir
           .\vcpkg install libarchive
         shell: cmd
       - name: build
         run: |
-          cd "%GITHUB_WORKSPACE%" && cd ".."
-          set vcpkg="%cd%/vcpkg"
+          cd "%GITHUB_WORKSPACE%"
+          cd ..
+          set vcpkg="%cd%\vcpkg"
           dir "%vcpkg%"
           cd libacquire
           md cmake-build-debug
