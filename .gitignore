@@ -7,3 +7,4 @@ Testing
 *_export.h
 libacquire/freebsd_libfetch/httperr.h
 libacquire/freebsd_libfetch/ftperr.h
+vcpkg

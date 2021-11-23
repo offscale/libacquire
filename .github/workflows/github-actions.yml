@@ -72,12 +72,10 @@ jobs:
         shell: cmd
       - name: Install dependencies with vcpkg
         run: |
-          cd "%GITHUB_WORKSPACE%"
-          set vcpkg="%cd%\vcpkg"
-          cd "%vcpkg%"
-          dir
+          cd "%GITHUB_WORKSPACE%\%vcpkg%"
           IF NOT EXIST "buildtrees\libarchive" (
-              "vcpkg.exe install libarchive"
+              .\vcpkg.exe "--version"
+              .\vcpkg.exe "install" "libarchive"
           )
         shell: cmd
       - name: build
