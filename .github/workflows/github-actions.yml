@@ -66,17 +66,18 @@ jobs:
           IF NOT EXIST "vcpkg" (
               git clone --depth=360 https://github.com/microsoft/vcpkg
               cd "vcpkg"
-              git reset --hard 4a78558
+              git reset --hard d8b9ae5
               .\bootstrap-vcpkg.bat
           )
         shell: cmd
       - name: Install dependencies with vcpkg
         run: |
           cd "%GITHUB_WORKSPACE%"
-          cd "vcpkg"
+          set vcpkg="%cd%\vcpkg"
+          cd "%vcpkg%"
           dir
           IF NOT EXIST "buildtrees\libarchive" (
-              .\vcpkg.exe install libarchive
+              "vcpkg.exe install libarchive"
           )
         shell: cmd
       - name: build
