@@ -65,6 +65,7 @@ jobs:
           set
           cd "%GITHUB_WORKSPACE%" && cd ..
           git clone --depth=360 https://github.com/microsoft/vcpkg
+          cd vcpkg
           git reset --hard 4a78558
         shell: cmd
       - name: Install dependencies
