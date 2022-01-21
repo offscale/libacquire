@@ -6,6 +6,8 @@
 
 #define LIBACQUIRE_IMPLEMENTATION
 
+/* #include <acquire_crc32c.h> */
+
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 #include <acquire_openssl.h>
 #elif defined(USE_WINCRYPT)
@@ -20,6 +22,13 @@
 #define NUM_FORMAT "%lu"
 #endif
 
+/*
+TEST x_test_crc32c_should_be_true(void) {
+    ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
+    PASS();
+}
+*/
+
 TEST x_test_sha256_should_be_true(void) {
     ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));
     PASS();
@@ -33,6 +42,7 @@ TEST x_test_sha256_file_should_be_false(void) {
 
 /* Suites can group multiple tests with common setup. */
 SUITE (checksums_suite) {
+    /* RUN_TEST(x_test_crc32c_should_be_true); */
     RUN_TEST(x_test_sha256_should_be_true);
     RUN_TEST(x_test_sha256_file_should_be_false);
 }

@@ -21,15 +21,12 @@ include(CheckSymbolExists)
 check_symbol_exists(asprintf "stdio.h" HAVE_ASPRINTF)
 if (HAVE_ASPRINTF)
     add_compile_definitions(HAVE_ASPRINTF)
+    add_subdirectory("morestd")
 endif (HAVE_ASPRINTF)
 check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
 if (HAVE_VA_COPY)
     add_compile_definitions(HAVE_VA_COPY)
 endif (HAVE_VA_COPY)
-
-if (HAVE_ASPRINTF)
-    add_subdirectory("morestd")
-endif ()
 
 ###############################
 # Executable target formation #
@@ -63,7 +60,8 @@ set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
 set(installable_libs "${EXEC_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
+endif (TARGET "${DEPENDANT_LIBRARY}")
+
 install(TARGETS ${installable_libs}
         DESTINATION "bin"
         EXPORT "${EXEC_NAME}Targets")

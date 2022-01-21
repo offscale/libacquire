@@ -35,7 +35,7 @@
 #include <acquire_wincrypt.h>
 #endif
 
-
+#include <acquire_crc32c.h>
 
 int main(int argc, char *argv[]) {
     struct DocoptArgs args = docopt(argc, argv, /* help */ 1, /* version */ VERSION);

@@ -7,7 +7,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 set(Header_Files "acquire_download.h")
 if (NOT HAS_STDBOOL AND NOT MSVC)
   list(APPEND Header_Files "acquire_stdbool.h")
-endif ()
+endif (NOT HAS_STDBOOL AND NOT MSVC)
 source_group("Header Files" FILES "${Header_Files}")
 
 ##############################################################
@@ -30,9 +30,11 @@ set_http_https_lib()
 
 set_extract_lib()
 
+set_checksum_lib()
+
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
-foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
+foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
   message(STATUS "[libacquire] ${_library}_LIB:\t${${_library}_LIB}")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
@@ -58,7 +60,7 @@ set(_include_dirs
 
 if (DEFINED LIBACQUIRE_INCLUDE_DIR)
   list(APPEND _include_dirs "$<BUILD_INTERFACE:${LIBACQUIRE_INCLUDE_DIR}>")
-endif ()
+endif (DEFINED LIBACQUIRE_INCLUDE_DIR)
 
 target_include_directories(
         "${LIBRARY_NAME}"
@@ -103,7 +105,7 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
+endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
         DESTINATION "bin"
         EXPORT "${LIBRARY_NAME}Targets")

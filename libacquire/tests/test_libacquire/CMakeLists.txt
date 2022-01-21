@@ -7,13 +7,14 @@ include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 # Dependencies download #
 #########################
 
+set(GREATEST_CRC32C "c66c379f")
 set(GREATEST_SHA256 "1292593d95c35eeccc89ffa1c91d6fe53b49f81cbf2c2b7758842b7f3186fcc2")
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
 
 file(TO_NATIVE_PATH "${DOWNLOAD_DIR}" DOWNLOAD_DIR)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
   string(REPLACE "\\" "\\\\" DOWNLOAD_DIR "${DOWNLOAD_DIR}")
-endif ()
+endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
 file(MAKE_DIRECTORY "${DOWNLOAD_DIR}")
 set(GREATEST_BASEFILENAME "greatest.h")
@@ -60,13 +61,15 @@ set_http_https_lib()
 
 set_extract_lib()
 
+set_checksum_lib()
+
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
 set(_targets "${exec_name}" "test_amalgamation")
 set(_archives "libarchive" "miniz") # "zlib"
 set(All_Header_Files "${GREATEST_FILE}")
 
-foreach (_library "HTTPS" "CRYPTO" "EXTRACT")
+foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
   message(STATUS "[test_libacquire] ${_library}_LIB: \t${${_library}_LIB}")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 

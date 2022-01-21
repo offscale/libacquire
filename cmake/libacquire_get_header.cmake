@@ -32,7 +32,7 @@ function (get_libacquire_header header_file)
     string(LENGTH "${json_file}" json_filesize)
     if (json_filesize EQUAL 0)
         message(FATAL_ERROR "Unable to download \"${json_file}\"")
-    endif ()
+    endif (json_filesize EQUAL 0)
 
     file(READ "${json_file}" json_contents)
     string(JSON json_contents_n
@@ -44,12 +44,12 @@ function (get_libacquire_header header_file)
         string(JSON type TYPE "${json_contents}" "${i}")
         if (NOT type STREQUAL "OBJECT")
             continue ()
-        endif ()
+        endif (NOT type STREQUAL "OBJECT")
 
         string(JSON type TYPE "${json_contents}" "${i}" "assets")
         if (NOT type STREQUAL "ARRAY")
             continue ()
-        endif ()
+        endif (NOT type STREQUAL "ARRAY")
 
         string(JSON assets_json
                 GET "${json_contents}" "${i}" "assets")
@@ -65,7 +65,7 @@ function (get_libacquire_header header_file)
             string(JSON type TYPE "${asset_json}")
             if (NOT type STREQUAL "OBJECT")
                 continue ()
-            endif ()
+            endif (NOT type STREQUAL "OBJECT")
 
             string(JSON content_type
                     GET "${asset_json}" "content_type")
@@ -78,7 +78,7 @@ function (get_libacquire_header header_file)
                         )
                 file(DOWNLOAD "${browser_download_url}" "${header_file}")
                 return()
-            endif ()
+            endif (name STREQUAL "acquire.h")
         endforeach ()
     endforeach ()
 

@@ -27,7 +27,7 @@ set_target_properties(
 
 if (HAVE_ASPRINTF)
     target_compile_definitions("${LIBRARY_NAME}" INTERFACE HAVE_ASPRINTF=1)
-endif ()
+endif (HAVE_ASPRINTF)
 
 include(GenerateExportHeader)
 set(_export_file "${CMAKE_CURRENT_SOURCE_DIR}/${LIBRARY_NAME}_export.h")
@@ -40,7 +40,8 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
+endif (TARGET "${DEPENDANT_LIBRARY}")
+
 install(TARGETS ${installable_libs}
         DESTINATION "${INSTALL_DEST}"
         EXPORT "${LIBRARY_NAME}Targets")

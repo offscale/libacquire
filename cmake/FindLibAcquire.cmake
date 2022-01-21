@@ -36,7 +36,7 @@ function (set_networking_lib HTTPS_LIBRARY)
         set(HTTPS_LIBRARY "wininet" PARENT_SCOPE)
         if (NOT DEFINED USE_OPENSSL)
             set(USE_WINCRYPT 1 PARENT_SCOPE)
-        endif ()
+        endif (NOT DEFINED USE_OPENSSL)
     elseif (DEFINED USE_MY_LIBFETCH)
         set(HTTPS_LIBRARY "freebsd_libfetch" PARENT_SCOPE)
     elseif (DEFINED USE_LIBFETCH)
@@ -61,7 +61,7 @@ message(STATUS "net LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 function (set_cryptography_lib CRYPTO_LIBRARIES)
     if (NOT DEFINED CRYPTO_LIB)
         message(FATAL_ERROR "Crypto library could not be inferred so must be specified for linkage")
-    endif ()
+    endif (NOT DEFINED CRYPTO_LIB)
 
     set(CRYPTO_LIBRARIES "")
 
@@ -104,7 +104,7 @@ macro (download_extract_miniz download_dir)
                 EXPECTED_HASH "SHA256=e4aa5078999c7f7466fa6b8f9848e39ddfff9a4bafc50215764aebe1f13b3841")
         #file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
         #        DESTINATION "${download_dir}")
-    endif ()
+    endif (NOT EXISTS "${MINIZ_ZIP_FILE}")
 
     if (NOT EXISTS "${download_dir}/zip.h")
         file(DOWNLOAD
@@ -123,13 +123,13 @@ macro (download_extract_miniz download_dir)
                 "https://raw.githubusercontent.com/kuba--/zip/5b3f387/src/miniz.h"
                 "${download_dir}/miniz.h"
                 EXPECTED_HASH "SHA256=ce02b94490b7a24cc24d2426869a04239ff47dd29d133f9a57625afc0f4a0e87")
-    endif ()
+    endif (NOT EXISTS "${download_dir}/zip.h")
 
     file(TO_NATIVE_PATH "${MINIZ_ZIP_FILE}" MINIZ_ZIP_FILE)
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
         string(REPLACE "\\" "\\\\" MINIZ_ZIP_FILE "${MINIZ_ZIP_FILE}")
-    endif ()
+    endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 endmacro (download_extract_miniz download_dir)
 
 function (download_unarchiver EXTRACT_LIB)
@@ -159,14 +159,14 @@ function (download_unarchiver EXTRACT_LIB)
                 LINKER_LANGUAGE
                 C
         )
-    endif ()
+    endif (NOT TARGET "${EXTRACT_LIB}")
 endfunction (download_unarchiver EXTRACT_LIB)
 
 function (set_download_unarchiver EXTRACT_LIB)
     download_unarchiver(EXTRACT_LIB)
     if (NOT DEFINED EXTRACT_LIB)
         message(FATAL_ERROR "EXTRACT_LIB is not defined")
-    endif ()
+    endif (NOT DEFINED EXTRACT_LIB)
     set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
     unset(USE_ZLIB)
     unset(USE_ZLIB PARENT_SCOPE)
@@ -218,3 +218,31 @@ else ()
 endif ()
 
 message(STATUS "compress LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+
+######################
+# Checksum libraries #
+######################
+
+function (set_checksum_libraries CHECKSUM_LIBRARIES)
+    # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
+    if (USE_LIBRHASH)
+        #include("${CMAKE_SOURCE_DIR}/cmake/FindLibRHash.cmake")
+        #find_library(LibRHash_LIBRARY NAMES RHash LibRHash librhash rhash REQUIRED)
+        find_package(rhash CONFIG REQUIRED)
+        set(CHECKSUM_LIB "rhash")
+    endif (USE_LIBRHASH)
+    # set(CHECKSUM_LIB "librhash" PARENT_SCOPE)
+    if (DEFINED CHECKSUM_LIBRARIES AND NOT CHECKSUM_LIBRARIES STREQUAL "")
+        set(CHECKSUM_LIBRARIES "${CHECKSUM_LIB}" PARENT_SCOPE)
+    endif (DEFINED CHECKSUM_LIBRARIES AND NOT CHECKSUM_LIBRARIES STREQUAL "")
+endfunction (set_checksum_libraries CHECKSUM_LIBRARIES)
+
+set_checksum_libraries(CHECKSUM_LIBRARIES)
+
+if (CHECKSUM_LIBRARIES)
+    list(APPEND LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}")
+else ()
+    message(STATUS "CHECKSUM_LIBRARIES not set for linkage (crypto libraries will be used)")
+endif ()
+
+message(STATUS "checksum LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")

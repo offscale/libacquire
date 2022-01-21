@@ -62,7 +62,7 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 set(installable_libs "${EXEC_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
+endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
         DESTINATION "bin"
         EXPORT "${EXEC_NAME}Targets")

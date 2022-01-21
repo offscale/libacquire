@@ -160,7 +160,7 @@ if (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h"
     # Set Version String
     set(LIBRESSL_VERSION "${LIBRESSL_VERSION_MAJOR}.${LIBRESSL_VERSION_MINOR}.${LIBRESSL_VERSION_REVISION}")
 
-endif ()
+endif (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
 
 # Set Find Package Arguments
 find_package_handle_standard_args(LibreSSL
@@ -192,7 +192,7 @@ if (LIBRESSL_FOUND)
                 IMPORTED_LOCATION "${LIBRESSL_CRYPTO_LIBRARY}"
         )
 
-    endif () # LibreSSL::Crypto
+    endif (NOT TARGET LibreSSL::Crypto AND EXISTS "${LIBRESSL_CRYPTO_LIBRARY}") # LibreSSL::Crypto
 
     # Set LibreSSL::SSL
     if (NOT TARGET LibreSSL::SSL AND EXISTS "${LIBRESSL_SSL_LIBRARY}")
@@ -210,7 +210,7 @@ if (LIBRESSL_FOUND)
                 INTERFACE_LINK_LIBRARIES LibreSSL::Crypto
         )
 
-    endif () # LibreSSL::SSL
+    endif (NOT TARGET LibreSSL::SSL AND EXISTS "${LIBRESSL_SSL_LIBRARY}") # LibreSSL::SSL
 
     # Set LibreSSL::TLS
     if (NOT TARGET LibreSSL::TLS AND EXISTS "${LIBRESSL_TLS_LIBRARY}")
@@ -224,6 +224,6 @@ if (LIBRESSL_FOUND)
                 INTERFACE_LINK_LIBRARIES LibreSSL::SSL
         )
 
-    endif () # LibreSSL::TLS
+    endif (NOT TARGET LibreSSL::TLS AND EXISTS "${LIBRESSL_TLS_LIBRARY}") # LibreSSL::TLS
 
 endif (LIBRESSL_FOUND)

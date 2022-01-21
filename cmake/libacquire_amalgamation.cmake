@@ -22,6 +22,8 @@ function (generate_amalgamation_header)
             "libacquire/acquire_wincrypt.h"
             # "libacquire/acquire_winseccng.h"
             "libacquire/acquire_openssl.h"
+            "libacquire/acquire_crc32c.h"
+            "libacquire/acquire_librhash.h"
 
             # Networking
             "libacquire/acquire_download.h"

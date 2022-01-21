@@ -2,6 +2,7 @@
   "name": "libacquire",
   "version-string": "0.0.1",
   "dependencies": [
-    "libarchive"
+    "libarchive",
+    "rhash"
   ]
 }
