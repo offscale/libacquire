@@ -151,7 +151,7 @@ function (download_unarchiver EXTRACT_LIB)
 
         add_library("${EXTRACT_LIB}" "${Header_Files}" "${Source_Files}")
 
-        target_link_libraries("${EXTRACT_LIB}" INTERFACE "${PROJECT_NAME}_compiler_flags")
+        target_link_libraries("${EXTRACT_LIB}" PRIVATE "libacquire_compiler_flags")
 
         set_target_properties(
                 "${EXTRACT_LIB}"

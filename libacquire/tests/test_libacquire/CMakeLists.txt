@@ -118,7 +118,7 @@ foreach (EXEC_NAME ${_targets})
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
-    target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire")
+    target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "libacquire_compiler_flags")
     test_wrapper()
 endforeach (EXEC_NAME ${_targets})
 
@@ -150,9 +150,10 @@ foreach (ARCHIVE_LIB ${_archives})
     if (ARCHIVE_LIB STREQUAL "miniz")
         set(archive_lib "${ARCHIVE_LIB}")
     elseif (ARCHIVE_LIB STREQUAL "libarchive")
-        include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
-        target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
-        set(archive_lib "${LibArchive_LIBRARIES}")
+        include(FindLibArchive)
+        find_package(LibArchive REQUIRED)
+        #target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
+        set(archive_lib "LibArchive::LibArchive")
     endif ()
     #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
     target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "${archive_lib}")
@@ -161,7 +162,7 @@ endforeach (ARCHIVE_LIB ${_archives})
 
 install(FILES
         "${PROJECT_BINARY_DIR}/src/config_for_tests.h"
-        "${All_Header_Files}"
+        ${All_Header_Files}
         "${GREATEST_FILE}"
         DESTINATION
         "include")

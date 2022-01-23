@@ -45,4 +45,4 @@ endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
         DESTINATION "${INSTALL_DEST}"
         EXPORT "${LIBRARY_NAME}Targets")
-install(FILES "${_export_file}" "${Header_Files}" DESTINATION "include")
+install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")

@@ -111,6 +111,6 @@ install(TARGETS ${installable_libs}
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES
         "${PROJECT_BINARY_DIR}/src/acquire_config.h"
-        "${Header_Files}"
+        ${Header_Files}
         DESTINATION
         "include")

@@ -60,6 +60,6 @@ if (NOT LibArchive_FOUND)
     endif (PkgConfig_FOUND)
 endif (NOT LibArchive_FOUND)
 
-if (NOT LibArchive_FOUND)
+if (NOT LibArchive_FOUND AND NOT DEFINED LibArchive_QUIET)
     message(FATAL_ERROR "Could NOT find LibArchive")
-endif (NOT LibArchive_FOUND)
+endif (NOT LibArchive_FOUND AND NOT DEFINED LibArchive_QUIET)
