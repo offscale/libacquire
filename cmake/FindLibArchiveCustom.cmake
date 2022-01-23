@@ -50,7 +50,7 @@ LibArchive_STATIC_LIBRARY_DIRS=/usr/local/Cellar/libarchive/3.5.2/lib
 
 ]=======================================================================]
 
-
+# include(FindLibArchive)
 find_package(LibArchive QUIET)
 if (NOT LibArchive_FOUND)
     find_package(PkgConfig)
