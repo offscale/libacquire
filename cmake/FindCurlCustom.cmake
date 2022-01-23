@@ -20,12 +20,14 @@ function (get_curl LINK_LIBRARIES)
 
     if (VCPKG_TOOLCHAIN)  # Overly specific, should be same for conan, Buckaroo, Hunter, &etc.
         find_package(CURL CONFIG QUIET)
+        if (CURL_FOUND)
+            set("${LINK_LIBRARIES}" "CURL::libcurl" PARENT_SCOPE)
+            return()
+        endif (CURL_FOUND)
     endif (VCPKG_TOOLCHAIN)
 
-    if (NOT CURL_FOUND)
-        # curl version >=7.57 can have config files
-        find_package(CURL QUIET COMPONENTS libcurl CONFIG)
-    endif (NOT CURL_FOUND)
+    # curl version >=7.57 can have config files
+    find_package(CURL QUIET COMPONENTS libcurl CONFIG)
 
     # This conditional if/else block from https://gitlab.kitware.com/cmake/cmake/-/issues/18378#note_467156
     if (CURL_FOUND)
