@@ -11,6 +11,10 @@
 
 #include "cli.h"
 
+#ifdef USE_CRC32C
+#include <acquire_crc32c.h>
+#endif
+
 #ifdef USE_LIBCURL
 
 #include <acquire_libcurl.h>
@@ -34,8 +38,6 @@
 #elif defined(USE_WINCRYPT)
 #include <acquire_wincrypt.h>
 #endif
-
-#include <acquire_crc32c.h>
 
 int main(int argc, char *argv[]) {
     struct DocoptArgs args = docopt(argc, argv, /* help */ 1, /* version */ VERSION);

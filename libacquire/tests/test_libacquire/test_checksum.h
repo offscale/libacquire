@@ -6,7 +6,7 @@
 
 #define LIBACQUIRE_IMPLEMENTATION
 
-/* #include <acquire_crc32c.h> */
+#include <acquire_crc32c.h>
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 #include <acquire_openssl.h>
@@ -22,12 +22,10 @@
 #define NUM_FORMAT "%lu"
 #endif
 
-/*
 TEST x_test_crc32c_should_be_true(void) {
     ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
     PASS();
 }
-*/
 
 TEST x_test_sha256_should_be_true(void) {
     ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));

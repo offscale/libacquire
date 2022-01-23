@@ -151,7 +151,21 @@ function (download_unarchiver EXTRACT_LIB)
 
         add_library("${EXTRACT_LIB}" "${Header_Files}" "${Source_Files}")
 
-        target_link_libraries("${EXTRACT_LIB}" PRIVATE "libacquire_compiler_flags")
+        target_compile_features("${EXTRACT_LIB}" PRIVATE "c_std_${CMAKE_C_STANDARD}")
+
+        set(gcc_like "$<COMPILE_LANG_AND_ID:C,CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
+        set(msvc "$<COMPILE_LANG_AND_ID:C,CXX,MSVC>")
+        target_compile_options(
+                "${EXTRACT_LIB}"
+                PRIVATE
+                "$<${gcc_like}:$<BUILD_INTERFACE:-Wno-long-long>>"
+                "$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi>>"
+        )
+        target_compile_definitions(
+                "${EXTRACT_LIB}"
+                PRIVATE
+                -D_CRT_SECURE_NO_WARNINGS
+        )
 
         set_target_properties(
                 "${EXTRACT_LIB}"
@@ -229,7 +243,6 @@ function (set_checksum_libraries CHECKSUM_LIBRARIES)
         #include("${CMAKE_SOURCE_DIR}/cmake/FindLibRHash.cmake")
         #find_library(LibRHash_LIBRARY NAMES RHash LibRHash librhash rhash REQUIRED)
         find_package(rhash CONFIG REQUIRED)
-        set(CHECKSUM_LIB "rhash")
     endif (USE_LIBRHASH)
     # set(CHECKSUM_LIB "librhash" PARENT_SCOPE)
     if (DEFINED CHECKSUM_LIBRARIES AND NOT CHECKSUM_LIBRARIES STREQUAL "")
@@ -240,7 +253,9 @@ endfunction (set_checksum_libraries CHECKSUM_LIBRARIES)
 set_checksum_libraries(CHECKSUM_LIBRARIES)
 
 if (CHECKSUM_LIBRARIES)
-    list(APPEND LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}")
+    if (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
+        list(APPEND LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}")
+    endif (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
 else ()
     message(STATUS "CHECKSUM_LIBRARIES not set for linkage (crypto libraries will be used)")
 endif ()

@@ -40,6 +40,14 @@
 
 #define EXTRACT_LIB "@EXTRACT_LIB@"
 
+/* Checksum API */
+
+#cmakedefine USE_CRC32C 1
+
+#cmakedefine USE_LIBRHASH 1
+
+#define CHECKSUM_LIB "@CHECKSUM_LIB@"
+
 /* Architecture (needed by MSVC) */
 
 #define _@TARGET_ARCH@_

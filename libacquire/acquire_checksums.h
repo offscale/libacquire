@@ -16,7 +16,7 @@
 #include "acquire_config.h"
 #include "acquire_string_extras.h"
 
-/* extern bool crc32c(const char *, const char *); */
+extern bool crc32c(const char *, const char *);
 
 extern bool sha256(const char *, const char *);
 
@@ -48,8 +48,8 @@ extern enum Checksum string2checksum(const char *s) {
 
 bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *) {
     switch (checksum) {
-        /*case LIBACQUIRE_CRC32C:
-            return crc32c;*/
+        case LIBACQUIRE_CRC32C:
+            return crc32c;
         case LIBACQUIRE_SHA256:
             return sha256;
         case LIBACQUIRE_SHA512:

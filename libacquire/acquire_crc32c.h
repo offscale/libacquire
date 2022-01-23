@@ -8,22 +8,26 @@
  * Alternatives are to use `zlib`'s CRC32C impl conditionally or RHash or miniz
  * */
 
-#if !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) && defined(LIBACQUIRE_IMPLEMENTATION)
+#if !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) && defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C)
 #define LIBACQUIRE_ACQUIRE_CRC32C_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include <acquire_config.h>
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
 
 #define CHUNK_SIZE 4096
 
-#ifdef _WIN32
-#include <wchar.h>
-#include <io.h>
-#include <shellapi.h>
+#include <stdio.h>
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
+
 #else
 #include <unistd.h>
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -84,7 +88,7 @@ unsigned int crc32_file(FILE *file) {
     return crc;
 }
 
-bool crc32(const char *filename, const char *hash) {
+bool crc32c(const char *filename, const char *hash) {
     unsigned int crc32_res;
     FILE* fh;
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
@@ -100,4 +104,4 @@ bool crc32(const char *filename, const char *hash) {
     return true;
 }
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) && defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C) */

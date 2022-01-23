@@ -11,6 +11,8 @@ By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `winine
 
 By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DUSE_OPENSSL`.
 
+By default—for crc32c—this uses `rhash` if available (also giving access to: CRC32, MD4, MD5, SHA1, SHA256, SHA512, SHA3, AICH, ED2K, DC++ TTH, BitTorrent BTIH, Tiger, GOST R 34.11-94, GOST R 34.11-2012, RIPEMD-160, HAS-160, EDON-R, and Whirlpool); otherwise uses included crc32c implementation. Override with `-DUSE_CRC32c`.
+
 By default—for decompression—this uses `compressapi.h` on Windows; then, in order of precedence tries: libarchive, zlib, or downloads miniz.
 
 Supports:
@@ -66,6 +68,14 @@ If your OS doesn't have the dependency, an optimised dependency free version wil
   | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † (if installed) on macOS, Linux, BSD, and SunOS
   | \* [libarchive](https://libarchive.org) | `USE_LIBARCHIVE` | All that libarchive supports
   | [miniz](https://github.com/richgel999/miniz) with [zip](https://github.com/kuba--/zip) API | `USE_MINIZ` | All that miniz + zip supports; default † fallback
+
+### Checksum
+Note that most checksum libraries are crypto libraries so working with these APIs isn't required for libacquire:
+
+  | API                                                           | Package enable flag | OS support                      |
+  ----------------------------------------------------------------| ------------------- |---------------------------------|
+  | \* `acquire_crc32c.h`                                         | `USE_CRC32C`        | All                             |
+  | \* [RHash (Recursive Hasher)](https://github.com/rhash/RHash) | `USE_LIBRHASH`      | All; † fallback to `USE_CRC32C` 
 
 ## Docker
 
