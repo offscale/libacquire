@@ -22,6 +22,8 @@ if (DEFINED USE_MY_LIBFETCH) # Experiments
     endif ()
 endif (DEFINED USE_MY_LIBFETCH)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 ###############################
 # System symbol configuration #
 ###############################

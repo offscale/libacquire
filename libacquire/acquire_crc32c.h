@@ -98,7 +98,7 @@ bool crc32c(const char *filename, const char *hash) {
 #endif
     if (fh != NULL) {
         crc32_res = crc32_file(fh);
-        printf("crc32_res: %u\n", crc32_res);
+        printf("crc32_res: %x\n", crc32_res);
         fclose(fh);
     }
     return true;

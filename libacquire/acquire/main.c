@@ -13,6 +13,8 @@
 
 #ifdef USE_CRC32C
 #include <acquire_crc32c.h>
+#elif defined(USE_LIBRHASH)
+#include <acquire_librhash.h>
 #endif
 
 #ifdef USE_LIBCURL

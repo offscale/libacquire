@@ -6,7 +6,11 @@
 
 #define LIBACQUIRE_IMPLEMENTATION
 
+#ifdef USE_CRC32C
 #include <acquire_crc32c.h>
+#elif defined(USE_LIBRHASH)
+#include <acquire_librhash.h>
+#endif
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 #include <acquire_openssl.h>
@@ -40,7 +44,7 @@ TEST x_test_sha256_file_should_be_false(void) {
 
 /* Suites can group multiple tests with common setup. */
 SUITE (checksums_suite) {
-    /* RUN_TEST(x_test_crc32c_should_be_true); */
+    RUN_TEST(x_test_crc32c_should_be_true);
     RUN_TEST(x_test_sha256_should_be_true);
     RUN_TEST(x_test_sha256_file_should_be_false);
 }

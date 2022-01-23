@@ -173,4 +173,57 @@ char *strcasestr(const char *h, const char *n)
 
 #endif /* ! HAVE_STRCASESTR_H */
 
+#if 1
+
+/* MIT licensed function from Safe C Library */
+
+size_t strerrorlen_s(errno_t errnum)
+{
+#ifndef ESNULLP
+#define ESNULLP         ( 400 )       /* null ptr                    */
+#endif
+
+#ifndef ESLEWRNG
+#define ESLEWRNG        ( 410 )       /* wrong size                */
+#endif
+
+#ifndef ESLAST
+#define ESLAST ESLEWRNG
+#endif
+
+    static const int len_errmsgs_s[] = {
+            sizeof "null ptr",               /* ESNULLP */
+            sizeof "length is zero",         /* ESZEROL */
+            sizeof "length is below min",    /* ESLEMIN */
+            sizeof "length exceeds RSIZE_MAX",/* ESLEMAX */
+            sizeof "overlap undefined",      /* ESOVRLP */
+            sizeof "empty string",           /* ESEMPTY */
+            sizeof "not enough space",       /* ESNOSPC */
+            sizeof "unterminated string",    /* ESUNTERM */
+            sizeof "no difference",          /* ESNODIFF */
+            sizeof "not found",              /* ESNOTFND */
+            sizeof "wrong size",             /* ESLEWRNG */
+    };
+
+    if (errnum >= ESNULLP && errnum <= ESLAST)
+    {
+        return len_errmsgs_s[errnum - ESNULLP] - 1;
+    }
+    else
+    {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#endif /* _MSC_VER */
+        const char *buf = strerror(errnum);
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif /* _MSC_VER */
+        return buf ? strlen(buf) : 0;
+    }
+}
+
+
+#endif
+
 #endif /* ! LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */
