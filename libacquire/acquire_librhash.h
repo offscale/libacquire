@@ -41,13 +41,10 @@ struct CodeHash hash_file(const char* filepath, enum rhash_ids hash)
 #else
         fprintf(stderr, "LibRHash error: %s: %s\n", filepath, strerror(errno));
 #endif
-    } else {
+    } else
         /* convert binary digest to hexadecimal string */
         rhash_print_bytes(code_hash.hash, (const unsigned char*)digest, rhash_get_digest_size(hash),
-                          (RHPR_BASE32 | RHPR_UPPERCASE));
-
-        printf("%s (%s) = %s\n", rhash_get_name(hash), filepath, code_hash.hash);
-    }
+                          RHPR_BASE64);
     return code_hash;
 }
 

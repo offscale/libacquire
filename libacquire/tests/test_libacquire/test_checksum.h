@@ -27,7 +27,8 @@
 #endif
 
 TEST x_test_crc32c_should_be_true(void) {
-    ASSERT_FALSE(/*TODO add '!'*/crc32c(GREATEST_FILE, GREATEST_CRC32C));
+    printf("crc32c(GREATEST_FILE, \"%s\"): "NUM_FORMAT"\n", GREATEST_CRC32C, crc32c(GREATEST_FILE, GREATEST_CRC32C));
+    ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
     PASS();
 }
 
@@ -37,7 +38,6 @@ TEST x_test_sha256_should_be_true(void) {
 }
 
 TEST x_test_sha256_file_should_be_false(void) {
-    printf("sha256(GREATEST_FILE, \"wrong sha256 sum here\"): "NUM_FORMAT"\n", sha256(GREATEST_FILE, "wrong sha256 sum here"));
     ASSERT_FALSE(sha256(GREATEST_FILE, "wrong sha256 sum here"));
     PASS();
 }
