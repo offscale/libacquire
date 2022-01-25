@@ -47,6 +47,15 @@
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
+#if defined(__STDC_LIB_EXT1__)
+#define HAVE_STRERRORLEN_S
+#else
+
+#if !defined(__APPLE__) && !defined(__APPLE_CC__)
+typedef int errno_t;
+#endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
+#endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__) */
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -173,7 +182,7 @@ char *strcasestr(const char *h, const char *n)
 
 #endif /* ! HAVE_STRCASESTR_H */
 
-#if 1
+#ifndef HAVE_STRERRORLEN_S
 
 /* MIT licensed function from Safe C Library */
 
@@ -224,6 +233,6 @@ size_t strerrorlen_s(errno_t errnum)
 }
 
 
-#endif
+#endif /* HAVE_STRERRORLEN_S */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */
