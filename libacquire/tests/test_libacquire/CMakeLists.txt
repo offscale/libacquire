@@ -53,6 +53,8 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 
 include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 
+set_checksum_lib()
+
 set_crypto_lib()
 
 set_ssl_lib()
@@ -60,8 +62,6 @@ set_ssl_lib()
 set_http_https_lib()
 
 set_extract_lib()
-
-set_checksum_lib()
 
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 

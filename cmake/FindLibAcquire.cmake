@@ -54,6 +54,34 @@ endif ()
 
 message(STATUS "net LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 
+
+######################
+# Checksum libraries #
+######################
+
+function (set_checksum_libraries CHECKSUM_LIBRARIES)
+    # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
+    if (USE_LIBRHASH)
+        # list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+        if (NOT TARGET LibRHash)
+            find_package(LibRHash REQUIRED)
+        endif (NOT TARGET LibRHash)
+        set(CHECKSUM_LIBRARIES "LibRHash::LibRHash" PARENT_SCOPE)
+    endif (USE_LIBRHASH)
+endfunction (set_checksum_libraries CHECKSUM_LIBRARIES)
+
+set_checksum_libraries(CHECKSUM_LIBRARIES)
+
+if (DEFINED CHECKSUM_LIBRARIES AND NOT CHECKSUM_LIBRARIES STREQUAL "")
+    if (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
+        list(APPEND LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}")
+    endif (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
+else ()
+    message(STATUS "CHECKSUM_LIBRARIES not set for linkage (crypto libraries will be used)")
+endif ()
+
+message(STATUS "checksum LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+
 ###########################
 # Cryptographic libraries #
 ###########################
@@ -82,7 +110,11 @@ set_cryptography_lib(CRYPTO_LIBRARIES)
 
 if (DEFINED CRYPTO_LIBRARIES AND NOT CRYPTO_LIBRARIES STREQUAL "")
     list(APPEND LIBACQUIRE_LIBRARIES "${CRYPTO_LIBRARIES}")
-elseif (NOT DEFINED USE_COMMON_CRYPTO)  # Link not needed
+elseif (NOT DEFINED USE_COMMON_CRYPTO AND  # Link not needed
+        NOT DEFINED CHECKSUM_LIBRARIES OR
+        CHECKSUM_LIBRARIES STREQUAL "" OR
+        CHECKSUM_LIBRARIES STREQUAL "crc32c" # Needs actual crypto not just crc32c impl
+        )
     message(FATAL_ERROR "CRYPTO_LIBRARIES not set for linkage")
 endif ()
 
@@ -232,30 +264,3 @@ else ()
 endif ()
 
 message(STATUS "compress LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
-
-######################
-# Checksum libraries #
-######################
-
-function (set_checksum_libraries CHECKSUM_LIBRARIES)
-    # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
-    if (USE_LIBRHASH)
-        # list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-        if (NOT TARGET LibRHash)
-            find_package(LibRHash REQUIRED)
-        endif (NOT TARGET LibRHash)
-        set(CHECKSUM_LIBRARIES "LibRHash::LibRHash" PARENT_SCOPE)
-    endif (USE_LIBRHASH)
-endfunction (set_checksum_libraries CHECKSUM_LIBRARIES)
-
-set_checksum_libraries(CHECKSUM_LIBRARIES)
-
-if (DEFINED CHECKSUM_LIBRARIES AND NOT CHECKSUM_LIBRARIES STREQUAL "")
-    if (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
-        list(APPEND LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}")
-    endif (NOT CHECKSUM_LIBRARIES STREQUAL "crc32c")
-else ()
-    message(STATUS "CHECKSUM_LIBRARIES not set for linkage (crypto libraries will be used)")
-endif ()
-
-message(STATUS "checksum LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
