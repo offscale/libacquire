@@ -147,19 +147,25 @@ int sha512_file(const char *filename,
     return exit_code;
 }
 
+#ifndef LIBACQUIRE_IMPL_SHA256
+#define LIBACQUIRE_IMPL_SHA256
 bool sha256(const char *filename, const char *hash) {
     unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1];
     sha256_file(filename, sha_output);
 
     return strcmp((const char*)sha_output, hash) == 0;
 }
+#endif /* !LIBACQUIRE_IMPL_SHA256 */
 
+#ifndef LIBACQUIRE_IMPL_SHA512
+#define LIBACQUIRE_IMPL_SHA512
 bool sha512(const char *filename, const char *hash) {
     unsigned char sha_output[SHA512_DIGEST_LENGTH * 2 + 1];
     sha512_file(filename, sha_output);
 
     return strcmp((const char*)sha_output, hash) == 0;
 }
+#endif /* !LIBACQUIRE_IMPL_SHA512 */
 
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 

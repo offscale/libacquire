@@ -22,7 +22,7 @@ struct CodeHash {
     char hash[130];
 };
 
-struct CodeHash hash_file(const char* filepath, enum rhash_ids hash)
+struct CodeHash hash_file(const char* filepath, enum rhash_ids hash, enum rhash_print_sum_flags print_sum_flags)
 {
     char digest[64];
     int res;
@@ -42,15 +42,30 @@ struct CodeHash hash_file(const char* filepath, enum rhash_ids hash)
         fprintf(stderr, "LibRHash error: %s: %s\n", filepath, strerror(errno));
 #endif
     } else
-        /* convert binary digest to hexadecimal string */
         rhash_print_bytes(code_hash.hash, (const unsigned char*)digest, rhash_get_digest_size(hash),
-                          RHPR_BASE64);
+                          print_sum_flags);
     return code_hash;
 }
 
 bool crc32c(const char *filename, const char *hash) {
-    const struct CodeHash code_hash = hash_file(filename, RHASH_CRC32C);
+    const struct CodeHash code_hash = hash_file(filename, RHASH_CRC32C, RHPR_BASE64);
     return code_hash.code < 0 ? false : strcmp(code_hash.hash, hash) == 0;
 }
+
+#ifndef LIBACQUIRE_IMPL_SHA256
+#define LIBACQUIRE_IMPL_SHA256
+bool sha256(const char *filename, const char *hash) {
+    const struct CodeHash code_hash = hash_file(filename, RHASH_SHA256, RHPR_DEFAULT);
+    return code_hash.code < 0 ? false : strcmp(code_hash.hash, hash) == 0;
+}
+#endif /* !LIBACQUIRE_IMPL_SHA256 */
+
+#ifndef LIBACQUIRE_IMPL_SHA512
+#define LIBACQUIRE_IMPL_SHA512
+bool sha512(const char *filename, const char *hash) {
+    const struct CodeHash code_hash = hash_file(filename, RHASH_SHA512, RHPR_DEFAULT);
+    return code_hash.code < 0 ? false : strcmp(code_hash.hash, hash) == 0;
+}
+#endif /* !LIBACQUIRE_IMPL_SHA512 */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBRHASH_H) && defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) */

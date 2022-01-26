@@ -146,15 +146,21 @@ BOOL sha256_file(LPCSTR filename,
 #undef MD5LEN
 }
 
-
+#ifndef LIBACQUIRE_IMPL_SHA256
+#define LIBACQUIRE_IMPL_SHA256
 bool sha256(const char *filename, const char *hash) {
     CHAR result[SHA256_BLOCK_BYTES + 1];
     sha256_file(filename, result);
     return strcmp(hash, result) == 0;
 }
+#endif /* !LIBACQUIRE_IMPL_SHA256 */
 
+#ifndef LIBACQUIRE_IMPL_SHA512
+#define LIBACQUIRE_IMPL_SHA512
 bool sha512(const char *filename, const char *hash) {
+    fputs(stderr, "SHA512 for wincrypt not implemented: always returns `false`");
     return false;
 }
+#endif /* !LIBACQUIRE_IMPL_SHA512 */
 
 #endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) && defined(LIBACQUIRE_IMPLEMENTATION) */
