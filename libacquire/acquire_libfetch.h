@@ -346,48 +346,6 @@ stat_end(struct xferstat *xs)
 }
 
 /*
- * Ask the user for authentication details
- */
-static int
-query_auth(struct url *URL)
-{
-    struct termios tios;
-    tcflag_t saved_flags;
-    size_t i;
-    int nopwd;
-
-    fprintf(stderr, "Authentication required for <%s://%s:%d/>!\n",
-            URL->scheme, URL->host, URL->port);
-
-    fprintf(stderr, "Login: ");
-    if (fgets(URL->user, sizeof URL->user, stdin) == NULL)
-        return (-1);
-    for (i = strlen(URL->user); i >= 0; --i)
-        if (URL->user[i] == '\r' || URL->user[i] == '\n')
-            URL->user[i] = '\0';
-
-    fprintf(stderr, "Password: ");
-    if (tcgetattr(STDIN_FILENO, &tios) == 0) {
-        saved_flags = tios.c_lflag;
-        tios.c_lflag &= ~ECHO;
-        tios.c_lflag |= ECHONL|ICANON;
-        tcsetattr(STDIN_FILENO, TCSAFLUSH|TCSASOFT, &tios);
-        nopwd = (fgets(URL->pwd, sizeof URL->pwd, stdin) == NULL);
-        tios.c_lflag = saved_flags;
-        tcsetattr(STDIN_FILENO, TCSANOW|TCSASOFT, &tios);
-    } else {
-        nopwd = (fgets(URL->pwd, sizeof URL->pwd, stdin) == NULL);
-    }
-    if (nopwd)
-        return (-1);
-    for (i = strlen(URL->pwd); i >= 0; --i)
-        if (URL->pwd[i] == '\r' || URL->pwd[i] == '\n')
-            URL->pwd[i] = '\0';
-
-    return (0);
-}
-
-/*
  * Fetch a file
  */
 static int

@@ -52,6 +52,9 @@
 #include <openssl/err.h>
 #endif /* WITH_SSL */
 
+#include <string.h>
+#include <stdio.h>
+
 /* Connection */
 typedef struct fetchconn conn_t;
 struct fetchconn {
