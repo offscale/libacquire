@@ -12,7 +12,7 @@
 
 /* Crypto library */
 
-#define CRYPTO_LIB "@CRYPTO_LIB@"
+#cmakedefine CRYPTO_LIB "@CRYPTO_LIB@"
 
 #cmakedefine USE_COMMON_CRYPTO 1
 

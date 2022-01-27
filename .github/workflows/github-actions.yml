@@ -66,7 +66,7 @@ jobs:
           IF NOT EXIST "vcpkg" (
               git clone --depth=360 https://github.com/microsoft/vcpkg
               cd "vcpkg"
-              git reset --hard d8b9ae5
+              git reset --hard 7baf7bc
               .\bootstrap-vcpkg.bat
           )
         shell: cmd
@@ -76,9 +76,7 @@ jobs:
           set
           IF NOT EXIST "buildtrees\libarchive" (
               .\vcpkg --version
-              echo ".\vcpkg install --triplet %RUNNER_ARCH%-%RUNNER_OS% libarchive"
               .\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%"
-              rem .\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%" libarchive
           )
         shell: cmd
       - name: build
