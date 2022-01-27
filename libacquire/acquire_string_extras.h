@@ -8,52 +8,56 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#   if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 
-#if _MSC_VER >= 1900
+#       if _MSC_VER >= 1900
 
 /* snprintf is implemented in VS 2015 */
-#define HAVE_SNPRINTF_H
+#               define HAVE_SNPRINTF_H
 
-#endif /* _MSC_VER >= 1900 */
+#       endif /* _MSC_VER >= 1900 */
+
+#   else
+
+#       define HAVE_STRNCASECMP
+
+#   endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
 #else
 
-#define HAVE_STRNCASECMP
+#   include <sys/param.h>
 
-#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
+#   define HAVE_STRINGS_H
 
-#else
+#   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#       define HAVE_SNPRINTF_H
+#       define HAVE_STRNCASECMP_H
+#       define HAVE_STRCASESTR_H
+#   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L */
 
-#include <sys/param.h>
+#   if defined(__APPLE__) && defined(__MACH__)
+#       define HAVE_SNPRINTF_H
+#       define HAVE_STRNCASECMP_H
+#   endif /* defined(__APPLE__) && defined(__MACH__) */
 
-#define HAVE_STRINGS_H
-
-#if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
-#define HAVE_SNPRINTF_H
-#define HAVE_STRNCASECMP_H
-#define HAVE_STRCASESTR_H
-#endif
-
-#if defined(__APPLE__) && defined(__MACH__)
-#define HAVE_SNPRINTF_H
-#define HAVE_STRNCASECMP_H
-#endif /* defined(__APPLE__) && defined(__MACH__) */
-
-#if (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
-    (!defined(__linux__) && !defined(linux) && !defined(__linux) || defined(_GNU_SOURCE))
-#define HAVE_STRNSTR_H
-#endif
+#   if (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
+       (!defined(__linux__) && !defined(linux) && !defined(__linux) || defined(_GNU_SOURCE))
+#      define HAVE_STRNSTR_H
+#   endif /* (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
+             (!defined(__linux__) && !defined(linux) && !defined(__linux) || defined(_GNU_SOURCE)) */
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
-#if defined(__STDC_LIB_EXT1__)
-#define HAVE_STRERRORLEN_S
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__)
+
+#   define HAVE_STRERRORLEN_S
+
 #else
 
-#if !defined(__APPLE__) && !defined(__APPLE_CC__)
-typedef int errno_t;
-#endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
+#   if !defined(__APPLE__) && !defined(__APPLE_CC__)
+        typedef int errno_t;
+#   endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
+
 #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__) */
 
 #include <stdarg.h>
@@ -61,7 +65,7 @@ typedef int errno_t;
 #include <string.h>
 
 #ifdef HAVE_STRINGS_H
-#include <strings.h>
+#   include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
 #ifndef HAVE_STRNCASECMP_H
@@ -231,7 +235,6 @@ size_t strerrorlen_s(errno_t errnum)
         return buf ? strlen(buf) : 0;
     }
 }
-
 
 #endif /* HAVE_STRERRORLEN_S */
 
