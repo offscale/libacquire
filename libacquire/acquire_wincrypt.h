@@ -158,7 +158,7 @@ bool sha256(const char *filename, const char *hash) {
 #ifndef LIBACQUIRE_IMPL_SHA512
 #define LIBACQUIRE_IMPL_SHA512
 bool sha512(const char *filename, const char *hash) {
-    fputs(stderr, "SHA512 for wincrypt not implemented: always returns `false`");
+    fputs("SHA512 for wincrypt not implemented: always returns `false`", stderr);
     return false;
 }
 #endif /* !LIBACQUIRE_IMPL_SHA512 */
