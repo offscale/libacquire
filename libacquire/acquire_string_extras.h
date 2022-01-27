@@ -27,11 +27,8 @@
 
 #   include <sys/param.h>
 
-#   define HAVE_STRINGS_H
-
 #   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
 #       define HAVE_SNPRINTF_H
-#       define HAVE_STRNCASECMP_H
 #       define HAVE_STRCASESTR_H
 #   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L */
 
@@ -41,10 +38,10 @@
 #   endif /* defined(__APPLE__) && defined(__MACH__) */
 
 #   if (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
-       (!defined(__linux__) && !defined(linux) && !defined(__linux) || defined(_GNU_SOURCE))
+           (!defined(__linux__) && !defined(linux) && !defined(__linux))
 #      define HAVE_STRNSTR_H
 #   endif /* (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
-             (!defined(__linux__) && !defined(linux) && !defined(__linux) || defined(_GNU_SOURCE)) */
+                 (!defined(__linux__) && !defined(linux) && !defined(__linux)) */
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
@@ -60,6 +57,11 @@
 
 #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__) */
 
+#ifndef _MSC_VER
+#   define HAVE_STRINGS_H
+#   define HAVE_STRNCASECMP_H
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -68,7 +70,7 @@
 #   include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
-#ifndef HAVE_STRNCASECMP_H
+#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 
 /*
  * `snprintf`, `strncasecmp`, `vsnprintf`, `strnstr` taken from:
@@ -80,8 +82,6 @@
  *
  * SPDX-License-Identifier:  BSD-2-Clause
  */
-
-#ifndef HAVE_SNPRINTF_H
 
 inline int snprintf(char* buffer, size_t count, const char* format, ...)
 {
@@ -112,7 +112,9 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
    termination. Microsoft's implementation is fixed in VS 2015. */
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* HAVE_SNPRINTF_H */
+#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) */
+
+#ifndef HAVE_STRNCASECMP_H
 
 extern int strncasecmp(const char *, const char *, size_t);
 
@@ -130,7 +132,7 @@ int strcasecmp(const char *s1, const char *s2) {
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* ! HAVE_STRNCASECMP_H */
+#endif /* !HAVE_STRNCASECMP_H */
 
 #ifndef HAVE_STRNSTR_H
 
