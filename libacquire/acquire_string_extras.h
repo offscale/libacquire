@@ -45,7 +45,8 @@
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
-#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__)
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && defined(__STDC_LIB_EXT1__) && \
+        __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__)
 
 #   define HAVE_STRERRORLEN_S
 
@@ -55,7 +56,8 @@
         typedef int errno_t;
 #   endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
 
-#endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__) */
+#endif /* defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && defined(__STDC_LIB_EXT1__) && \
+              __STDC_WANT_LIB_EXT1__ || defined(__APPLE__) || defined(__APPLE_CC__) */
 
 #ifndef _MSC_VER
 #   define HAVE_STRINGS_H
