@@ -105,7 +105,7 @@ static int	 sigint;	/* SIGINT received */
 
 static long	 ftp_timeout = TIMEOUT;	/* default timeout for FTP transfers */
 static long	 http_timeout = TIMEOUT;/* default timeout for HTTP transfers */
-static char	*buf;		/* transfer buffer */
+static char	 *transfer_buf;		/* transfer buffer */
 
 
 #if defined(__linux__) || defined(linux) || defined(__linux) \
@@ -701,7 +701,7 @@ fetch(char *URL, const char *path)
         if (size == 0)
             break;
 
-        if ((readcnt = fread(buf, 1, size, f)) < size) {
+        if ((readcnt = fread(transfer_buf, 1, size, f)) < size) {
             if (ferror(f) && errno == EINTR && !sigint)
                 clearerr(f);
             else if (readcnt == 0)
@@ -709,7 +709,7 @@ fetch(char *URL, const char *path)
         }
 
         stat_update(&xs, count += readcnt);
-        for (ptr = buf; readcnt > 0; ptr += wr, readcnt -= wr)
+        for (ptr = transfer_buf; readcnt > 0; ptr += wr, readcnt -= wr)
             if ((wr = fwrite(ptr, 1, readcnt, of)) < readcnt) {
                 if (ferror(of) && errno == EINTR && !sigint)
                     clearerr(of);

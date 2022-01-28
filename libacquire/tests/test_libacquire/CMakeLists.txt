@@ -7,7 +7,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
 # Dependencies download #
 #########################
 
-set(GREATEST_CRC32C "xmw3nw==")
+set(GREATEST_CRC32C "c66c379f")
 set(GREATEST_SHA256 "1292593d95c35eeccc89ffa1c91d6fe53b49f81cbf2c2b7758842b7f3186fcc2")
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
 

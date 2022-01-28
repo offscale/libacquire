@@ -43,11 +43,6 @@ int hash_file(const char* filepath,
     }
 }
 
-bool crc32c(const char *filename, const char *gold_hash) {
-    char gen_hash[130], digest[64];
-    return hash_file(filename, RHASH_CRC32C, RHPR_BASE64, digest, gen_hash) < 0 ? false : strcmp(gen_hash, gold_hash) == 0;
-}
-
 #if !defined(LIBACQUIRE_IMPL_SHA256) && !defined(CRYPTO_LIB)
 #define LIBACQUIRE_IMPL_SHA256
 bool sha256(const char *filename, const char *gold_hash) {
@@ -63,5 +58,45 @@ bool sha512(const char *filename, const char *gold_hash) {
     return hash_file(filename, RHASH_SHA512, RHPR_HEX, digest, gen_hash) < 0 ? false : strcmp(gen_hash, gold_hash) == 0;
 }
 #endif /* !defined(LIBACQUIRE_IMPL_SHA512) && !defined(CRYPTO_LIB) */
+
+/* X(sha256, RHASH_SHA256, comma) \ */
+/* X(sha512, RHASH_SHA512, comma) \ */
+#define comma ,
+#define blank /* nothing */
+#define HASHES \
+	X(crc32, RHASH_CRC32, comma) \
+	X(md4, RHASH_MD4, comma) \
+	X(md5, RHASH_MD5, comma) \
+	X(tiger, RHASH_TIGER, comma) \
+	X(tth, RHASH_TTH, comma) \
+	X(btih, RHASH_BTIH, comma) \
+	X(ed2k, RHASH_ED2K, comma) \
+	X(aich, RHASH_AICH, comma) \
+	X(whirlpool, RHASH_WHIRLPOOL, comma) \
+	X(ripemd160, RHASH_RIPEMD160, comma) \
+	X(gost94, RHASH_GOST94, comma) \
+	X(gost94_cryptopro, RHASH_GOST94_CRYPTOPRO, comma) \
+	X(has160, RHASH_HAS160, comma) \
+	X(gost12_256, RHASH_GOST12_256, comma) \
+	X(gost12_512, RHASH_GOST12_512, comma) \
+	X(sha224, RHASH_SHA224, comma) \
+	X(sha384, RHASH_SHA384, comma) \
+	X(edonr256, RHASH_EDONR256, comma) \
+	X(edonr512, RHASH_EDONR512, comma) \
+	X(sha3_224, RHASH_SHA3_224, comma) \
+	X(sha3_256, RHASH_SHA3_256, comma) \
+	X(sha3_384, RHASH_SHA3_384, comma) \
+	X(sha3_512, RHASH_SHA3_512, comma) \
+	X(crc32c, RHASH_CRC32C, comma) \
+	X(snefru128, RHASH_SNEFRU128, comma) \
+	X(snefru256, RHASH_SNEFRU256, blank)
+
+#define X(name, hash, unused) \
+  bool name(const char *filename, const char *gold_hash) { \
+    char gen_hash[130], digest[64]; \
+	return hash_file(filename, hash, RHPR_HEX, digest, gen_hash) < 0 ? false : strcmp(gen_hash, gold_hash) == 0; \
+  }
+HASHES
+#undef X
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBRHASH_H) && defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) */
