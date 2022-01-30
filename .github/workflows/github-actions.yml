@@ -82,7 +82,7 @@ jobs:
           set vcpkg="%cd%\vcpkg"
           md "cmake-build-debug"
           cd "cmake-build-debug"
-          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" ..
+          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_MANIFEST_MODE="OFF" ..
           cmake --build .
         shell: cmd
       - name: test
