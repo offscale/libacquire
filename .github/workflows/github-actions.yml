@@ -71,6 +71,7 @@ jobs:
       - name: Install dependencies with vcpkg
         run: |
           cd "%GITHUB_WORKSPACE%\vcpkg"
+          dir /S /AD
           IF NOT EXIST "buildtrees\libarchive" (
               .\vcpkg --version
               .\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%"
@@ -82,7 +83,7 @@ jobs:
           set vcpkg="%cd%\vcpkg"
           md "cmake-build-debug"
           cd "cmake-build-debug"
-          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_MANIFEST_MODE="OFF" ..
+          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" ..
           cmake --build .
         shell: cmd
       - name: test
