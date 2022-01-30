@@ -60,16 +60,14 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - name: clone and bootstrap vcpkg
-        run: |
-          cd "%GITHUB_WORKSPACE%"
-          IF NOT EXIST "vcpkg" (
-              git clone --depth=360 https://github.com/microsoft/vcpkg
-              cd "vcpkg"
-              git reset --hard 7baf7bc
-              .\bootstrap-vcpkg.bat
-          )
-        shell: cmd
+      - name: checkout vcpkg
+        uses: actions/checkout@v2
+        with:
+          repository: "microsoft/vcpkg"
+          ref: 6ba505cf2c1752d8ea5abb21427e23ff89dc486f
+          path: vcpkg
+      - name: "Setup vcpkg"
+        run: ./vcpkg/bootstrap-vcpkg.bat
       - name: Install dependencies with vcpkg
         run: |
           cd "%GITHUB_WORKSPACE%\vcpkg"
