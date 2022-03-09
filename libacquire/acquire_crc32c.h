@@ -11,7 +11,6 @@
 #if !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) && defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C)
 #define LIBACQUIRE_ACQUIRE_CRC32C_H
 
-#include <acquire_config.h>
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
