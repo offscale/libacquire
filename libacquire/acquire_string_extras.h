@@ -6,13 +6,21 @@
 #ifndef LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 #define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 
+#include <string.h>
+
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
+        defined(__bsdi__) || defined(__DragonFly__) || defined(BSD)
+#   define ANY_BSD
+#endif
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
 #   if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 
+        /* snprintf is implemented in VS 2015 */
 #       if _MSC_VER >= 1900
 
-/* snprintf is implemented in VS 2015 */
+
 #               define HAVE_SNPRINTF_H
 
 #       endif /* _MSC_VER >= 1900 */
@@ -27,23 +35,19 @@
 
 #   include <sys/param.h>
 
-#   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L || \
-      defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || \
-      defined(__DragonFly__) || defined(BSD)
+#   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L || defined(ANY_BSD)
 #       define HAVE_SNPRINTF_H
 #       define HAVE_STRCASESTR_H
-#   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L */
+#   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L || defined(ANY_BSD) */
 
 #   if defined(__APPLE__) && defined(__MACH__)
 #       define HAVE_SNPRINTF_H
 #       define HAVE_STRNCASECMP_H
 #   endif /* defined(__APPLE__) && defined(__MACH__) */
 
-#   if (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
-           (!defined(__linux__) && !defined(linux) && !defined(__linux))
-#      define HAVE_STRNSTR_H
-#   endif /* (defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L) || defined(BSD) && (BSD >= 199306)) && \
-                 (!defined(__linux__) && !defined(linux) && !defined(__linux)) */
+#   if defined(BSD) && (BSD >= 199306) && !defined(__linux__) && !defined(linux) && !defined(__linux)
+#      define HAVE_STRNSTR
+#   endif /* defined(BSD) && (BSD >= 199306) && !defined(__linux__) && !defined(linux) && !defined(__linux) */
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
@@ -66,6 +70,10 @@
 #   define HAVE_STRNCASECMP_H
 #endif
 
+#if defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#   define HAVE_ASPRINTF
+#endif /* defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE) */
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -77,7 +85,7 @@
 #if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 
 /*
- * `snprintf`, `strncasecmp`, `vsnprintf`, `strnstr` taken from:
+ * `snprintf`, `vsnprintf`, `strnstr` taken from:
  * https://chromium.googlesource.com/chromium/blink/+/5cedd2fd208daf119b9ea47c7c1e22d760a586eb/Source/wtf/StringExtras.h
  * …then modified to remove C++ specifics and WebKit specific macros
  *
@@ -126,19 +134,15 @@ extern int strcasecmp(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
-int strncasecmp(const char *s1, const char *s2, size_t len) {
-    return _strnicmp(s1, s2, len);
-}
+#define strncasecmp _strnicmp
 
-int strcasecmp(const char *s1, const char *s2) {
-    return _stricmp(s1, s2);
-}
+#define strcasecmp _stricmp
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* !HAVE_STRNCASECMP_H */
 
-#ifndef HAVE_STRNSTR_H
+#ifndef HAVE_STRNSTR
 
 extern char *strnstr(const char *, const char *, size_t);
 
@@ -172,7 +176,7 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 }
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* ! HAVE_STRNSTR_H */
+#endif /* ! HAVE_STRNSTR */
 
 #ifndef HAVE_STRCASESTR_H
 extern char *strcasestr(const char *, const char *);
@@ -242,6 +246,6 @@ size_t strerrorlen_s(errno_t errnum)
     }
 }
 
-#endif /* HAVE_STRERRORLEN_S */
+#endif /* !HAVE_STRERRORLEN_S */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */

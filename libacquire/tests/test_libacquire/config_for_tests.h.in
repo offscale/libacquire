@@ -27,4 +27,4 @@
 
 #define _@TARGET_ARCH@_
 
-#endif
+#endif /* ! LIBACQUIRE_CONFIG_FOR_TESTS_H */
