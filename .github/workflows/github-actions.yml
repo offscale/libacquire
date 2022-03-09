@@ -6,88 +6,78 @@ on:
       - master
 
 jobs:
-  build_ubuntu:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    name: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v2
-      - name: deps
-        run: sudo apt-get install -y libssl-dev libcurl4-openssl-dev libarchive-dev
-      - name: build
+
+      - name: mkdir
+        run: mkdir build
+
+      - name: Install dependencies for macOS
+        run: brew install pkg-config libarchive
+        if: matrix.os == 'macos-latest'
+
+      - name: Install dependencies for Ubuntu
+        run: sudo apt-get install -y libcurl4-openssl-dev
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: checkout vcpkg
+        uses: actions/checkout@v2
+        with:
+          repository: "microsoft/vcpkg"
+          ref: d8d61c941c333a147edffdcbdc9964dc0c0962f5
+          path: vcpkg
+        if: matrix.os == 'windows-latest'
+
+      - name: Setup vcpkg (Windows)
+        run: ./vcpkg/bootstrap-vcpkg.bat
+        if: matrix.os == 'windows-latest'
+
+      - name: configure (with vcpkg on Windows)
+        working-directory: ./build
         run: |
-          mkdir cmake-build-"$RUNNER_OS"-debug && pushd "$_"
-          cmake -DCMAKE_BUILD_TYPE="Debug" ..
-          cmake --build .
-      - name: test
-        run: cd cmake-build-"$RUNNER_OS"-debug && ctest .
-      - name: release
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          echo "${{ secrets.GITHUB_TOKEN }}" > .token
-          gh auth login --with-token < .token
-          rm .token
-          gh release delete -y amalgamation
-          gh release create amalgamation --target master cmake-build-"$RUNNER_OS"-debug/src/acquire.h
-  build_macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: deps
-        run: brew install pkg-config libarchive  # openssl
-      - name: build
+          cmake -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="..\vcpkg\scripts\buildsystems\vcpkg.cmake" .
+        shell: cmd
+        if: matrix.os == 'windows-latest'
+
+      - name: configure (macOS)
+        working-directory: ./build
         run: |
           prefix="$(brew --prefix libarchive)"
           export LDFLAGS="-L${prefix}/lib"
           export CPPFLAGS="-I${prefix}/include"
           export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
-          mkdir cmake-build-"$RUNNER_OS"-debug && cd "$_"
           cmake -DCMAKE_BUILD_TYPE="Debug" ..
-          cmake --build .
-      - name: test
-        run: cd cmake-build-"$RUNNER_OS"-debug && ctest .
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      # - uses: ilammy/msvc-dev-cmd@v1
-      - name: Cache vcpkg
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-vcpkg
-        with:
-          path: ${{ github.workspace }}/vcpkg
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/vcpkg.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: checkout vcpkg
-        uses: actions/checkout@v2
-        with:
-          repository: "microsoft/vcpkg"
-          ref: 6ba505cf2c1752d8ea5abb21427e23ff89dc486f
-          path: vcpkg
-      - name: "Setup vcpkg"
-        run: ./vcpkg/bootstrap-vcpkg.bat
-      - name: Install dependencies with vcpkg
+        if: matrix.os == 'macos-latest'
+
+      - name: configure (Ubuntu)
+        working-directory: ./build
         run: |
-          cd "%GITHUB_WORKSPACE%\vcpkg"
-          dir /S /AD
-          IF NOT EXIST "buildtrees\libarchive" (
-              .\vcpkg --version
-              .\vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%"
-          )
-        shell: cmd
+          cmake -DCMAKE_BUILD_TYPE="Debug" ..
+        if: matrix.os == 'ubuntu-latest'
+
       - name: build
-        run: |
-          cd "%GITHUB_WORKSPACE%"
-          set vcpkg="%cd%\vcpkg"
-          md "cmake-build-debug"
-          cd "cmake-build-debug"
-          cmake -DCMAKE_TOOLCHAIN_FILE="%vcpkg%\scripts\buildsystems\vcpkg.cmake" ..
-          cmake --build .
-        shell: cmd
+        working-directory: ./build
+        run: cmake --build .
+
       - name: test
+        working-directory: ./build
+        run: ctest --output-on-failure -C Debug .
+
+      - name: release
+        working-directory: ./build
         run: |
-          cd "%GITHUB_WORKSPACE%\libacquire\cmake-build-debug"
-          ctest -C "Debug" .
-        shell: cmd
+          echo "${{ secrets.GITHUB_TOKEN }}" > .token
+          gh auth login --with-token < .token
+          rm .token
+          gh release delete -y amalgamation
+          gh release create amalgamation --target master "src/acquire.h"
+        if: matrix.os == 'ubuntu-latest'
