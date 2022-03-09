@@ -49,8 +49,8 @@ jobs:
         run: ./vcpkg/bootstrap-vcpkg.bat
         if: matrix.os == 'windows-latest'
 
-      - name: Setup vcpkg (Windows)
-        run: ./vcpkg/vcpkg install $(jq '.dependencies[]' vcpkg.json)
+      - name: Install vcpkg ports (Windows)
+        run: ./vcpkg/vcpkg install --triplet "%RUNNER_ARCH%-%RUNNER_OS%" $(jq '.dependencies[]' vcpkg.json)
         if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: configure (with vcpkg on Windows)
@@ -83,7 +83,7 @@ jobs:
         working-directory: ./build
         run: ctest --output-on-failure -C Debug .
 
-      - name: release
+      - name: release (Ubuntu)
         working-directory: ./build
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
