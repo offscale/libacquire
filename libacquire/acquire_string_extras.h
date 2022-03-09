@@ -35,10 +35,12 @@
 
 #   include <sys/param.h>
 
-#   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L || defined(ANY_BSD)
+#   if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
 #       define HAVE_SNPRINTF_H
+#   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L */
+#   if defined(_GNU_SOURCE) || defined(ANY_BSD)
 #       define HAVE_STRCASESTR_H
-#   endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L || defined(ANY_BSD) */
+#   endif /* defined(_GNU_SOURCE) || defined(ANY_BSD) */
 
 #   if defined(__APPLE__) && defined(__MACH__)
 #       define HAVE_SNPRINTF_H
