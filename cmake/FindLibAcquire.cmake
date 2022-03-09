@@ -198,6 +198,12 @@ function (download_unarchiver EXTRACT_LIB)
                 PRIVATE
                 -D_CRT_SECURE_NO_WARNINGS
         )
+        target_include_directories(
+                "${EXTRACT_LIB}"
+                PUBLIC
+                "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
+                "$<INSTALL_INTERFACE:include>"
+        )
 
         set_target_properties(
                 "${EXTRACT_LIB}"
@@ -205,6 +211,16 @@ function (download_unarchiver EXTRACT_LIB)
                 LINKER_LANGUAGE
                 C
         )
+
+        include(GNUInstallDirs)
+        install(TARGETS "${EXTRACT_LIB}"
+                EXPORT "${EXTRACT_LIB}Targets"
+                ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+        install(FILES ${Header_Files}
+                TYPE "INCLUDE")
+        install(EXPORT "${EXTRACT_LIB}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${EXTRACT_LIB}")
     endif (NOT TARGET "${EXTRACT_LIB}")
 endfunction (download_unarchiver EXTRACT_LIB)
 
