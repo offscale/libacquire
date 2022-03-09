@@ -63,6 +63,11 @@
         typedef int errno_t;
 #   endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
 
+#   if defined(__linux__) || defined(linux) || defined(__linux) || defined(ANY_BSD)
+#       define strerror_s strerror_r
+#       define HAVE_STRERRORLEN_S
+#   endif /* defined(__linux__) || defined(linux) || defined(__linux) || defined(ANY_BSD) */
+
 #endif /* defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
 #ifndef _MSC_VER
