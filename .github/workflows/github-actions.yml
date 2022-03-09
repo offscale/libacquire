@@ -44,7 +44,7 @@ jobs:
       - name: configure (with vcpkg on Windows)
         working-directory: ./build
         run: |
-          cmake -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="..\..\vcpkg\scripts\buildsystems\vcpkg.cmake" ..
+          cmake -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake" ..
         shell: cmd
         if: matrix.os == 'windows-latest'
 
@@ -60,8 +60,7 @@ jobs:
 
       - name: configure (Ubuntu)
         working-directory: ./build
-        run: |
-          cmake -DCMAKE_BUILD_TYPE="Debug" ..
+        run: cmake -DCMAKE_BUILD_TYPE="Debug" ..
         if: matrix.os == 'ubuntu-latest'
 
       - name: build
@@ -78,6 +77,6 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" > .token
           gh auth login --with-token < .token
           rm .token
-          gh release delete -y amalgamation
+          gh release delete -y amalgamation || true
           gh release create amalgamation --target master "src/acquire.h"
         if: matrix.os == 'ubuntu-latest'
