@@ -65,6 +65,8 @@ set_extract_lib()
 
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
+set_checksum_lib()
+
 set(_targets "${exec_name}" "test_amalgamation")
 set(_archives "libarchive" "miniz") # "zlib"
 set(All_Header_Files "${GREATEST_FILE}")

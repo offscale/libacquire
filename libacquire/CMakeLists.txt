@@ -38,6 +38,8 @@ foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
   message(STATUS "[libacquire] ${_library}_LIB:\t${${_library}_LIB}")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
 
+set_checksum_lib()
+
 ################################
 # Configure file (interpolate) #
 ################################
