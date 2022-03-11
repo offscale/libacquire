@@ -89,3 +89,63 @@ function (generate_amalgamation_header)
             "#endif /* ! LIBACQUIRE_H */\n"
             )
 endfunction (generate_amalgamation_header)
+
+function (create_amalgamation_target amalgamation_header)
+    set(LIBRARY_NAME "libacquire")
+
+    if (NOT TARGET "${LIBRARY_NAME}")
+        source_group("Header Files" FILES "${amalgamation_header}")
+        get_filename_component(dir_of_amalgamation_header "${amalgamation_header}" DIRECTORY)
+
+        add_library("${LIBRARY_NAME}" INTERFACE)
+        target_include_directories(
+                "${LIBRARY_NAME}"
+                PUBLIC
+                "$<BUILD_INTERFACE:${dir_of_amalgamation_header}>"
+                "$<INSTALL_INTERFACE:include>"
+        )
+
+        if (NOT DEFINED TARGET_ARCH)
+            get_arch()
+        endif (NOT DEFINED TARGET_ARCH)
+        target_compile_definitions(
+                "${LIBRARY_NAME}"
+                INTERFACE
+                "_${TARGET_ARCH}_"
+        )
+
+        get_cmake_property(_variableNames VARIABLES)
+        foreach (_variableName ${_variableNames})
+            string(SUBSTRING "${_variableName}" 0 4 maybe_use)
+            if (maybe_use STREQUAL "USE_")
+                target_compile_definitions("${LIBRARY_NAME}" INTERFACE "${_variableName}=${${_variableName}}")
+            endif (maybe_use STREQUAL "USE_")
+        endforeach(_variableName ${_variableNames})
+
+        set_target_properties(
+                "${LIBRARY_NAME}"
+                PROPERTIES
+                LINKER_LANGUAGE
+                C
+        )
+
+        # setup the version numbering
+        set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
+        set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
+
+        # install rules
+        include(GNUInstallDirs)
+        set(installable_libs "${LIBRARY_NAME}")
+        if (TARGET "${DEPENDANT_LIBRARY}")
+            list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
+        endif (TARGET "${DEPENDANT_LIBRARY}")
+        install(TARGETS ${installable_libs}
+                EXPORT "${LIBRARY_NAME}Targets"
+                ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+        install(FILES "${amalgamation_header}"
+                TYPE "INCLUDE")
+        install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}")
+    endif (NOT TARGET "${LIBRARY_NAME}")
+endfunction (create_amalgamation_target amalgamation_header)

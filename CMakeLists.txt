@@ -114,19 +114,8 @@ elseif (UNIX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 endif ()
 
-if (NOT DEFINED TARGET_ARCH)
-    set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
-endif ()
-
-if ((DEFINED CMAKE_C_FLAGS AND NOT CMAKE_C_FLAGS STREQUAL "")
-        OR (DEFINED CMAKE_CXX_FLAGS AND NOT CMAKE_CXX_FLAGS STREQUAL ""))
-    set(TARGET_ARCH_REGEX "^.*-march[= ]([^ ]+).*$")
-    string(REGEX MATCH "${TARGET_ARCH_REGEX}" TARGET_ARCH_MATCH ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS})
-    string(REGEX MATCH <match-regex> <out-var> <input>...)
-    if (TARGET_ARCH_MATCH)
-        string(REGEX REPLACE "${TARGET_ARCH_REGEX}" "\\1" TARGET_ARCH ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS})
-    endif ()
-endif ()
+include("${CMAKE_SOURCE_DIR}/cmake/get_arch.cmake")
+get_arch()
 
 ########################
 # Subprojects to build #
