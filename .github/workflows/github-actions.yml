@@ -60,20 +60,10 @@ jobs:
         shell: cmd
         if: matrix.os == 'windows-latest'
 
-      - name: configure (macOS)
-        working-directory: ./build
-        run: |
-          prefix="$(brew --prefix libarchive)"
-          export LDFLAGS="-L${prefix}/lib"
-          export CPPFLAGS="-I${prefix}/include"
-          export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
-          cmake -DCMAKE_BUILD_TYPE="Debug" ..
-        if: matrix.os == 'macos-latest'
-
-      - name: configure (Ubuntu)
+      - name: configure (Ubuntu, macOS)
         working-directory: ./build
         run: cmake -DCMAKE_BUILD_TYPE="Debug" ..
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os != 'windows-latest'
 
       - name: build
         working-directory: ./build

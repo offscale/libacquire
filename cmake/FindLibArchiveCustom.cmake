@@ -56,6 +56,13 @@ if (NOT LibArchive_FOUND)
     find_package(PkgConfig)
     if (PkgConfig_FOUND)
         set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
+
+        # `brew install libarchive` location:
+        set(libarchive_pc_dir "/usr/local/opt/libarchive/lib/pkgconfig")
+        if (IS_DIRECTORY "${libarchive_pc_dir}")
+            set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${libarchive_pc_dir}")
+            pkg_search_module(LibArchive LibArchive)
+        endif (IS_DIRECTORY "${libarchive_pc_dir}")
         pkg_search_module(LibArchive LibArchive)
     endif (PkgConfig_FOUND)
 endif (NOT LibArchive_FOUND)
