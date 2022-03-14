@@ -98,11 +98,12 @@ function (create_amalgamation_target amalgamation_header)
         get_filename_component(dir_of_amalgamation_header "${amalgamation_header}" DIRECTORY)
 
         add_library("${LIBRARY_NAME}" INTERFACE)
+        include(GNUInstallDirs)
         target_include_directories(
                 "${LIBRARY_NAME}"
                 PUBLIC
                 "$<BUILD_INTERFACE:${dir_of_amalgamation_header}>"
-                "$<INSTALL_INTERFACE:include>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         )
 
         if (NOT DEFINED TARGET_ARCH)

@@ -50,6 +50,6 @@
 
 /* Architecture (needed by MSVC) */
 
-#define _@TARGET_ARCH@_
+/*#define _@TARGET_ARCH@_*/
 
 #endif /* ! LIBACQUIRE_VERSION_H */

@@ -198,11 +198,12 @@ function (download_unarchiver EXTRACT_LIB)
                 PRIVATE
                 -D_CRT_SECURE_NO_WARNINGS
         )
+        include(GNUInstallDirs)
         target_include_directories(
                 "${EXTRACT_LIB}"
                 PUBLIC
                 "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
-                "$<INSTALL_INTERFACE:include>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         )
 
         set_target_properties(

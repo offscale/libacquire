@@ -13,6 +13,7 @@
 #define PATH_SEP "/"
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
+#include <acquire_common_defs.h>
 #include <config_for_tests.h>
 #include <acquire_config.h>
 #include <acquire_extract.h>

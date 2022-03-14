@@ -55,10 +55,11 @@ source_group("Header Files" FILES "${Header_Files}")
 add_library("${LIBRARY_NAME}" INTERFACE)
 target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
 
+include(GNUInstallDirs)
 set(_include_dirs
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-        "$<INSTALL_INTERFACE:include>")
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 if (DEFINED LIBACQUIRE_INCLUDE_DIR)
   list(APPEND _include_dirs "$<BUILD_INTERFACE:${LIBACQUIRE_INCLUDE_DIR}>")
@@ -74,6 +75,12 @@ target_link_libraries(
         INTERFACE
         "${PROJECT_NAME}_compiler_flags"
         "${LIBACQUIRE_LIBRARIES}"
+)
+
+target_compile_definitions(
+        "${LIBRARY_NAME}"
+        INTERFACE
+        "_${TARGET_ARCH}_"
 )
 
 set_target_properties(

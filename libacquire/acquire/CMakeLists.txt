@@ -4,7 +4,9 @@ string(REPLACE " " "_" EXEC_NAME "${EXEC_NAME}")
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-include(GenerateExportHeader)
+############################
+# Library target formation #
+############################
 
 set(Header_Files "cli.h")
 source_group("Header Files" FILES "${Header_Files}")
@@ -12,16 +14,24 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "cli.c")
 source_group("Source Files" FILES "${Source_Files}" "main.c")
 
-############################
-# Library target formation #
-############################
-
 set(LIBRARY_NAME "${EXEC_NAME}_lib")
 
 add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 
 target_link_libraries("${LIBRARY_NAME}" INTERFACE "${PROJECT_NAME}_compiler_flags")
 target_link_libraries("${LIBRARY_NAME}" PUBLIC "libacquire")
+
+include(GenerateExportHeader)
+set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
+generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
+
+include(GNUInstallDirs)
+target_include_directories(
+        "${LIBRARY_NAME}"
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
 set_target_properties(
         "${LIBRARY_NAME}"
@@ -51,9 +61,6 @@ set_target_properties(
 # Export / installation configuration #
 #######################################
 
-set(_export_file "${CMAKE_CURRENT_SOURCE_DIR}/${LIBRARY_NAME}_export.h")
-generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
-
 # setup the version numbering
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
@@ -64,5 +71,9 @@ if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "bin"
-        EXPORT "${EXEC_NAME}Targets")
+        EXPORT "${EXEC_NAME}Targets"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(FILES "${_export_file}" ${Header_Files}
+        TYPE "INCLUDE")

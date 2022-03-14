@@ -67,8 +67,9 @@ foreach (proto "ftp" "http")
     parse_emit_errors("${proto}" "${proto}.errors" "${proto}err.h")
 endforeach (proto "ftp" "http")
 
-# /
-
+############################
+# Library target formation #
+############################
 
 set(Header_Files
         "common.h"
@@ -89,10 +90,6 @@ set(Source_Files
         )
 source_group("Source Files" FILES "${Source_Files}")
 
-############################
-# Library target formation #
-############################
-
 add_library("${LIBRARY_NAME}" SHARED "${Header_Files}" "${Source_Files}")
 
 set(_libs "${PROJECT_NAME}_compiler_flags")
@@ -111,6 +108,14 @@ endif ()
 
 target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_libs}")
 
+include(GNUInstallDirs)
+target_include_directories(
+        "${LIBRARY_NAME}"
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
 set_target_properties(
         "${LIBRARY_NAME}"
         PROPERTIES
@@ -123,7 +128,7 @@ set_target_properties(
 #######################################
 
 include(GenerateExportHeader)
-set(_export_file "${CMAKE_CURRENT_SOURCE_DIR}/${LIBRARY_NAME}_export.h")
+set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 # setup the version numbering
@@ -137,5 +142,9 @@ if (TARGET "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 
 install(TARGETS ${installable_libs}
-        DESTINATION "bin"
-        EXPORT "${LIBRARY_NAME}Targets")
+        EXPORT "${LIBRARY_NAME}Targets"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(FILES "${_export_file}" ${Header_Files}
+        TYPE "INCLUDE")

@@ -82,28 +82,9 @@ macro (test_wrapper)
             "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
             "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
             "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
-            "$<INSTALL_INTERFACE:include>"
     )
 
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
-
-    #######################################
-    # Export / installation configuration #
-    #######################################
-
-    # setup the version numbering
-    #set_property(TARGET "${EXEC_NAME}" PROPERTY VERSION "1.0.0")
-    #set_property(TARGET "${EXEC_NAME}" PROPERTY SOVERSION "1")
-
-    # install rules
-    set(installable_libs "${EXEC_NAME}")
-    if (TARGET "${DEPENDANT_LIBRARY}")
-        list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-    endif (TARGET "${DEPENDANT_LIBRARY}")
-    list(APPEND All_Header_Files "${Header_Files}")
-    install(TARGETS ${installable_libs}
-            DESTINATION "bin"
-            EXPORT "${EXEC_NAME}Targets")
 endmacro (test_wrapper)
 
 foreach (EXEC_NAME ${_targets})
@@ -160,10 +141,3 @@ foreach (ARCHIVE_LIB ${_archives})
     target_link_libraries("${EXEC_NAME}" PRIVATE "libacquire" "${archive_lib}")
     test_wrapper()
 endforeach (ARCHIVE_LIB ${_archives})
-
-install(FILES
-        "${PROJECT_BINARY_DIR}/src/config_for_tests.h"
-        ${All_Header_Files}
-        "${GREATEST_FILE}"
-        DESTINATION
-        "include")
