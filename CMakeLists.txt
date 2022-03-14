@@ -3,7 +3,7 @@ project(libacquire
         VERSION "0.0.1"
         LANGUAGES C)
 
-set(HOMEPAGE_URL "https://github.com/offscale/libacquire")
+set(HOMEPAGE_URL "https://github.com/offscale/${PROJECT_NAME}")
 set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
 
 set(CMAKE_C_STANDARD 90)
@@ -31,7 +31,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
-include(CTest)
 
 if (CMAKE_C_STANDARD GREATER 90)
     CHECK_INCLUDE_FILE("stdbool.h" HAS_STDBOOL)
@@ -121,22 +120,23 @@ get_arch()
 # Subprojects to build #
 ########################
 
-add_subdirectory("libacquire")
-add_subdirectory("libacquire/acquire")
-
-################################
-# Generate amalgamation header #
-################################
-
-include("${CMAKE_SOURCE_DIR}/cmake/libacquire_amalgamation.cmake")
-
-generate_amalgamation_header()
+add_subdirectory("${PROJECT_NAME}")
+add_subdirectory("${PROJECT_NAME}/acquire")
 
 ######################
 # Test configuration #
 ######################
 
-if (CMAKE_PROJECT_NAME STREQUAL "libacquire" AND BUILD_TESTING)
+include(CTest)
+if (CMAKE_PROJECT_NAME STREQUAL "${PROJECT_NAME}" AND BUILD_TESTING)
     enable_testing()
-    add_subdirectory("libacquire/tests")
-endif ()
+    add_subdirectory("${PROJECT_NAME}/tests")
+endif (CMAKE_PROJECT_NAME STREQUAL "${PROJECT_NAME}" AND BUILD_TESTING)
+
+################################
+# Generate amalgamation header #
+################################
+
+include("${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}_amalgamation.cmake")
+
+generate_amalgamation_header()

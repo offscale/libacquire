@@ -1,14 +1,7 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
 include("${CMAKE_SOURCE_DIR}/cmake/FindCurlCustom.cmake")
-include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
-
-set(Header_Files "acquire_download.h")
-if (NOT HAS_STDBOOL AND NOT MSVC)
-  list(APPEND Header_Files "acquire_stdbool.h")
-endif (NOT HAS_STDBOOL AND NOT MSVC)
-source_group("Header Files" FILES "${Header_Files}")
+include("${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}_helpers.cmake")
 
 ##############################################################
 # CMake options that can be overridden at configuration time #
@@ -20,7 +13,7 @@ set(_Header_Files "")
 
 # Set libacquire dependencies
 
-include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}_helpers.cmake")
 
 set_checksum_lib()
 
@@ -50,10 +43,15 @@ configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" 
 # Test and target formation #
 #############################
 
+message(STATUS "_Header_Files = ${_Header_Files}")
+set(Header_Files "acquire_download.h")
+if (NOT HAS_STDBOOL AND NOT MSVC)
+  list(APPEND Header_Files "acquire_stdbool.h")
+endif (NOT HAS_STDBOOL AND NOT MSVC)
 source_group("Header Files" FILES "${Header_Files}")
 
 add_library("${LIBRARY_NAME}" INTERFACE)
-target_sources("${LIBRARY_NAME}" INTERFACE "${Header_Files}")
+target_sources("${LIBRARY_NAME}" INTERFACE "${_Header_Files}" "${Header_Files}")
 
 include(GNUInstallDirs)
 target_include_directories(
@@ -122,5 +120,5 @@ install(TARGETS ${installable_libs}
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(FILES "${PROJECT_BINARY_DIR}/src/acquire_config.h" ${Header_Files}
+install(FILES "${PROJECT_BINARY_DIR}/src/acquire_config.h" ${Header_Files} ${_Header_Files}
         TYPE "INCLUDE")

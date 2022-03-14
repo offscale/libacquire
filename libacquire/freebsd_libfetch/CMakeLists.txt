@@ -1,5 +1,4 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
@@ -103,7 +102,7 @@ check_symbol_exists(strnstr "string.h" HAS_STRNSTR)
 if (HAS_STRNSTR)
     add_compile_definitions(HAS_STRNSTR=1)
 else()
-    list(APPEND _libs "libacquire")
+    list(APPEND _libs "${PROJECT_NAME}")
 endif ()
 
 target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_libs}")
