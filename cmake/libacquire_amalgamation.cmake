@@ -101,7 +101,7 @@ function (create_amalgamation_target amalgamation_header)
         include(GNUInstallDirs)
         target_include_directories(
                 "${LIBRARY_NAME}"
-                PUBLIC
+                INTERFACE
                 "$<BUILD_INTERFACE:${dir_of_amalgamation_header}>"
                 "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         )

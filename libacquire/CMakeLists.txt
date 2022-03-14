@@ -53,23 +53,24 @@ configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" 
 source_group("Header Files" FILES "${Header_Files}")
 
 add_library("${LIBRARY_NAME}" INTERFACE)
-target_sources("${LIBRARY_NAME}" PRIVATE "${Header_Files}")
+target_sources("${LIBRARY_NAME}" INTERFACE "${Header_Files}")
 
 include(GNUInstallDirs)
-set(_include_dirs
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-
-if (DEFINED LIBACQUIRE_INCLUDE_DIR)
-  list(APPEND _include_dirs "$<BUILD_INTERFACE:${LIBACQUIRE_INCLUDE_DIR}>")
-endif (DEFINED LIBACQUIRE_INCLUDE_DIR)
-
 target_include_directories(
         "${LIBRARY_NAME}"
         INTERFACE
-        "${_include_dirs}"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
+
+if (DEFINED LIBACQUIRE_INCLUDE_DIR)
+  target_include_directories(
+          "${LIBRARY_NAME}"
+          INTERFACE
+          "$<BUILD_INTERFACE:${LIBACQUIRE_INCLUDE_DIR}>"
+  )
+endif (DEFINED LIBACQUIRE_INCLUDE_DIR)
 target_link_libraries(
         "${LIBRARY_NAME}"
         INTERFACE

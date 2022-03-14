@@ -64,7 +64,7 @@ function (get_curl LINK_LIBRARIES)
                             INTERFACE_LINK_LIBRARIES "${CURL_STATIC_LIBRARIES}"
                             IMPORTED_LINK_INTERFACE_LANGUAGES C
                             IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
-                    link_directories(CURL_STATIC_LIBRARY_DIRS)
+                    target_link_libraries(CURL::libcurl INTERFACE "${CURL_STATIC_LIBRARY_DIRS}")
                 else ()
                     add_library(CURL::libcurl SHARED IMPORTED)
                     set_target_properties(CURL::libcurl PROPERTIES

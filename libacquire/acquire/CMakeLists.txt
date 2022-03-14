@@ -1,31 +1,27 @@
 get_filename_component(EXEC_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" EXEC_NAME "${EXEC_NAME}")
-
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 ############################
 # Library target formation #
 ############################
 
+set(LIBRARY_NAME "${EXEC_NAME}_lib")
+
 set(Header_Files "cli.h")
-source_group("Header Files" FILES "${Header_Files}")
+source_group("${LIBRARY_NAME} Header Files" FILES "${Header_Files}")
 
 set(Source_Files "cli.c")
-source_group("Source Files" FILES "${Source_Files}" "main.c")
-
-set(LIBRARY_NAME "${EXEC_NAME}_lib")
+source_group("${LIBRARY_NAME} Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 
-target_link_libraries("${LIBRARY_NAME}" INTERFACE "${PROJECT_NAME}_compiler_flags")
-target_link_libraries("${LIBRARY_NAME}" PUBLIC "libacquire")
+target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_compiler_flags")
+
+include(GNUInstallDirs)
 
 include(GenerateExportHeader)
 set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
-include(GNUInstallDirs)
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
@@ -44,11 +40,18 @@ set_target_properties(
 # Executable target formation #
 ###############################
 
-add_executable("${EXEC_NAME}" "main.c")
+set(Source_Exec_Files "main.c")
+source_group("${EXEC_NAME} Source Files" FILES "${Source_Exec_Files}")
 
-target_link_libraries("${EXEC_NAME}" INTERFACE "${PROJECT_NAME}_compiler_flags")
+add_executable("${EXEC_NAME}" "${Source_Exec_Files}")
 
-target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBRARY_NAME}")
+target_link_libraries(
+        "${EXEC_NAME}"
+        PRIVATE
+        "${PROJECT_NAME}_compiler_flags"
+        "${LIBRARY_NAME}"
+        "${PROJECT_NAME}"
+)
 
 set_target_properties(
         "${EXEC_NAME}"
@@ -66,7 +69,7 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
-set(installable_libs "${EXEC_NAME}" "${PROJECT_NAME}_compiler_flags")
+set(installable_libs "${EXEC_NAME}" "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")

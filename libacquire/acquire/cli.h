@@ -4,8 +4,8 @@
  * File is generated. See "README.md" for details.
  * */
 
-#ifndef DOCOPT_CLI_H
-#define DOCOPT_CLI_H
+#ifndef LIBACQUIRE_DOCOPT_CLI_H
+#define LIBACQUIRE_DOCOPT_CLI_H
 
 #include <stddef.h>
 #include <string.h>
@@ -117,6 +117,6 @@ struct DocoptArgs {
     const char *help_message[17];
 };
 
-struct DocoptArgs ACQUIRE_LIB_EXPORT docopt(int, char *[], bool, const char *);
+extern ACQUIRE_LIB_EXPORT struct DocoptArgs docopt(int, char *[], bool, const char *);
 
-#endif /* DOCOPT_CLI_H */
+#endif /* !LIBACQUIRE_DOCOPT_CLI_H */
