@@ -46,7 +46,7 @@ configure_file(acquire_config.h.in "${PROJECT_BINARY_DIR}/src/acquire_config.h" 
 message(STATUS "_Header_Files = ${_Header_Files}")
 set(Header_Files "acquire_download.h")
 if (NOT HAS_STDBOOL AND NOT MSVC)
-  list(APPEND Header_Files "acquire_stdbool.h")
+  list(APPEND Header_Files "${abs_folder_path}/acquire_stdbool.h")
 endif (NOT HAS_STDBOOL AND NOT MSVC)
 source_group("Header Files" FILES "${Header_Files}")
 
