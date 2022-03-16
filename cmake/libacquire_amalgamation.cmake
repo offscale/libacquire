@@ -9,36 +9,36 @@ Function to generate the amalgamated header.
 
 function (generate_amalgamation_header)
     set(amalgam
-            "libacquire/acquire_stdbool.h"
-            "libacquire/acquire_errors.h"
-            "libacquire/acquire_url_utils.h"
-            "libacquire/acquire_string_extras.h"
-            "libacquire/acquire_fileutils.h"
-            "libacquire/acquire_checksums.h"
-            "libacquire/acquire_common_defs.h"
+            "acquire/acquire_stdbool.h"
+            "acquire/acquire_errors.h"
+            "acquire/acquire_url_utils.h"
+            "acquire/acquire_string_extras.h"
+            "acquire/acquire_fileutils.h"
+            "acquire/acquire_checksums.h"
+            "acquire/acquire_common_defs.h"
 
             # Crypto
-            "libacquire/acquire_openssl.h"
-            "libacquire/acquire_wincrypt.h"
-            # "libacquire/acquire_winseccng.h"
-            "libacquire/acquire_openssl.h"
-            "libacquire/acquire_crc32c.h"
-            "libacquire/acquire_librhash.h"
+            "acquire/acquire_openssl.h"
+            "acquire/acquire_wincrypt.h"
+            # "acquire/acquire_winseccng.h"
+            "acquire/acquire_openssl.h"
+            "acquire/acquire_crc32c.h"
+            "acquire/acquire_librhash.h"
 
             # Networking
-            "libacquire/acquire_download.h"
+            "acquire/acquire_download.h"
 
-            "libacquire/acquire_libcurl.h"
-            "libacquire/acquire_wininet.h"
-            "libacquire/acquire_libfetch.h"
+            "acquire/acquire_libcurl.h"
+            "acquire/acquire_wininet.h"
+            "acquire/acquire_libfetch.h"
 
-            "libacquire/acquire_net_common.h"
+            "acquire/acquire_net_common.h"
 
             # Archiving
-            "libacquire/acquire_extract.h"
-            "libacquire/acquire_libarchive.h"
-            "libacquire/acquire_miniz.h"
-            # "libacquire/acquire_zlib.h"  # TODO
+            "acquire/acquire_extract.h"
+            "acquire/acquire_libarchive.h"
+            "acquire/acquire_miniz.h"
+            # "acquire/acquire_zlib.h"  # TODO
             )
 
     set(amalgam_files "")

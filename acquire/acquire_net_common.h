@@ -2,13 +2,16 @@
  * API that is common between all network libraries… however requires network libs included first
  * */
 
-#if !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_H) && defined(LIBACQUIRE_IMPLEMENTATION)
+#ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
 #include "acquire_string_extras.h"
 #include "acquire_download.h"
 
+bool LIBACQUIRE_LIB_EXPORT is_downloaded(const char *url, enum Checksum checksum,
+        const char *hash, const char *target_location);
 
+#ifdef LIBACQUIRE_IMPLEMENTATION
 bool is_downloaded(const char *url, enum Checksum checksum,
                    const char *hash, const char *target_location) {
     char full_local_fname[NAME_MAX + 1];
@@ -36,5 +39,6 @@ bool is_downloaded(const char *url, enum Checksum checksum,
             return false;
     }
 }
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_H) && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !LIBACQUIRE_ACQUIRE_NET_COMMON_H */

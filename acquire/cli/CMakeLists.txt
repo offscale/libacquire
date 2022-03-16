@@ -1,4 +1,4 @@
-get_filename_component(EXEC_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+set(EXEC_NAME "acquire_cli")
 
 ############################
 # Library target formation #
@@ -24,8 +24,9 @@ generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 target_include_directories(
         "${LIBRARY_NAME}"
-        PUBLIC
+        PRIVATE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 

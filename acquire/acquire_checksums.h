@@ -8,6 +8,7 @@
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 
+#include "libacquire_export.h"
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
@@ -16,11 +17,11 @@
 #include "acquire_config.h"
 #include "acquire_string_extras.h"
 
-extern bool crc32c(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT bool crc32c(const char *, const char *);
 
-extern bool sha256(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT bool sha256(const char *, const char *);
 
-extern bool sha512(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT bool sha512(const char *, const char *);
 
 enum Checksum {
     LIBACQUIRE_CRC32C,
@@ -29,13 +30,17 @@ enum Checksum {
     LIBACQUIRE_UNSUPPORTED_CHECKSUM
 };
 
-extern enum Checksum string2checksum(const char *);
+extern LIBACQUIRE_LIB_EXPORT enum Checksum string2checksum(const char *);
 
-extern bool (*get_checksum_function(enum Checksum))(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT bool (*get_checksum_function(enum Checksum))(const char *, const char *);
+
+extern LIBACQUIRE_LIB_EXPORT enum Checksum string2checksum(const char *);
+
+extern LIBACQUIRE_LIB_EXPORT bool (*get_checksum_function(enum Checksum checksum))(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
-extern enum Checksum string2checksum(const char *s) {
+enum Checksum string2checksum(const char *s) {
     if (strncasecmp(s, "CRC32C", 6) == 0)
         return LIBACQUIRE_CRC32C;
     else if (strncasecmp(s, "SHA256", 6) == 0)

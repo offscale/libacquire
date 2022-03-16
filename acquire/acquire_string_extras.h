@@ -85,6 +85,8 @@
 
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
+#include "libacquire_export.h"
+
 #endif /* HAVE_STRINGS_H */
 
 #if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
@@ -133,9 +135,9 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
 
 #ifndef HAVE_STRNCASECMP_H
 
-extern int strncasecmp(const char *, const char *, size_t);
+extern LIBACQUIRE_LIB_EXPORT int strncasecmp(const char *, const char *, size_t);
 
-extern int strcasecmp(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT int strcasecmp(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
@@ -149,7 +151,7 @@ extern int strcasecmp(const char *, const char *);
 
 #ifndef HAVE_STRNSTR
 
-extern char *strnstr(const char *, const char *, size_t);
+extern LIBACQUIRE_LIB_EXPORT char *strnstr(const char *, const char *, size_t);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
@@ -184,7 +186,7 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 #endif /* ! HAVE_STRNSTR */
 
 #ifndef HAVE_STRCASESTR_H
-extern char *strcasestr(const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT char *strcasestr(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
@@ -203,6 +205,9 @@ char *strcasestr(const char *h, const char *n)
 
 #ifndef HAVE_STRERRORLEN_S
 
+extern size_t LIBACQUIRE_LIB_EXPORT strerrorlen_s(errno_t);
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
 /* MIT licensed function from Safe C Library */
 
 size_t strerrorlen_s(errno_t errnum)
@@ -250,6 +255,8 @@ size_t strerrorlen_s(errno_t errnum)
         return buf ? strlen(buf) : 0;
     }
 }
+
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* !HAVE_STRERRORLEN_S */
 

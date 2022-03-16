@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "acquire_lib_export.h"
+#include "acquire_cli_lib_export.h"
 
 #if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
@@ -117,6 +117,6 @@ struct DocoptArgs {
     const char *help_message[17];
 };
 
-extern ACQUIRE_LIB_EXPORT struct DocoptArgs docopt(int, char *[], bool, const char *);
+extern ACQUIRE_CLI_LIB_EXPORT struct DocoptArgs docopt(int, char *[], bool, const char *);
 
 #endif /* !LIBACQUIRE_DOCOPT_CLI_H */

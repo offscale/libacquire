@@ -10,15 +10,17 @@
 #ifndef LIBACQUIRE_ACQUIRE_EXTRACT_H
 #define LIBACQUIRE_ACQUIRE_EXTRACT_H
 
-enum Archive {
+#include "libacquire_export.h"
+
+enum LIBACQUIRE_LIB_EXPORT Archive {
     LIBACQUIRE_ZIP,
     LIBACQUIRE_INFER,
     LIBACQUIRE_UNSUPPORTED_ARCHIVE
 };
 
-extern int extract_archive(enum Archive, const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT int extract_archive(enum Archive, const char *, const char *);
 
-extern enum Archive extension2archive(const char *);
+extern LIBACQUIRE_LIB_EXPORT enum Archive extension2archive(const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 

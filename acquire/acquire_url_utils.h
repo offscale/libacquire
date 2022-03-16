@@ -18,9 +18,9 @@
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 #include <string.h>
 
-extern const char *get_path_from_url(const char *);
+extern LIBACQUIRE_LIB_EXPORT const char *get_path_from_url(const char *);
 
-extern bool is_url(const char *);
+extern LIBACQUIRE_LIB_EXPORT bool is_url(const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 

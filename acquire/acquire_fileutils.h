@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
+#include "libacquire_export.h"
+
 #endif /* defined(HAS_STDBOOL) && !defined(bool) */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -31,17 +33,17 @@
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
 
-extern bool is_directory(const char *);
+extern LIBACQUIRE_LIB_EXPORT bool is_directory(const char *);
 
-extern bool is_file(const char *);
+extern LIBACQUIRE_LIB_EXPORT bool is_file(const char *);
 
-extern bool exists(const char *);
+extern LIBACQUIRE_LIB_EXPORT bool exists(const char *);
 
-extern off_t filesize(const char *);
+extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *);
 
-extern bool is_relative(const char *);
+extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *);
 
-extern const char* get_extension(const char *);
+extern LIBACQUIRE_LIB_EXPORT const char* get_extension(const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 bool is_directory(const char *path) {

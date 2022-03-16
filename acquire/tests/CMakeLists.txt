@@ -79,6 +79,8 @@ macro (test_wrapper)
             PRIVATE
             "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
             "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
+            "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire>"
+            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
             "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
     )
 
@@ -135,6 +137,7 @@ foreach (ARCHIVE_LIB ${_archives})
         set(archive_lib "${LibArchive_LIBRARIES}")
     endif ()
     #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
+    message(STATUS "PROJECT_NAME = ${PROJECT_NAME}")
     target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}" "${archive_lib}")
     test_wrapper()
 endforeach (ARCHIVE_LIB ${_archives})

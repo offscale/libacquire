@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(libacquire
+project(acquire
         VERSION "0.0.1"
         LANGUAGES C)
 
@@ -121,7 +121,7 @@ get_arch()
 ########################
 
 add_subdirectory("${PROJECT_NAME}")
-add_subdirectory("${PROJECT_NAME}/acquire")
+add_subdirectory("${PROJECT_NAME}/cli")
 
 ######################
 # Test configuration #
@@ -137,6 +137,6 @@ endif (CMAKE_PROJECT_NAME STREQUAL "${PROJECT_NAME}" AND BUILD_TESTING)
 # Generate amalgamation header #
 ################################
 
-include("${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}_amalgamation.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/lib${PROJECT_NAME}_amalgamation.cmake")
 
 generate_amalgamation_header()
