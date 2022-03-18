@@ -85,9 +85,9 @@
 
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
-#include "libacquire_export.h"
-
 #endif /* HAVE_STRINGS_H */
+
+#include "libacquire_export.h"
 
 #if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 
