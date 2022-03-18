@@ -60,6 +60,17 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibRHash
         )
 set(LIBRHASH_FOUND ${LibRHash_FOUND})
 
+if(NOT LibRHash_FOUND)
+    # `brew install rhash` location:
+    set(rhash_dir "/usr/local/opt/rhash")
+    if (IS_DIRECTORY "${rhash_dir}" AND IS_DIRECTORY "${rhash_dir}/include")
+        set(LibRHash_INCLUDE_DIR "${rhash_dir}/include")
+        message(STATUS "LibRHash_INCLUDE_DIR = ${LibRHash_INCLUDE_DIR}")
+        set(LibRHash_LIBRARY "${rhash_dir}/lib/librhash.dylib") # Could find in dir I guess to support other OSs
+        set(LibRHash_FOUND 1)
+    endif ()
+endif ()
+
 #-----------------------------------------------------------------------------
 # Provide documented result variables and targets.
 if(LibRHash_FOUND)
@@ -72,4 +83,8 @@ if(LibRHash_FOUND)
                 INTERFACE_INCLUDE_DIRECTORIES "${LibRHash_INCLUDE_DIRS}"
                 )
     endif()
+endif ()
+
+if(NOT LibRHash_FOUND)
+    message(FATAL_ERROR "Could NOT find LibRHash")
 endif()

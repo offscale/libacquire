@@ -48,22 +48,22 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 # Set libacquire dependencies #
 ###############################
 
-#include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
-#
-#set(CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${PROJECT_NAME}")
-#set_checksum_lib()
-#
-#set_crypto_lib()
-#
-#set_ssl_lib()
-#
-#set_http_https_lib()
-#
-#set_extract_lib()
-#
-#include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
-#
-#set_checksum_lib()
+include("${CMAKE_SOURCE_DIR}/cmake/libacquire_helpers.cmake")
+
+set(CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${PROJECT_NAME}")
+set_checksum_lib()
+
+set_crypto_lib()
+
+set_ssl_lib()
+
+set_http_https_lib()
+
+set_extract_lib()
+
+include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
+
+set_checksum_lib()
 
 set(_targets "${exec_name}" "test_amalgamation")
 set(_archives "libarchive" "miniz") # "zlib"
@@ -90,9 +90,9 @@ endmacro (test_wrapper)
 foreach (EXEC_NAME ${_targets})
     math(EXPR "${exec_name}_count" "${${exec_name}_count} + 1")
     set(Header_Files
-            "${CMAKE_CURRENT_SOURCE_DIR}/test_fileutils.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/test_string_extras.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/test_checksum.h"
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_fileutils.h"
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_string_extras.h"
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_checksum.h"
     )
     source_group("Header Files" FILES "${Header_Files}")
 
@@ -101,7 +101,19 @@ foreach (EXEC_NAME ${_targets})
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
-    target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}" "${PROJECT_NAME}_compiler_flags")
+    target_link_libraries(
+            "${EXEC_NAME}"
+            PRIVATE
+            "lib${PROJECT_NAME}"
+            "${PROJECT_NAME}_compiler_flags"
+            "${CHECKSUM_LIBRARIES}"
+    )
+    target_include_directories(
+            "${EXEC_NAME}"
+            PRIVATE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
+    )
     test_wrapper()
 endforeach (EXEC_NAME ${_targets})
 
@@ -138,6 +150,11 @@ foreach (ARCHIVE_LIB ${_archives})
     endif ()
     #target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBACQUIRE_LIBRARIES}" "${archive_lib}")
     message(STATUS "PROJECT_NAME = ${PROJECT_NAME}")
-    target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}" "${archive_lib}")
+    target_link_libraries(
+            "${EXEC_NAME}"
+            PRIVATE
+            "lib${PROJECT_NAME}"
+            "${archive_lib}"
+    )
     test_wrapper()
 endforeach (ARCHIVE_LIB ${_archives})

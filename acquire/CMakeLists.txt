@@ -13,7 +13,7 @@ set(installable_libs "")
 
 option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
 
-option(LIBACQUIRE_HEADER_ONLY "Make the build header-only" OFF)
+option(LIBACQUIRE_HEADER_ONLY "Make the build header-only" ON)
 
 if (LIBACQUIRE_HEADER_ONLY)
   set(lib_type "INTERFACE")

@@ -24,7 +24,7 @@ generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 target_include_directories(
         "${LIBRARY_NAME}"
-        PRIVATE
+        PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -45,13 +45,21 @@ set(Source_Exec_Files "main.c")
 source_group("${EXEC_NAME} Source Files" FILES "${Source_Exec_Files}")
 
 add_executable("${EXEC_NAME}" "${Source_Exec_Files}")
-
 target_link_libraries(
         "${EXEC_NAME}"
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
         "${LIBRARY_NAME}"
-        "${PROJECT_NAME}"
+        "lib${PROJECT_NAME}"
+)
+target_include_directories(
+        "${EXEC_NAME}"
+        PRIVATE
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
+        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
+        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire>"
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 set_target_properties(
