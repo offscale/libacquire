@@ -15,6 +15,7 @@
 #include "libacquire_export.h"
 
 #endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#include <string.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 

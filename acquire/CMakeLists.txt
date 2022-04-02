@@ -13,7 +13,7 @@ set(installable_libs "")
 
 option(USE_LIBCURL "Enable libcurl (defaults to `ON` on non-Windows)" OFF)
 
-option(LIBACQUIRE_HEADER_ONLY "Make the build header-only" ON)
+option(LIBACQUIRE_HEADER_ONLY "Make the build header-only" OFF)
 
 if (LIBACQUIRE_HEADER_ONLY)
   set(lib_type "INTERFACE")
@@ -85,7 +85,14 @@ function (generate_source_file_from_header_only filepath header_filepath source_
     foreach (char_index RANGE ${len})
       string(SUBSTRING "${contents}" "${char_index}" "1" char)
       string(LENGTH "${line}" line_len)
+      math(EXPR line_len_minus_1 "${line_len} - 1")
+      if (line_len_minus_1 GREATER 0)
+          string(SUBSTRING "${line}" "${line_len_minus_1}" "1" prev_char)
+      else ()
+          set(prev_char '')
+      endif ()
       string(APPEND line "${char}")
+      message(STATUS "prev_char = '${prev_char}'; char = '${char}'")
       if (char STREQUAL "\n")
         if (line_len)
           math(EXPR line_no "${line_no} + 1")

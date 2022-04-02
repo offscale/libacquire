@@ -7,6 +7,10 @@
 #define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
+
+#include "libacquire_export.h"
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
         defined(__bsdi__) || defined(__DragonFly__) || defined(BSD)
@@ -79,15 +83,9 @@
 #   define HAVE_ASPRINTF
 #endif /* defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE) */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
 #endif /* HAVE_STRINGS_H */
-
-#include "libacquire_export.h"
 
 #if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 
