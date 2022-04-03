@@ -39,126 +39,125 @@
 #define INFTIM (-1)
 #endif /* ! INFTIM */
 
-#define FTP_DEFAULT_PORT	21
-#define HTTP_DEFAULT_PORT	80
-#define FTP_DEFAULT_PROXY_PORT	21
-#define HTTP_DEFAULT_PROXY_PORT	3128
+#define FTP_DEFAULT_PORT 21
+#define HTTP_DEFAULT_PORT 80
+#define FTP_DEFAULT_PROXY_PORT 21
+#define HTTP_DEFAULT_PROXY_PORT 3128
 
 #ifdef WITH_SSL
 #include <openssl/crypto.h>
-#include <openssl/x509.h>
+#include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
-#include <openssl/err.h>
+#include <openssl/x509.h>
 #endif /* WITH_SSL */
 
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 /* Connection */
 typedef struct fetchconn conn_t;
 struct fetchconn {
-	int		 sd;		/* socket descriptor */
-	char		*buf;		/* buffer */
-	size_t		 bufsize;	/* buffer size */
-	size_t		 buflen;	/* length of buffer contents */
-	int		 err;		/* last protocol reply code */
+  int sd;         /* socket descriptor */
+  char *buf;      /* buffer */
+  size_t bufsize; /* buffer size */
+  size_t buflen;  /* length of buffer contents */
+  int err;        /* last protocol reply code */
 #ifdef WITH_SSL
-	SSL		*ssl;		/* SSL handle */
-	SSL_CTX		*ssl_ctx;	/* SSL context */
-	X509		*ssl_cert;	/* server certificate */
-	const SSL_METHOD *ssl_meth;	/* SSL method */
-#endif /* WITH_SSL */
-	int		 ref;		/* reference count */
+  SSL *ssl;                   /* SSL handle */
+  SSL_CTX *ssl_ctx;           /* SSL context */
+  X509 *ssl_cert;             /* server certificate */
+  const SSL_METHOD *ssl_meth; /* SSL method */
+#endif                        /* WITH_SSL */
+  int ref;                    /* reference count */
 };
 
 /* Structure used for error message lists */
 struct fetcherr {
-	const int	 num;
-	const int	 cat;
-	const char	*string;
+  const int num;
+  const int cat;
+  const char *string;
 };
 
 /* For SOCKS header size */
-#define HEAD_SIZE	4
-#define FQDN_SIZE	256
-#define PACK_SIZE	1
-#define PORT_SIZE	2
-#define BUFF_SIZE	HEAD_SIZE + FQDN_SIZE + PACK_SIZE + PORT_SIZE
+#define HEAD_SIZE 4
+#define FQDN_SIZE 256
+#define PACK_SIZE 1
+#define PORT_SIZE 2
+#define BUFF_SIZE HEAD_SIZE + FQDN_SIZE + PACK_SIZE + PORT_SIZE
 
 /* SOCKS5 Request Header */
-#define SOCKS_VERSION_5		0x05
+#define SOCKS_VERSION_5 0x05
 /* SOCKS5 CMD */
-#define SOCKS_CONNECTION	0x01
-#define SOCKS_BIND		0x02
-#define SOCKS_UDP		0x03
-#define SOCKS_NOMETHODS		0xFF
-#define SOCKS5_NOTIMPLEMENTED	0x00
+#define SOCKS_CONNECTION 0x01
+#define SOCKS_BIND 0x02
+#define SOCKS_UDP 0x03
+#define SOCKS_NOMETHODS 0xFF
+#define SOCKS5_NOTIMPLEMENTED 0x00
 /* SOCKS5 Reserved */
-#define SOCKS_RSV		0x00
+#define SOCKS_RSV 0x00
 /* SOCKS5 Address Type */
-#define SOCKS_ATYP_IPV4		0x01
-#define SOCKS_ATYP_DOMAINNAME	0x03
-#define SOCKS_ATYP_IPV6		0x04
+#define SOCKS_ATYP_IPV4 0x01
+#define SOCKS_ATYP_DOMAINNAME 0x03
+#define SOCKS_ATYP_IPV6 0x04
 /* SOCKS5 Reply Field */
-#define SOCKS_SUCCESS			0x00
-#define SOCKS_GENERAL_FAILURE		0x01
-#define SOCKS_CONNECTION_NOT_ALLOWED	0x02
-#define SOCKS_NETWORK_UNREACHABLE	0x03
-#define SOCKS_HOST_UNREACHABLE		0x04
-#define SOCKS_CONNECTION_REFUSED	0x05
-#define SOCKS_TTL_EXPIRED		0x06
-#define SOCKS_COMMAND_NOT_SUPPORTED	0x07
-#define SOCKS_ADDRESS_NOT_SUPPORTED	0x08
+#define SOCKS_SUCCESS 0x00
+#define SOCKS_GENERAL_FAILURE 0x01
+#define SOCKS_CONNECTION_NOT_ALLOWED 0x02
+#define SOCKS_NETWORK_UNREACHABLE 0x03
+#define SOCKS_HOST_UNREACHABLE 0x04
+#define SOCKS_CONNECTION_REFUSED 0x05
+#define SOCKS_TTL_EXPIRED 0x06
+#define SOCKS_COMMAND_NOT_SUPPORTED 0x07
+#define SOCKS_ADDRESS_NOT_SUPPORTED 0x08
 
 /* for fetch_writev */
 struct iovec;
 
-void		 fetch_seterr(struct fetcherr *, int);
-void		 fetch_syserr(void);
-void		 fetch_info(const char *, ...) __printflike(1, 2);
-int		 fetch_socks5_getenv(char **host, int *port);
-int		 fetch_socks5_init(conn_t *conn, const char *host,
-		     int port, int verbose);
-int		 fetch_default_port(const char *);
-int		 fetch_default_proxy_port(const char *);
+void fetch_seterr(struct fetcherr *, int);
+void fetch_syserr(void);
+void fetch_info(const char *, ...) __printflike(1, 2);
+int fetch_socks5_getenv(char **host, int *port);
+int fetch_socks5_init(conn_t *conn, const char *host, int port, int verbose);
+int fetch_default_port(const char *);
+int fetch_default_proxy_port(const char *);
 struct addrinfo *fetch_resolve(const char *, int, int);
-int		 fetch_bind(int, int, const char *);
-conn_t		*fetch_connect(const char *, int, int, int);
-conn_t		*fetch_reopen(int);
-conn_t		*fetch_ref(conn_t *);
+int fetch_bind(int, int, const char *);
+conn_t *fetch_connect(const char *, int, int, int);
+conn_t *fetch_reopen(int);
+conn_t *fetch_ref(conn_t *);
 #ifdef WITH_SSL
-int		 fetch_ssl_cb_verify_crt(int, X509_STORE_CTX*);
+int fetch_ssl_cb_verify_crt(int, X509_STORE_CTX *);
 #endif /* WITH_SSL */
-int		 fetch_ssl(conn_t *, const struct url *, int);
-ssize_t		 fetch_read(conn_t *, char *, size_t);
-int		 fetch_getln(conn_t *);
-ssize_t		 fetch_write(conn_t *, const char *, size_t);
-ssize_t		 fetch_writev(conn_t *, struct iovec *, int);
-int		 fetch_putln(conn_t *, const char *, size_t);
-int		 fetch_close(conn_t *);
-int		 fetch_add_entry(struct url_ent **, int *, int *,
-		     const char *, struct url_stat *);
-int		 fetch_netrc_auth(struct url *url);
-int		 fetch_no_proxy_match(const char *);
+int fetch_ssl(conn_t *, const struct url *, int);
+ssize_t fetch_read(conn_t *, char *, size_t);
+int fetch_getln(conn_t *);
+ssize_t fetch_write(conn_t *, const char *, size_t);
+ssize_t fetch_writev(conn_t *, struct iovec *, int);
+int fetch_putln(conn_t *, const char *, size_t);
+int fetch_close(conn_t *);
+int fetch_add_entry(struct url_ent **, int *, int *, const char *,
+                    struct url_stat *);
+int fetch_netrc_auth(struct url *url);
+int fetch_no_proxy_match(const char *);
 
-#define ftp_seterr(n)	 fetch_seterr(ftp_errlist, n)
-#define http_seterr(n)	 fetch_seterr(http_errlist, n)
-#define netdb_seterr(n)	 fetch_seterr(netdb_errlist, n)
-#define url_seterr(n)	 fetch_seterr(url_errlist, n)
+#define ftp_seterr(n) fetch_seterr(ftp_errlist, n)
+#define http_seterr(n) fetch_seterr(http_errlist, n)
+#define netdb_seterr(n) fetch_seterr(netdb_errlist, n)
+#define url_seterr(n) fetch_seterr(url_errlist, n)
 #define socks5_seterr(n) fetch_seterr(socks5_errlist, n)
 
 #ifndef NDEBUG
-#define DEBUGF(...)							\
-	do {								\
-		if (fetchDebug)						\
-			fprintf(stderr, __VA_ARGS__);			\
-	} while (0)
+#define DEBUGF(...)                                                            \
+  do {                                                                         \
+    if (fetchDebug)                                                            \
+      fprintf(stderr, __VA_ARGS__);                                            \
+  } while (0)
 #else
-#define DEBUGF(...)							\
-	do {								\
-		/* nothing */						\
-	} while (0)
+#define DEBUGF(...)                                                            \
+  do {                                                                         \
+    /* nothing */                                                              \
+  } while (0)
 #endif /* ! NDEBUG */
 
 /*
@@ -170,17 +169,16 @@ int		 fetch_no_proxy_match(const char *);
  * Note that _*_request() free purl, which is way ugly but saves us a
  * whole lot of trouble.
  */
-FILE		*http_request(struct url *, const char *,
-		     struct url_stat *, struct url *, const char *);
-FILE		*http_request_body(struct url *, const char *,
-		     struct url_stat *, struct url *, const char *,
-		     const char *, const char *);
-FILE		*ftp_request(struct url *, const char *,
-		     struct url_stat *, struct url *, const char *);
+FILE *http_request(struct url *, const char *, struct url_stat *, struct url *,
+                   const char *);
+FILE *http_request_body(struct url *, const char *, struct url_stat *,
+                        struct url *, const char *, const char *, const char *);
+FILE *ftp_request(struct url *, const char *, struct url_stat *, struct url *,
+                  const char *);
 
 /*
  * Check whether a particular flag is set
  */
-#define CHECK_FLAG(x)	(flags && strchr(flags, (x)))
+#define CHECK_FLAG(x) (flags && strchr(flags, (x)))
 
 #endif

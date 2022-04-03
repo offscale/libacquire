@@ -67,8 +67,8 @@
 #define __dead
 #define SIGINFO 29
 /* TODO */
-typedef void* EditLine;
-typedef void* History;
+typedef void *EditLine;
+typedef void *History;
 #define IPTOS_LOWDELAY (-1)
 #define IAC (-1)
 #define WILL (-2)
@@ -77,68 +77,68 @@ typedef void* History;
 #define DO (-5)
 #endif
 
-void	abort_remote(FILE *);
-void	abortpt(int);
-void	abortrecv(int);
-void	alarmtimer(int);
-int	another(int *, char ***, const char *);
-int	auto_fetch(int, char **, char *);
-void	blkfree(char **);
-void	cdup(int, char **);
-void	cmdabort(int);
-void	cmdscanner(int);
-int	command(const char *, ...);
-int	confirm(const char *, const char *);
-int	connect_wait(int);
-FILE   *dataconn(const char *);
-int	foregroundproc(void);
-int	fileindir(const char *, const char *);
+void abort_remote(FILE *);
+void abortpt(int);
+void abortrecv(int);
+void alarmtimer(int);
+int another(int *, char ***, const char *);
+int auto_fetch(int, char **, char *);
+void blkfree(char **);
+void cdup(int, char **);
+void cmdabort(int);
+void cmdscanner(int);
+int command(const char *, ...);
+int confirm(const char *, const char *);
+int connect_wait(int);
+FILE *dataconn(const char *);
+int foregroundproc(void);
+int fileindir(const char *, const char *);
 struct cmd *getcmd(const char *);
-int	getreply(int);
-int	globulize(char **);
-char   *gunique(const char *);
-void	help(int, char **);
-char   *hookup(char *, char *);
-int	initconn(void);
-void	intr(void);
-int	isurl(const char *);
-int	ftp_login(const char *, char *, char *);
-void	lostpeer(void);
-void	makeargv(void);
-void	progressmeter(int, const char *);
-char   *prompt(void);
-void	proxtrans(const char *, const char *, const char *);
-void	psabort(int);
-void	psummary(int);
-void	pswitch(int);
-void	ptransfer(int);
-void	recvrequest(const char *, const char *, const char *,
-	    const char *, int, int);
-char   *remglob(char **, int, char **);
-off_t	remotesize(const char *, int);
-time_t	remotemodtime(const char *, int);
-void	reset(int, char **);
-void	rmthelp(int, char **);
-void	sethash(int, char **);
-void	setpeer(int, char **);
-void	setttywidth(int);
-char   *slurpstring(void);
+int getreply(int);
+int globulize(char **);
+char *gunique(const char *);
+void help(int, char **);
+char *hookup(char *, char *);
+int initconn(void);
+void intr(void);
+int isurl(const char *);
+int ftp_login(const char *, char *, char *);
+void lostpeer(void);
+void makeargv(void);
+void progressmeter(int, const char *);
+char *prompt(void);
+void proxtrans(const char *, const char *, const char *);
+void psabort(int);
+void psummary(int);
+void pswitch(int);
+void ptransfer(int);
+void recvrequest(const char *, const char *, const char *, const char *, int,
+                 int);
+char *remglob(char **, int, char **);
+off_t remotesize(const char *, int);
+time_t remotemodtime(const char *, int);
+void reset(int, char **);
+void rmthelp(int, char **);
+void sethash(int, char **);
+void setpeer(int, char **);
+void setttywidth(int);
+char *slurpstring(void);
 
-__dead void	usage(void);
+__dead void usage(void);
 
-void	cookie_get(const char *, const char *, int, char **);
-void	cookie_load(void);
+void cookie_get(const char *, const char *, int, char **);
+void cookie_load(void);
 
 #ifndef SMALL
-void	abortsend(int);
+void abortsend(int);
 unsigned char complete(EditLine *, int);
-void	controlediting(void);
-void	domacro(int, char **);
-void	list_vertical(StringList *);
-void	parse_list(char **, char *);
-char   *remglob2(char **, int, char **, FILE **ftemp, char *type);
-int	ruserpass(const char *, char **, char **, char **);
-void	sendrequest(const char *, const char *, const char *, int);
+void controlediting(void);
+void domacro(int, char **);
+void list_vertical(StringList *);
+void parse_list(char **, char *);
+char *remglob2(char **, int, char **, FILE **ftemp, char *type);
+int ruserpass(const char *, char **, char **, char **);
+void sendrequest(const char *, const char *, const char *, int);
 
 #ifdef _MSC_VER
 #include <BaseTsd.h>
@@ -148,25 +148,24 @@ typedef SSIZE_T ssize_t;
 ssize_t http_time(time_t, char *, size_t);
 #endif /* !SMALL */
 
-extern jmp_buf	abortprox;
-extern int	abrtflag;
-extern FILE    *cout;
-extern int	data;
-extern char    *home;
-extern jmp_buf	jabort;
-extern int	family;
-extern int	proxy;
-extern char	reply_string[];
-extern off_t	restart_point;
-extern int	keep_alive_timeout;
-extern int	connect_timeout;
-extern int	pipeout;
-extern char	*action;
+extern jmp_buf abortprox;
+extern int abrtflag;
+extern FILE *cout;
+extern int data;
+extern char *home;
+extern jmp_buf jabort;
+extern int family;
+extern int proxy;
+extern char reply_string[];
+extern off_t restart_point;
+extern int keep_alive_timeout;
+extern int connect_timeout;
+extern int pipeout;
+extern char *action;
 
 #ifndef SMALL
-extern int	NCMDS;
-extern int	server_timestamps;
+extern int NCMDS;
+extern int server_timestamps;
 #endif /* !SMALL */
 
-extern char *__progname;		/* from crt0.o */
-
+extern char *__progname; /* from crt0.o */

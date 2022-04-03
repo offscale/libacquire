@@ -38,125 +38,113 @@ __FBSDID("$FreeBSD$");
 #include <fcntl.h>
 #include <stdio.h>
 
-#include "fetch.h"
 #include "common.h"
+#include "fetch.h"
 
-FILE *
-fetchXGetFile(struct url *u, struct url_stat *us, const char *flags)
-{
-	FILE *f;
+FILE *fetchXGetFile(struct url *u, struct url_stat *us, const char *flags) {
+  FILE *f;
 
-	if (us && fetchStatFile(u, us, flags) == -1)
-		return (NULL);
-
+  if (us && fetchStatFile(u, us, flags) == -1)
+    return (NULL);
 
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-	fopen_s(&f, u->doc, "re");
+  fopen_s(&f, u->doc, "re");
 #else
-	f = fopen(u->doc, "re");
+  f = fopen(u->doc, "re");
 #endif
 
-	if (f == NULL) {
-		fetch_syserr();
-		return (NULL);
-	}
+  if (f == NULL) {
+    fetch_syserr();
+    return (NULL);
+  }
 
-	if (u->offset && fseeko(f, u->offset, SEEK_SET) == -1) {
-		fclose(f);
-		fetch_syserr();
-		return (NULL);
-	}
+  if (u->offset && fseeko(f, u->offset, SEEK_SET) == -1) {
+    fclose(f);
+    fetch_syserr();
+    return (NULL);
+  }
 
-	return (f);
+  return (f);
 }
 
-FILE *
-fetchGetFile(struct url *u, const char *flags)
-{
-	return (fetchXGetFile(u, NULL, flags));
+FILE *fetchGetFile(struct url *u, const char *flags) {
+  return (fetchXGetFile(u, NULL, flags));
 }
 
-FILE *
-fetchPutFile(struct url *u, const char *flags)
-{
-	FILE *f;
+FILE *fetchPutFile(struct url *u, const char *flags) {
+  FILE *f;
 
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-		fopen_s(&f, u->doc,
+  fopen_s(&f, u->doc,
 #else
-		f = fopen(u->doc,
+  f = fopen(u->doc,
 #endif
-				  CHECK_FLAG('a')?  "ae" :  "w+e");
+          CHECK_FLAG('a') ? "ae" : "w+e");
 
-	if (f == NULL) {
-		fetch_syserr();
-		return (NULL);
-	}
+  if (f == NULL) {
+    fetch_syserr();
+    return (NULL);
+  }
 
-	if (u->offset && fseeko(f, u->offset, SEEK_SET) == -1) {
-		fclose(f);
-		fetch_syserr();
-		return (NULL);
-	}
+  if (u->offset && fseeko(f, u->offset, SEEK_SET) == -1) {
+    fclose(f);
+    fetch_syserr();
+    return (NULL);
+  }
 
-	return (f);
+  return (f);
 }
 
-static int
-fetch_stat_file(const char *fn, struct url_stat *us)
-{
-	struct stat sb;
+static int fetch_stat_file(const char *fn, struct url_stat *us) {
+  struct stat sb;
 
-	us->size = -1;
-	us->atime = us->mtime = 0;
-	if (stat(fn, &sb) == -1) {
-		fetch_syserr();
-		return (-1);
-	}
-	us->size = sb.st_size;
-	us->atime = sb.st_atime;
-	us->mtime = sb.st_mtime;
-	return (0);
+  us->size = -1;
+  us->atime = us->mtime = 0;
+  if (stat(fn, &sb) == -1) {
+    fetch_syserr();
+    return (-1);
+  }
+  us->size = sb.st_size;
+  us->atime = sb.st_atime;
+  us->mtime = sb.st_mtime;
+  return (0);
 }
 
-int
-fetchStatFile(struct url *u, struct url_stat *us, const char *flags __unused)
-{
-	return (fetch_stat_file(u->doc, us));
+int fetchStatFile(struct url *u, struct url_stat *us,
+                  const char *flags __unused) {
+  return (fetch_stat_file(u->doc, us));
 }
 
-struct url_ent *
-fetchListFile(struct url *u, const char *flags __unused)
-{
-	struct dirent *de;
-	struct url_stat us;
-	struct url_ent *ue;
-	int size, len;
-	char fn[PATH_MAX], *p;
-	DIR *dir;
-	int l;
+struct url_ent *fetchListFile(struct url *u, const char *flags __unused) {
+  struct dirent *de;
+  struct url_stat us;
+  struct url_ent *ue;
+  int size, len;
+  char fn[PATH_MAX], *p;
+  DIR *dir;
+  int l;
 
-	if ((dir = opendir(u->doc)) == NULL) {
-		fetch_syserr();
-		return (NULL);
-	}
+  if ((dir = opendir(u->doc)) == NULL) {
+    fetch_syserr();
+    return (NULL);
+  }
 
-	ue = NULL;
-	strncpy(fn, u->doc, sizeof(fn) - 2);
-	fn[sizeof(fn) - 2] = 0;
-	strcat(fn, "/");
-	p = strchr(fn, 0);
-	l = sizeof(fn) - strlen(fn) - 1;
+  ue = NULL;
+  strncpy(fn, u->doc, sizeof(fn) - 2);
+  fn[sizeof(fn) - 2] = 0;
+  strcat(fn, "/");
+  p = strchr(fn, 0);
+  l = sizeof(fn) - strlen(fn) - 1;
 
-	while ((de = readdir(dir)) != NULL) {
-		strncpy(p, de->d_name, l - 1);
-		p[l - 1] = 0;
-		if (fetch_stat_file(fn, &us) == -1)
-			/* should I return a partial result, or abort? */
-			break;
-		fetch_add_entry(&ue, &size, &len, de->d_name, &us);
-	}
+  while ((de = readdir(dir)) != NULL) {
+    strncpy(p, de->d_name, l - 1);
+    p[l - 1] = 0;
+    if (fetch_stat_file(fn, &us) == -1)
+      /* should I return a partial result, or abort? */
+      break;
+    fetch_add_entry(&ue, &size, &len, de->d_name, &us);
+  }
 
-	closedir(dir);
-	return (ue);
+  closedir(dir);
+  return (ue);
 }

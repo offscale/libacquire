@@ -6,21 +6,20 @@
 char *strchrnul(const char *s, int c);
 
 #ifndef HAVE_REALLOCARRAY
-void *
-reallocarray(void *optr, size_t nmemb, size_t size);
+void *reallocarray(void *optr, size_t nmemb, size_t size);
 #endif
 
 #ifndef __printflike
-#define __printflike(fmtarg, firstvararg) \
-	        __attribute__((__format__ (__printf__, fmtarg, firstvararg)))
+#define __printflike(fmtarg, firstvararg)                                      \
+  __attribute__((__format__(__printf__, fmtarg, firstvararg)))
 #endif
 
 #ifndef __CAST_AWAY_QUALIFIER
-#define __CAST_AWAY_QUALIFIER(variable, qualifier, type)  (type) (long)(variable)
+#define __CAST_AWAY_QUALIFIER(variable, qualifier, type) (type)(long)(variable)
 #endif
 
 #ifndef __DECONST
-#define __DECONST(type, var)    __CAST_AWAY_QUALIFIER(var, const, type)
+#define __DECONST(type, var) __CAST_AWAY_QUALIFIER(var, const, type)
 #endif
 
 #endif /* ! LIBACQUIRE_SHIM_H */

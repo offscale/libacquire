@@ -32,7 +32,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
 
 extern LIBACQUIRE_LIB_EXPORT bool is_directory(const char *);
 
@@ -44,78 +45,84 @@ extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *);
 
 extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *);
 
-extern LIBACQUIRE_LIB_EXPORT const char* get_extension(const char *);
+extern LIBACQUIRE_LIB_EXPORT const char *get_extension(const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 bool is_directory(const char *path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    const DWORD dwAttrib = GetFileAttributes(path);
+  const DWORD dwAttrib = GetFileAttributes(path);
 
-    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-            (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+  return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+          (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 #else
-    struct stat statbuf;
-    if (stat(path, &statbuf) != 0)
-        return false;
-    return S_ISDIR(statbuf.st_mode);
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
+  struct stat statbuf;
+  if (stat(path, &statbuf) != 0)
+    return false;
+  return S_ISDIR(statbuf.st_mode);
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
 }
 
 bool is_file(const char *path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    const DWORD dwAttrib = GetFileAttributes(path);
+  const DWORD dwAttrib = GetFileAttributes(path);
 
-    return dwAttrib != INVALID_FILE_ATTRIBUTES && !is_directory(path);
+  return dwAttrib != INVALID_FILE_ATTRIBUTES && !is_directory(path);
 #else
-    struct stat statbuf;
-    if (stat(path, &statbuf) != 0)
-        return false;
-    return S_ISREG(statbuf.st_mode);
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
+  struct stat statbuf;
+  if (stat(path, &statbuf) != 0)
+    return false;
+  return S_ISREG(statbuf.st_mode);
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
 }
 
 bool exists(const char *path) {
-    return
+  return
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        _access
+      _access
 #else
-            access
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
-                    (path, 0) != -1;
+      access
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
+      (path, 0) != -1;
 }
 
 off_t filesize(const char *filename) {
-    struct stat st;
+  struct stat st;
 
-    if (stat(filename, &st) == 0)
-        return st.st_size;
+  if (stat(filename, &st) == 0)
+    return st.st_size;
 
-    return -1;
+  return -1;
 }
 
 bool is_relative(const char *filename) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
+  return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
 #else
-    return filename[0] != '/';
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) */
+  return filename[0] != '/';
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
 }
 
-const char* get_extension(const char *filename) {
-    /* Retrieves the file extension(s) from filename
-     *
-     * "tar" seems to be the only format serving as a middle extension (from Nov 11 2021 rev of:
-     * https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression )
-     * */
-    const char *ext0 = filename + strlen(filename), *ext1 = ext0;
-    size_t i;
-    for (i = 0; filename[i] != '\0'; i++)
-        if (filename[i] == '.') {
-            ext0 = ext1;
-            ext1 = filename + i;
-        }
+const char *get_extension(const char *filename) {
+  /* Retrieves the file extension(s) from filename
+   *
+   * "tar" seems to be the only format serving as a middle extension (from Nov
+   * 11 2021 rev of:
+   * https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression
+   * )
+   * */
+  const char *ext0 = filename + strlen(filename), *ext1 = ext0;
+  size_t i;
+  for (i = 0; filename[i] != '\0'; i++)
+    if (filename[i] == '.') {
+      ext0 = ext1;
+      ext1 = filename + i;
+    }
 
-    return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
+  return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */

@@ -34,21 +34,20 @@
 #include "morestd_export.h"
 
 #ifndef VA_COPY
-# ifdef HAVE_VA_COPY
-#  define VA_COPY(dest, src) va_copy(dest, src)
-# else
-#  ifdef HAVE___VA_COPY
-#   define VA_COPY(dest, src) __va_copy(dest, src)
-#  else
-#   define VA_COPY(dest, src) (dest) = (src)
-#  endif
-# endif
+#ifdef HAVE_VA_COPY
+#define VA_COPY(dest, src) va_copy(dest, src)
+#else
+#ifdef HAVE___VA_COPY
+#define VA_COPY(dest, src) __va_copy(dest, src)
+#else
+#define VA_COPY(dest, src) (dest) = (src)
+#endif
+#endif
 #endif
 
-#define INIT_SZ	128
+#define INIT_SZ 128
 
-int MORESTD_EXPORT
-vasprintf(char **str, const char *fmt, va_list ap);
+int MORESTD_EXPORT vasprintf(char **str, const char *fmt, va_list ap);
 
 int MORESTD_EXPORT asprintf(char **str, const char *fmt, ...);
 #else

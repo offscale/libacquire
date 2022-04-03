@@ -15,9 +15,9 @@
 #else
 #include "acquire_stdbool.h"
 #endif /* defined(HAS_STDBOOL) && !defined(bool) */
-#include "acquire_url_utils.h"
-#include "acquire_fileutils.h"
 #include "acquire_config.h"
+#include "acquire_fileutils.h"
+#include "acquire_url_utils.h"
 
 #include "acquire_checksums.h"
 #include "libacquire_export.h"
@@ -30,20 +30,15 @@
 
 extern LIBACQUIRE_LIB_EXPORT const char *get_download_dir();
 
-extern LIBACQUIRE_LIB_EXPORT bool is_downloaded(
-        const char *, enum Checksum,
-        const char *, const char *
-);
+extern LIBACQUIRE_LIB_EXPORT bool is_downloaded(const char *, enum Checksum,
+                                                const char *, const char *);
 
-extern LIBACQUIRE_LIB_EXPORT int download(
-        const char *, enum Checksum,
-        const char *, const char[248],
-        bool, size_t, size_t
-);
+extern LIBACQUIRE_LIB_EXPORT int download(const char *, enum Checksum,
+                                          const char *, const char[248], bool,
+                                          size_t, size_t);
 
-extern LIBACQUIRE_LIB_EXPORT int download_many(
-        const char *[], const char *[], enum Checksum[],
-        const char *, bool, size_t, size_t
-);
+extern LIBACQUIRE_LIB_EXPORT int download_many(const char *[], const char *[],
+                                               enum Checksum[], const char *,
+                                               bool, size_t, size_t);
 
 #endif /* ! LIBACQUIRE_ACQUIRE_DOWNLOAD_H */

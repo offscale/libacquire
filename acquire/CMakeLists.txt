@@ -76,6 +76,13 @@ function (generate_source_file_from_header_only filepath header_filepath source_
     set(source_contents "")
     set(eat_source "OFF")
     set(eat_header "ON")
+    set(within_comment "OFF")
+    set(lparen 0)
+    set(rparen 0)
+    set(lbrace 0)
+    set(rbrace 0)
+    set(lsquare 0)
+    set(rsquare 0)
 
 
     file(READ "${filepath}" contents)
@@ -86,15 +93,57 @@ function (generate_source_file_from_header_only filepath header_filepath source_
       string(SUBSTRING "${contents}" "${char_index}" "1" char)
       string(LENGTH "${line}" line_len)
       math(EXPR line_len_minus_1 "${line_len} - 1")
+      math(EXPR line_len_minus_2 "${line_len} - 2")
       if (line_len_minus_1 GREATER 0)
           string(SUBSTRING "${line}" "${line_len_minus_1}" "1" prev_char)
       else ()
           set(prev_char '')
       endif ()
+      if (line_len_minus_2 GREATER 0)
+          string(SUBSTRING "${line}" "${line_len_minus_2}" "1" prev_prev_char)
+      else ()
+          set(prev_prev_char '')
+      endif ()
       string(APPEND line "${char}")
-      message(STATUS "prev_char = '${prev_char}'; char = '${char}'")
-      if (char STREQUAL "\n")
+      # message(STATUS "prev_char = '${prev_char}'; char = '${char}'")
+
+      # Semicolon isn't sufficient, as we care about `concrete syntax` like:
+      # - function/struct start-of-definition;
+      # - statements;
+      # - multiline comments
+      if (prev_char STREQUAL '/' AND char STREQUAL '*')
+          set(within_comment "ON")
+      elseif (prev_char STREQUAL '*' AND char STREQUAL '/')
+          set(within_comment "OFF")
+      elseif (within_comment OR char STREQUAL '\\'
+              OR prev_prev_char STREQUAL '\\' OR prev_char STREQUAL '\\'
+              OR prev_prev_char STREQUAL '&' AND prev_char STREQUAL '&'
+              OR prev_char STREQUAL '&' AND char STREQUAL '&'
+              OR prev_prev_char STREQUAL '|' AND prev_char STREQUAL '|'
+              OR prev_char STREQUAL '|' AND char STREQUAL '|'
+              OR prev_prev_char STREQUAL '<' AND prev_char STREQUAL '<'
+              OR prev_prev_char STREQUAL '>' AND prev_char STREQUAL '>'
+              OR prev_prev_char STREQUAL '=' AND prev_char STREQUAL '='
+              OR prev_prev_char STREQUAL '!' AND prev_char STREQUAL '='
+              OR prev_prev_char STREQUAL '>' AND prev_char STREQUAL '='
+              OR prev_prev_char STREQUAL '<' AND prev_char STREQUAL '=')
+          pass()
+      elseif (char STREQUAL "(")
+          math(EXPR lparen "${lparen} + 1")
+      #elseif (char STREQUAL '{')  # Actually brace is beginning of scope, don't confuse semantics with simple Concrete Syntax
+      #    math(EXPR lbrace "${lbrace} + 1")
+      elseif (char STREQUAL '[')
+          math(EXPR lsquare "${lsquare} + 1")
+      elseif (char STREQUAL ")")
+          math(EXPR rparen "${rparen} + 1")
+      #elseif (char STREQUAL '}')
+      #    math(EXPR rbrace "${rbrace} + 1")
+      elseif (char STREQUAL ']')
+          math(EXPR rsquare "${rsquare} + 1")
+      elseif (char STREQUAL "\n" AND lparen EQUAL rparen AND lbrace EQUAL rbrace AND lsquare EQUAL rsquare)
         if (line_len)
+          message(STATUS "full_line = \"${line}\"")
+          message(STATUS "prev_prev_char = '${prev_prev_char}'; prev_char = '${prev_char}'; char = '${char}'")
           math(EXPR line_no "${line_no} + 1")
           if (line MATCHES "^#.*endif")
             list(POP_BACK conditions)

@@ -17,19 +17,18 @@
  */
 
 extern jmp_buf jabort;
-extern char   *mname;
-extern char   *home;
-extern char   *stype[];
+extern char *mname;
+extern char *home;
+extern char *stype[];
 
-void	settype(int, char **);
-void	changetype(int, int);
-void	setbinary(int, char **);
-void	get(int, char **);
-int	getit(int, char **, int, const char *);
-void	mabort(int);
-void	mget(int, char **);
-void	cd(int, char **);
-void	disconnect(int, char **);
-char   *dotrans(char *);
-char   *domap(char *);
-
+void settype(int, char **);
+void changetype(int, int);
+void setbinary(int, char **);
+void get(int, char **);
+int getit(int, char **, int, const char *);
+void mabort(int);
+void mget(int, char **);
+void cd(int, char **);
+void disconnect(int, char **);
+char *dotrans(char *);
+char *domap(char *);

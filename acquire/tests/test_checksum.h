@@ -2,8 +2,8 @@
 #include <stdbool.h>
 
 #include <acquire_common_defs.h>
-#include <config_for_tests.h>
 #include <acquire_config.h>
+#include <config_for_tests.h>
 
 #define LIBACQUIRE_IMPLEMENTATION
 
@@ -28,24 +28,25 @@
 #endif
 
 TEST x_test_crc32c_should_be_true(void) {
-    printf("crc32c(GREATEST_FILE, \"%s\"): "NUM_FORMAT"\n", GREATEST_CRC32C, crc32c(GREATEST_FILE, GREATEST_CRC32C));
-    ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
-    PASS();
+  printf("crc32c(GREATEST_FILE, \"%s\"): " NUM_FORMAT "\n", GREATEST_CRC32C,
+         crc32c(GREATEST_FILE, GREATEST_CRC32C));
+  ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
+  PASS();
 }
 
 TEST x_test_sha256_should_be_true(void) {
-    ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));
-    PASS();
+  ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));
+  PASS();
 }
 
 TEST x_test_sha256_file_should_be_false(void) {
-    ASSERT_FALSE(sha256(GREATEST_FILE, "wrong sha256 sum here"));
-    PASS();
+  ASSERT_FALSE(sha256(GREATEST_FILE, "wrong sha256 sum here"));
+  PASS();
 }
 
 /* Suites can group multiple tests with common setup. */
-SUITE (checksums_suite) {
-    RUN_TEST(x_test_crc32c_should_be_true);
-    RUN_TEST(x_test_sha256_should_be_true);
-    RUN_TEST(x_test_sha256_file_should_be_false);
+SUITE(checksums_suite) {
+  RUN_TEST(x_test_crc32c_should_be_true);
+  RUN_TEST(x_test_sha256_should_be_true);
+  RUN_TEST(x_test_sha256_file_should_be_false);
 }

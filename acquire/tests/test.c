@@ -13,10 +13,10 @@
 GREATEST_MAIN_DEFS();
 
 int main(int argc, char **argv) {
-    GREATEST_MAIN_BEGIN();
-    RUN_SUITE(checksums_suite);
-    RUN_SUITE(fileutils_suite);
-    RUN_SUITE(strnstr_suite);
-    RUN_SUITE(downloads_suite);
-    GREATEST_MAIN_END();
+  GREATEST_MAIN_BEGIN();
+  RUN_SUITE(checksums_suite);
+  RUN_SUITE(fileutils_suite);
+  RUN_SUITE(strnstr_suite);
+  RUN_SUITE(downloads_suite);
+  GREATEST_MAIN_END();
 }

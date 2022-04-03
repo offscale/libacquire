@@ -13,12 +13,13 @@
 #include "libacquire_export.h"
 
 enum LIBACQUIRE_LIB_EXPORT Archive {
-    LIBACQUIRE_ZIP,
-    LIBACQUIRE_INFER,
-    LIBACQUIRE_UNSUPPORTED_ARCHIVE
+  LIBACQUIRE_ZIP,
+  LIBACQUIRE_INFER,
+  LIBACQUIRE_UNSUPPORTED_ARCHIVE
 };
 
-extern LIBACQUIRE_LIB_EXPORT int extract_archive(enum Archive, const char *, const char *);
+extern LIBACQUIRE_LIB_EXPORT int extract_archive(enum Archive, const char *,
+                                                 const char *);
 
 extern LIBACQUIRE_LIB_EXPORT enum Archive extension2archive(const char *);
 
@@ -27,12 +28,12 @@ extern LIBACQUIRE_LIB_EXPORT enum Archive extension2archive(const char *);
 #include <acquire_string_extras.h>
 
 extern enum Archive extension2archive(const char *s) {
-    if (strncasecmp(s, ".zip", 6) == 0)
-        return LIBACQUIRE_ZIP;
-    else if (strlen(s) == 0)
-        return LIBACQUIRE_UNSUPPORTED_ARCHIVE;
-    else
-        return LIBACQUIRE_INFER;
+  if (strncasecmp(s, ".zip", 6) == 0)
+    return LIBACQUIRE_ZIP;
+  else if (strlen(s) == 0)
+    return LIBACQUIRE_UNSUPPORTED_ARCHIVE;
+  else
+    return LIBACQUIRE_INFER;
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */

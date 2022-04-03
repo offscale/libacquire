@@ -13,18 +13,17 @@
 #include "acquire_stdbool.h"
 #endif /* defined(HAS_STDBOOL) && !defined(bool) */
 
-#include "acquire_errors.h"
-#include "acquire_url_utils.h"
-#include "acquire_fileutils.h"
 #include "acquire_checksums.h"
 #include "acquire_download.h"
+#include "acquire_errors.h"
+#include "acquire_fileutils.h"
+#include "acquire_url_utils.h"
 
 #ifdef _AIX
 #include <sys/limits.h>
-#elif defined(__FreeBSD__) || defined(__NetBSD__) \
- || defined(__OpenBSD__) || defined(__bsdi__) \
- || defined(__DragonFly__) || defined(macintosh) \
- || defined(__APPLE__) || defined(__APPLE_CC__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) ||   \
+    defined(__bsdi__) || defined(__DragonFly__) || defined(macintosh) ||       \
+    defined(__APPLE__) || defined(__APPLE_CC__)
 
 #ifdef __CC_SUPPORTS_WARNING
 #define ____CC_SUPPORTS_WARNING __CC_SUPPORTS_WARNING
@@ -83,13 +82,15 @@
 #endif /* ! NAME_MAX */
 
 #if !defined(_AMD64_) && !defined(_X86_) && defined(_ARM_)
-#  if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64)
-#    define _AMD64_
-#  elif defined(i386) || defined(__i386) || defined(__i386__) || defined(__i386__) || defined(_M_IX86)
-#    define _X86_
-#  elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARMT)
-#    define _ARM_
-#  endif
+#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) ||           \
+    defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64)
+#define _AMD64_
+#elif defined(i386) || defined(__i386) || defined(__i386__) ||                 \
+    defined(__i386__) || defined(_M_IX86)
+#define _X86_
+#elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARMT)
+#define _ARM_
+#endif
 #endif /* !defined(_AMD64_) && !defined(_X86_) && defined(_ARM_) */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_COMMON_DEFS_H */

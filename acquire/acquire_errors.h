@@ -1,7 +1,8 @@
 /*
  * Common error codes
  *
- * Cross-platform support is paramount, so define codes that aren't defined everywhere.
+ * Cross-platform support is paramount, so define codes that aren't defined
+ * everywhere.
  * */
 
 #ifndef LIBACQUIRE_ERRORS_H

@@ -43,19 +43,18 @@
  * Simple string list
  */
 typedef struct _stringlist {
-	char	**sl_str;
-	size_t	  sl_max;
-	size_t	  sl_cur;
+  char **sl_str;
+  size_t sl_max;
+  size_t sl_cur;
 } StringList;
 
 __BEGIN_DECLS
-StringList	*sl_init(void);
-void		 sl_add(StringList *, char *);
-void		 sl_free(StringList *, int);
-char		*sl_find(StringList *, char *);
+StringList *sl_init(void);
+void sl_add(StringList *, char *);
+void sl_free(StringList *, int);
+char *sl_find(StringList *, char *);
 __END_DECLS
 
 #endif /* ! _STRINGLIST_H */
 
 #endif /* ! SMALL */
-
