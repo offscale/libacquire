@@ -62,6 +62,8 @@ endif (NOT HAS_STDBOOL AND NOT MSVC)
 source_group("Header Files" FILES "${Header_Files}")
 
 function (generate_source_file_from_header_only filepath header_filepath source_filepath)
+    # This function parses a header-only library file and creates a header and source file.
+    # Care is taken so that the same conditions hold, e.g., #if FEATURE\n#include "s.h"\n#endif /* FEATURE */
     set(conditions "")
     set(conditions_line "")
     set(start_proto "")
@@ -111,6 +113,11 @@ function (generate_source_file_from_header_only filepath header_filepath source_
       # - function/struct start-of-definition;
       # - statements;
       # - multiline comments
+      #
+      # Form a 'line' out of anything ending in newline unless we're still in a:
+      # - comment
+      # - expression, ending in `||` or other boolean check?
+      # - parentheses (round || square)
       if (prev_char STREQUAL '/' AND char STREQUAL '*')
           set(within_comment "ON")
       elseif (prev_char STREQUAL '*' AND char STREQUAL '/')
@@ -140,7 +147,30 @@ function (generate_source_file_from_header_only filepath header_filepath source_
       #    math(EXPR rbrace "${rbrace} + 1")
       elseif (char STREQUAL ']')
           math(EXPR rsquare "${rsquare} + 1")
-      elseif (char STREQUAL "\n" AND lparen EQUAL rparen AND lbrace EQUAL rbrace AND lsquare EQUAL rsquare)
+      elseif (char STREQUAL "\n"
+              AND lparen EQUAL rparen
+              # AND lbrace EQUAL rbrace
+              AND lsquare EQUAL rsquare
+              AND (
+                prev_char STREQUAL "{" OR prev_char STREQUAL "}"
+                OR prev_prev_char STREQUAL "{" OR prev_prev_char STREQUAL "}"
+                # This will break on macro 'calls' that don't end in a semicolon
+                # and when literals contain one of these statements, like `s="for;while";`
+                OR line MATCHES "{"              # block start
+                OR line MATCHES "}"              # block end
+                OR prev_char STREQUAL ";"        # statement end
+                OR prev_prev_char STREQUAL ";"   # statement end
+                OR prev_prev_char STREQUAL "*" AND prev_char STREQUAL "/"  # C comment
+                OR line MATCHES "^#"             # macro
+                OR line MATCHES "^.*//"          # C++ style comment
+                OR line MATCHES "^.*for"         # for loop
+                OR line MATCHES "^.*while"       # while loop
+                OR line MATCHES "^.*if"          # if condition
+                OR line MATCHES "^.*else"        # else / else if condition
+                OR line MATCHES "^.*switch"      # switch statement
+                OR prev_char STREQUAL ":"        # label (incl. case & default)
+                OR prev_prev_char STREQUAL ":"   # label (incl. case & default)
+              ))
         if (line_len)
           message(STATUS "full_line = \"${line}\"")
           message(STATUS "prev_prev_char = '${prev_prev_char}'; prev_char = '${prev_char}'; char = '${char}'")
