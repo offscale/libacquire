@@ -35,7 +35,13 @@
 
 #elif defined(USE_OPENSSL)
 
+#include <openssl/macros.h>
 #include <openssl/sha.h>
+#if OPENSSL_API_LEVEL >= 30000
+#include <openssl/evp.h>
+#include <openssl/types.h>
+#else
+#endif
 
 #define SHA256_BLOCK_BYTES 64 /* block size in bytes */
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
@@ -52,8 +58,6 @@ int sha256_file(const char *filename,
   SHA256_CTX sha256_context;
   size_t bytes;
   char buffer[BUFSIZ];
-  static unsigned char hex[] = "0123456789abcdef";
-  unsigned char sha[SHA256_DIGEST_LENGTH];
   int exit_code = EXIT_SUCCESS;
 
   /* zero out checksum */
@@ -73,23 +77,58 @@ int sha256_file(const char *filename,
   }
 
   /* calculate a SHA-1 checksum for files */
-  SHA256_Init(&sha256_context);
-
-  /* the file is small enough, checksum it all */
-  while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
-    SHA256_Update(&sha256_context, buffer, bytes);
-
-  SHA256_Final(sha, &sha256_context);
-
-  /* map into hex characters */
+#if OPENSSL_API_LEVEL >= 30000
   {
-    int i;
-    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-      sha_output[i + i] = hex[sha[i] >> 4];
-      sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    unsigned int md_len = 0;
+
+    md = EVP_get_digestbyname("SHA2-256");
+
+    mdctx = EVP_MD_CTX_new();
+    if (!EVP_DigestInit_ex2(mdctx, md, NULL)) {
+      fputs("Message digest initialization failed.", stderr);
+      EVP_MD_CTX_free(mdctx);
+      return 1;
     }
-    sha_output[i + i] = '\0';
+    while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+      if (!EVP_DigestUpdate(mdctx, &sha256_context, bytes)) {
+        fputs("Message digest update failed.", stderr);
+        EVP_MD_CTX_free(mdctx);
+        return 1;
+      } else
+        md_len += bytes;
+    if (!EVP_DigestFinal_ex(mdctx, sha_output, &md_len)) {
+      fputs("Message digest finalization failed.", stderr);
+      EVP_MD_CTX_free(mdctx);
+      return 1;
+    }
+    EVP_MD_CTX_free(mdctx);
   }
+#else
+  {
+    static unsigned char hex[] = "0123456789abcdef";
+    unsigned char sha[SHA256_DIGEST_LENGTH];
+
+    SHA256_Init(&sha256_context);
+
+    /* the file is small enough, checksum it all */
+    while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+      SHA256_Update(&sha256_context, buffer, bytes);
+
+    SHA256_Final(sha, &sha256_context);
+
+    /* map into hex characters */
+    {
+      int i;
+      for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sha_output[i + i] = hex[sha[i] >> 4];
+        sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+      }
+      sha_output[i + i] = '\0';
+    }
+  }
+#endif
 
 cleanup:
   fclose(fp);
@@ -105,8 +144,6 @@ int sha512_file(const char *filename,
   SHA512_CTX sha512_context;
   size_t bytes;
   char buffer[BUFSIZ];
-  static unsigned char hex[] = "0123456789abcdef";
-  unsigned char sha[SHA512_DIGEST_LENGTH];
   int exit_code = EXIT_SUCCESS;
 
   /* zero out checksum */
@@ -125,24 +162,59 @@ int sha512_file(const char *filename,
     goto cleanup;
   }
 
-  /* calculate a SHA-1 checksum for files */
-  SHA512_Init(&sha512_context);
-
-  /* the file is small enough, checksum it all */
-  while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
-    SHA512_Update(&sha512_context, buffer, bytes);
-
-  SHA512_Final(sha, &sha512_context);
-
-  /* map into hex characters */
+#if OPENSSL_API_LEVEL >= 30000
   {
-    int i;
-    for (i = 0; i < SHA512_DIGEST_LENGTH; i++) {
-      sha_output[i + i] = hex[sha[i] >> 4];
-      sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    unsigned int md_len = 0;
+
+    md = EVP_get_digestbyname("SHA2-512");
+
+    mdctx = EVP_MD_CTX_new();
+    if (!EVP_DigestInit_ex2(mdctx, md, NULL)) {
+      fputs("Message digest initialization failed.", stderr);
+      EVP_MD_CTX_free(mdctx);
+      return 1;
     }
-    sha_output[i + i] = '\0';
+    while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+      if (!EVP_DigestUpdate(mdctx, &sha512_context, bytes)) {
+        fputs("Message digest update failed.", stderr);
+        EVP_MD_CTX_free(mdctx);
+        return 1;
+      } else
+        md_len += bytes;
+    if (!EVP_DigestFinal_ex(mdctx, sha_output, &md_len)) {
+      fputs("Message digest finalization failed.", stderr);
+      EVP_MD_CTX_free(mdctx);
+      return 1;
+    }
+    EVP_MD_CTX_free(mdctx);
   }
+#else
+  {
+    unsigned char sha[SHA512_DIGEST_LENGTH];
+    static unsigned char hex[] = "0123456789abcdef";
+
+    /* calculate a SHA-1 checksum for files */
+    SHA512_Init(&sha512_context);
+
+    /* the file is small enough, checksum it all */
+    while ((bytes = fread(buffer, 1, sizeof(buffer), fp)))
+      SHA512_Update(&sha512_context, buffer, bytes);
+
+    SHA512_Final(sha, &sha512_context);
+
+    /* map into hex characters */
+    {
+      int i;
+      for (i = 0; i < SHA512_DIGEST_LENGTH; i++) {
+        sha_output[i + i] = hex[sha[i] >> 4];
+        sha_output[i + i + 1] = hex[sha[i] & 0x0F];
+      }
+      sha_output[i + i] = '\0';
+    }
+  }
+#endif
 
 cleanup:
   fclose(fp);

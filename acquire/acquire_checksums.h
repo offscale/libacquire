@@ -35,14 +35,9 @@ extern LIBACQUIRE_LIB_EXPORT enum Checksum string2checksum(const char *);
 extern LIBACQUIRE_LIB_EXPORT bool (*get_checksum_function(enum Checksum))(
     const char *, const char *);
 
-extern LIBACQUIRE_LIB_EXPORT enum Checksum string2checksum(const char *);
-
-extern LIBACQUIRE_LIB_EXPORT bool (
-    *get_checksum_function(enum Checksum checksum))(const char *, const char *);
-
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
-enum Checksum string2checksum(const char *s) {
+enum Checksum string2checksum(const char *const s) {
   if (strncasecmp(s, "CRC32C", 6) == 0)
     return LIBACQUIRE_CRC32C;
   else if (strncasecmp(s, "SHA256", 6) == 0)

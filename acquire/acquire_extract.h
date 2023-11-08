@@ -27,7 +27,7 @@ extern LIBACQUIRE_LIB_EXPORT enum Archive extension2archive(const char *);
 
 #include <acquire_string_extras.h>
 
-extern enum Archive extension2archive(const char *s) {
+extern enum Archive extension2archive(const char *const s) {
   if (strncasecmp(s, ".zip", 6) == 0)
     return LIBACQUIRE_ZIP;
   else if (strlen(s) == 0)

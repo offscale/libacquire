@@ -243,7 +243,7 @@ void fetch_info(const char *fmt, ...) {
 /*
  * Return the default port for a scheme
  */
-int fetch_default_port(const char *scheme) {
+int fetch_default_port(const char *const scheme) {
   struct servent *se;
 
   if ((se = getservbyname(scheme, "tcp")) != NULL)
@@ -258,7 +258,7 @@ int fetch_default_port(const char *scheme) {
 /*
  * Return the default proxy port for a scheme
  */
-int fetch_default_proxy_port(const char *scheme) {
+int fetch_default_proxy_port(const char *const scheme) {
   if (strcmp(scheme, SCHEME_FTP) == 0)
     return (FTP_DEFAULT_PROXY_PORT);
   if (strcmp(scheme, SCHEME_HTTP) == 0)
@@ -1453,7 +1453,7 @@ ssize_t fetch_writev(conn_t *conn, struct iovec *iov, int iovcnt) {
 /*
  * Write a line of text to a connection w/ timeout
  */
-int fetch_putln(conn_t *conn, const char *str, size_t len) {
+int fetch_putln(conn_t *conn, const char *const str, size_t len) {
   struct iovec iov[2];
   int ret;
 

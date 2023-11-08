@@ -196,7 +196,7 @@ static int ftp_cmd(conn_t *conn, const char *fmt, ...) {
  * Return a pointer to the filename part of a path
  */
 static const char *ftp_filename(const char *file, int *len, int *type) {
-  const char *s;
+  const char *const s;
 
   if ((s = strrchr(file, '/')) == NULL)
     s = file;

@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-char *strchrnul(const char *s, int c);
+char *strchrnul(const char *const s, int c);
 
 #ifndef HAVE_REALLOCARRAY
 void *reallocarray(void *optr, size_t nmemb, size_t size);

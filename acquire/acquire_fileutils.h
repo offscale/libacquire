@@ -48,7 +48,7 @@ extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *);
 extern LIBACQUIRE_LIB_EXPORT const char *get_extension(const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
-bool is_directory(const char *path) {
+bool is_directory(const char *const path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   const DWORD dwAttrib = GetFileAttributes(path);
 
@@ -63,7 +63,7 @@ bool is_directory(const char *path) {
           defined(__NT__) */
 }
 
-bool is_file(const char *path) {
+bool is_file(const char *const path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   const DWORD dwAttrib = GetFileAttributes(path);
 
@@ -77,7 +77,7 @@ bool is_file(const char *path) {
           defined(__NT__) */
 }
 
-bool exists(const char *path) {
+bool exists(const char *const path) {
   return
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
       _access
@@ -88,7 +88,7 @@ bool exists(const char *path) {
       (path, 0) != -1;
 }
 
-off_t filesize(const char *filename) {
+off_t filesize(const char *const filename) {
   struct stat st;
 
   if (stat(filename, &st) == 0)
@@ -97,7 +97,7 @@ off_t filesize(const char *filename) {
   return -1;
 }
 
-bool is_relative(const char *filename) {
+bool is_relative(const char *const filename) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   return !filename || !*filename || (*filename != '\\' && filename[1] != ':');
 #else
@@ -106,7 +106,7 @@ bool is_relative(const char *filename) {
           defined(__NT__) */
 }
 
-const char *get_extension(const char *filename) {
+const char *get_extension(const char *const filename) {
   /* Retrieves the file extension(s) from filename
    *
    * "tar" seems to be the only format serving as a middle extension (from Nov

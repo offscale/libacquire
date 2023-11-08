@@ -8,7 +8,7 @@
 #define M_HIGHS (M_ONES * (UCHAR_MAX / 2 + 1))
 #define M_HASZERO(x) ((x)-M_ONES & ~(x)&M_HIGHS)
 
-char *strchrnul(const char *s, int c) {
+char *strchrnul(const char *const s, int c) {
 #ifdef __GNUC__
   typedef size_t __attribute__((__may_alias__)) word;
   const word *w;

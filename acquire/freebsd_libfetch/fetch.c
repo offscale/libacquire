@@ -237,8 +237,9 @@ struct url_ent *fetchListURL(const char *URL, const char *flags) {
 /*
  * Make a URL
  */
-struct url *fetchMakeURL(const char *scheme, const char *host, int port,
-                         const char *doc, const char *user, const char *pwd) {
+struct url *fetchMakeURL(const char *const scheme, const char *const host,
+                         int port, const char *const doc,
+                         const char *const user, const char *const pwd) {
   struct url *u;
 
   if (!scheme || (!host && !doc)) {
@@ -295,7 +296,8 @@ static int fetch_hexval(char ch) {
  * part of the input string (null terminator, @, or :).  No terminator is
  * written to dst (it is the caller's responsibility).
  */
-static const char *fetch_pctdecode(char *dst, const char *src, size_t dlen) {
+static const char *fetch_pctdecode(char *dst, const char *const src,
+                                   size_t dlen) {
   int d1, d2;
   char c;
   const char *s;

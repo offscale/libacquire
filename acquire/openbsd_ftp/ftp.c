@@ -87,9 +87,9 @@
 #define warn(...) fprintf(stderr, __VA_ARGS__)
 #define warnx(...) fprintf(stderr, __VA_ARGS__)
 
-size_t strlcpy(char *dest, const char *src, size_t len) {
+size_t strlcpy(char *dest, const char *const src, size_t len) {
   char *d = dest, *e = dest + len;
-  const char *s = src;
+  const char *const s = src;
   for (; *s != '\0' && d < e; *d++ = *s++) {
   }
   if (d < e)

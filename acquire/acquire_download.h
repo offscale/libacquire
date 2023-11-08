@@ -28,14 +28,14 @@
 #include "acquire_wincrypt.h"
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
-extern LIBACQUIRE_LIB_EXPORT const char *get_download_dir();
+extern LIBACQUIRE_LIB_EXPORT const char *get_download_dir(void);
 
 extern LIBACQUIRE_LIB_EXPORT bool is_downloaded(const char *, enum Checksum,
                                                 const char *, const char *);
 
 extern LIBACQUIRE_LIB_EXPORT int download(const char *, enum Checksum,
-                                          const char *, const char[248], bool,
-                                          size_t, size_t);
+                                          const char *, const char[NAME_MAX],
+                                          bool, size_t, size_t);
 
 extern LIBACQUIRE_LIB_EXPORT int download_many(const char *[], const char *[],
                                                enum Checksum[], const char *,
