@@ -251,6 +251,13 @@ else ()
 #            "${CMAKE_BINARY_DIR}/generated_checksums.c")
 
     add_library("${LIBRARY_NAME}_lib" SHARED "${gen_header_files}" "${gen_source_files}")
+
+    find_package(LibBSD)
+    if (LibBSD_FOUND)
+        target_link_directories("${LIBRARY_NAME}_lib" PUBLIC "${BSD_LIBRARY}")
+        target_compile_definitions("${LIBRARY_NAME}_lib" PUBLIC HAVE_STRNSTR=1)
+    endif (LibBSD_FOUND)
+
     message(STATUS "${LIBRARY_NAME}_lib::CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
     target_include_directories(
             "${LIBRARY_NAME}_lib"
