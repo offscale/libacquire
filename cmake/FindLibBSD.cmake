@@ -1,33 +1,38 @@
-# Find Bsd compat lib
+# Find LibBSD compat lib
 #
 # Once done, this will define:
 #
-#  Bsd_FOUND - system has Bsd compat
-#  Bsd_INCLUDE_DIRS - the Bsd compat include directories
-#  Bsd_LIBRARIES - link these to use Bsd compat
+#  LibBSD_FOUND - system has LibBSD compat
+#  LibBSD_INCLUDE_DIRS - the LibBSD compat include directories
+#  LibBSD_LIBRARIES - link these to use LibBSD compat
 #
 
+if (DEFINED LibBSD_FOUND)
+    return()
+else ()
+    set(LibBSD_FOUND 0)
+endif (DEFINED LibBSD_FOUND)
+
 include(FindPkgConfig)
+find_package(PkgConfig)
+if (PkgConfig_FOUND)
+    set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
 
-if (BSD_INCLUDE_DIR AND BSD_LIBRARY)
-    # Already in cache, be silent
-    set(BSD_FIND_QUIETLY TRUE)
+    pkg_check_modules(LibBSD libbsd REQUIRED)
+    if (LibBSD_FOUND)
+        if (NOT LibBSD_INCLUDE_DIRS)
+            set(LibBSD_INCLUDE_DIRS "${LibBSD_INCLUDEDIR}")
+        endif (NOT LibBSD_INCLUDE_DIRS)
+
+        add_library(LibBSD SHARED IMPORTED)
+        set_target_properties(LibBSD PROPERTIES
+                INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${LibBSD_INCLUDE_DIRS}")
+        if (WIN32)
+            set_target_properties(LibBSD PROPERTIES
+                    IMPORTED_IMPLIB "${LibBSD_LINK_LIBRARIES}")
+        else ()
+            set_target_properties(LibBSD PROPERTIES
+                    IMPORTED_LOCATION "${LibBSD_LINK_LIBRARIES}")
+        endif ()
+    endif ()
 endif ()
-
-pkg_check_modules(BSD_PKGCONF libbsd)
-
-find_path(BSD_INCLUDE_DIR bsd.h
-        PATH_SUFFIX bsd
-        PATHS ${BSD_PKGCONF_INCLUDE_DIRS}
-)
-
-find_library(BSD_LIBRARY
-        NAMES bsd
-        PATHS ${BSD_PKGCONF_LIBRARY_DIRS}
-)
-
-set(BSD_PROCESS_INCLUDES BSD_INCLUDE_DIR)
-set(BSD_PROCESS_LIBS BSD_LIBRARY)
-if (BSD_LIBRARY)
-    set(LibBSD_FOUND 1)
-endif (BSD_LIBRARY)

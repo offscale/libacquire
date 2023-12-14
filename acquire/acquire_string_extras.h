@@ -8,7 +8,11 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#ifdef HAVE_LIBBSD
+#include <bsd/string.h>
+#else
 #include <string.h>
+#endif /* HAVE_LIBBSD */
 
 #include "libacquire_export.h"
 

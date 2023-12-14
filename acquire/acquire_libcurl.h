@@ -1,3 +1,6 @@
+#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) &&                  \
+    defined(LIBACQUIRE_IMPLEMENTATION)
+
 /*
  * libcurl implementation of libacquire's download API
  *
@@ -8,12 +11,12 @@
  *   - Elsewhere that curl supports (not tested, but shouldn't be an issue)
  * */
 
-#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) &&                  \
-    defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_LIBCURL_H
 
 #include <stdint.h>
 #include <stdlib.h>
+
+#include <acquire_fileutils.h>
 
 #include "acquire_common_defs.h"
 #include "acquire_string_extras.h"

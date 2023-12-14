@@ -1,3 +1,6 @@
+#ifndef TEST_AMALGAMATION_H
+#define TEST_AMALGAMATION_H
+
 #include <greatest.h>
 #include <stdbool.h>
 
@@ -21,3 +24,5 @@ TEST x_test_file_downloads(void) {
 
 /* Suites can group multiple tests with common setup. */
 SUITE(downloads_suite) { RUN_TEST(x_test_file_downloads); }
+
+#endif /* !TEST_AMALGAMATION_H */

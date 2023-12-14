@@ -1,22 +1,27 @@
+#ifndef TEST_FILEUTILS_H
+#define TEST_FILEUTILS_H
+
+#define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
+#undef LIBACQUIRE_IMPLEMENTATION
+
 #include <config_for_tests.h>
 #include <greatest.h>
-#include <stdbool.h>
 
 #ifdef _MSC_VER
-#define NUM_FORMAT "%zu"
+#define NUM_FORMAT "zu"
 typedef size_t num_type;
 #elif defined(__linux__) || defined(linux) || defined(__linux)
-#define NUM_FORMAT "%d"
+#define NUM_FORMAT "d"
 typedef int num_type;
 #else
-#define NUM_FORMAT "%lu"
+#define NUM_FORMAT "lu"
 typedef unsigned long num_type;
 #endif /* _MSC_VER */
 
 TEST x_is_directory_should_be_true(void) {
   const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);
-  ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
+  ASSERT_EQ_FMT((bool)true, x, "%" BOOL_FORMAT);
   PASS();
 }
 
@@ -30,7 +35,7 @@ TEST x_is_directory_should_be_false(void) {
 
 TEST x_is_file_should_be_true(void) {
   const bool x = is_file(CMAKE_CURRENT_LIST_FILE);
-  ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
+  ASSERT_EQ_FMT((bool)true, x, "%" BOOL_FORMAT);
   PASS();
 }
 
@@ -45,8 +50,8 @@ TEST x_is_file_should_be_false(void) {
 TEST x_exists_should_be_true(void) {
   const bool x = exists(CMAKE_CURRENT_SOURCE_DIR);
   const bool y = exists(CMAKE_CURRENT_LIST_FILE);
-  ASSERT_EQ_FMT((num_type) true, x, NUM_FORMAT);
-  ASSERT_EQ_FMT((num_type) true, y, NUM_FORMAT);
+  ASSERT_EQ_FMT((bool)true, x, "%" BOOL_FORMAT);
+  ASSERT_EQ_FMT((bool)true, y, "%" BOOL_FORMAT);
   PASS();
 }
 
@@ -102,3 +107,5 @@ SUITE(fileutils_suite) {
   /* RUN_TEST(x_parse_out_extension_should_be_include_both_dots_when_whole_filename_is_extension);
    */
 }
+
+#endif /* !TEST_FILEUTILS_H */

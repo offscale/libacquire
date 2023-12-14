@@ -1,3 +1,6 @@
+#ifndef TEST_STRING_EXTRAS_H
+#define TEST_STRING_EXTRAS_H
+
 #include "config_for_tests.h"
 #include <acquire_string_extras.h>
 #include <greatest.h>
@@ -20,3 +23,5 @@ SUITE(strnstr_suite) {
   RUN_TEST(x_strnstr_should_succeed);
   RUN_TEST(x_strnstr_should_fail);
 }
+
+#endif /* !TEST_STRING_EXTRAS_H */

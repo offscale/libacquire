@@ -1,3 +1,6 @@
+#ifndef TEST_CHECKSUM_H
+#define TEST_CHECKSUM_H
+
 #include <greatest.h>
 #include <stdbool.h>
 
@@ -20,15 +23,15 @@
 #endif
 
 #ifdef _MSC_VER
-#define NUM_FORMAT "%zu"
+#define NUM_FORMAT "zu"
+#define BOOL_FORMAT NUM_FORMAT
 #elif defined(__linux__) || defined(linux) || defined(__linux)
-#define NUM_FORMAT "%d"
-#else
-#define NUM_FORMAT "%lu"
+#define NUM_FORMAT "d"
+#define BOOL_FORMAT "lu"
 #endif
 
 TEST x_test_crc32c_should_be_true(void) {
-  printf("crc32c(GREATEST_FILE, \"%s\"): " NUM_FORMAT "\n", GREATEST_CRC32C,
+  printf("crc32c(GREATEST_FILE, \"%s\"): %" BOOL_FORMAT "\n", GREATEST_CRC32C,
          crc32c(GREATEST_FILE, GREATEST_CRC32C));
   ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
   PASS();
@@ -50,3 +53,5 @@ SUITE(checksums_suite) {
   RUN_TEST(x_test_sha256_should_be_true);
   RUN_TEST(x_test_sha256_file_should_be_false);
 }
+
+#endif /* !TEST_CHECKSUM_H */

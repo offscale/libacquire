@@ -1,3 +1,6 @@
+#ifndef TEST_DOWNLOAD_H
+#define TEST_DOWNLOAD_H
+
 #include <greatest.h>
 
 #include <acquire_common_defs.h>
@@ -35,3 +38,5 @@ TEST x_test_file_downloads(void) {
 
 /* Suites can group multiple tests with common setup. */
 SUITE(downloads_suite) { RUN_TEST(x_test_file_downloads); }
+
+#endif /* !TEST_DOWNLOAD_H */

@@ -13,15 +13,15 @@
 #define PATH_SEP "/"
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-#include <acquire_common_defs.h>
-#include <acquire_config.h>
-#include <acquire_extract.h>
-#include <config_for_tests.h>
-
 #define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
 #include ARCHIVE_LIB_NAME
 #undef LIBACQUIRE_IMPLEMENTATION
+
+#include <acquire_common_defs.h>
+#include <acquire_config.h>
+#include <acquire_extract.h>
+#include <config_for_tests.h>
 
 TEST x_test_extract_archive(void) {
 #define EXTRACT_DIR DOWNLOAD_DIR PATH_SEP "extract" PATH_SEP ARCHIVE_LIB

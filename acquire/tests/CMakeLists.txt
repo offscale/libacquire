@@ -71,7 +71,7 @@ set(All_Header_Files "${GREATEST_FILE}")
 
 foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
   message(STATUS "[test_libacquire] ${_library}_LIB: \t${${_library}_LIB}")
-endforeach (_library "HTTPS" "CRYPTO" "EXTRACT")
+endforeach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
 
 macro (test_wrapper)
     target_include_directories(
