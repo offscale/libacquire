@@ -6,6 +6,10 @@
 #ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #include "acquire_download.h"
 #include "acquire_string_extras.h"
 
@@ -44,5 +48,9 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
   }
 }
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_ACQUIRE_NET_COMMON_H */

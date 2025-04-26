@@ -2,6 +2,10 @@
     defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_ACQUIRE_MINIZ_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,6 +34,10 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
     return zip_extract(archive_filepath, output_folder, on_extract_entry, &arg);
   }
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(USE_MINIZ) &&        \
           defined(LIBACQUIRE_IMPLEMENTATION) */

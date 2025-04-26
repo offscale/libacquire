@@ -10,6 +10,10 @@
 #ifndef LIBACQUIRE_ACQUIRE_EXTRACT_H
 #define LIBACQUIRE_ACQUIRE_EXTRACT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "libacquire_export.h"
 
 enum LIBACQUIRE_LIB_EXPORT Archive {
@@ -37,5 +41,9 @@ extern enum Archive extension2archive(const char *const s) {
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_EXTRACT_H */

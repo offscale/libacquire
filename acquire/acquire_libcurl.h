@@ -13,6 +13,10 @@
 
 #define LIBACQUIRE_LIBCURL_H
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -185,7 +189,7 @@ int download(const char *url, enum Checksum checksum, const char *hash,
     if (filesize(target_location) > 0 /* && check checksum */) {
       return EEXIST /*CURLE_ALREADY_COMPLETE*/;
     } else
-    set_remote_fname_to_target_location : {
+    set_remote_fname_to_target_location: {
       const size_t target_location_n = strlen(target_location);
       strncpy(dnld_params.dnld_remote_fname, target_location,
               target_location_n);
@@ -303,6 +307,10 @@ int download_many(const char *url[], const char *hashes[],
                   bool follow, size_t retry, size_t verbosity) {
   return UNIMPLEMENTED;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) &&            \
           defined(LIBACQUIRE_IMPLEMENTATION) */

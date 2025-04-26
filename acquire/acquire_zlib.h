@@ -7,11 +7,13 @@
     defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_ACQUIRE_ZLIB_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* __cplusplus */
 
 #include "zlib.h"
 #include <assert.h>
@@ -120,6 +122,10 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
                     const char *output_folder) {
   return EXIT_FAILURE;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_ZLIB_H) && defined(USE_ZLIB) &&          \
           defined(LIBACQUIRE_IMPLEMENTATION) */

@@ -11,6 +11,10 @@
 #if !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_OPENSSL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "acquire_config.h"
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
@@ -243,6 +247,10 @@ bool sha512(const char *filename, const char *hash) {
 #endif /* !LIBACQUIRE_IMPL_SHA512 */
 
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION) \
         */

@@ -5,11 +5,13 @@
 #ifndef LIBACQUIRE_ACQUIRE_URL_UTILS_H
 #define LIBACQUIRE_ACQUIRE_URL_UTILS_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#endif /* __cplusplus */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define strdup _strdup
@@ -60,5 +62,9 @@ bool is_url(const char *maybe_url) {
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_URL_UTILS_H */

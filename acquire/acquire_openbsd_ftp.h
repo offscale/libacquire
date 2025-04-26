@@ -7,6 +7,10 @@
 #if !defined(LIBACQUIRE_OPENBSD_FTP_H) && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_OPENBSD_FTP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "openbsd.ftp/extern.h"
 
 const char *get_download_dir() { return ".downloads"; }
@@ -16,6 +20,10 @@ int download(const char *url, enum Checksum checksum, const char *hash,
              size_t verbosity) {
   sendrequest();
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_OPENBSD_FTP_H) &&                                \
           defined(LIBACQUIRE_IMPLEMENTATION) */

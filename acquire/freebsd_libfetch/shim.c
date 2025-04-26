@@ -6,7 +6,7 @@
 #define M_ALIGN (sizeof(size_t))
 #define M_ONES ((size_t)-1 / UCHAR_MAX)
 #define M_HIGHS (M_ONES * (UCHAR_MAX / 2 + 1))
-#define M_HASZERO(x) ((x)-M_ONES & ~(x)&M_HIGHS)
+#define M_HASZERO(x) ((x) - M_ONES & ~(x) & M_HIGHS)
 
 char *strchrnul(const char *const s, int c) {
 #ifdef __GNUC__

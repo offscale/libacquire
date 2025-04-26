@@ -8,11 +8,14 @@
     defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WININET_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* __cplusplus */
+
 #include "acquire_checksums.h"
 
 #ifndef NAME_MAX
@@ -76,6 +79,10 @@ int download(const char *url, enum Checksum checksum, const char *hash,
   InternetCloseHandle(hInternet);
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) &&            \
           defined(LIBACQUIRE_IMPLEMENTATION) */

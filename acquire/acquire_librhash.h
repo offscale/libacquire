@@ -8,7 +8,9 @@
 
 #include <errno.h>
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
@@ -102,6 +104,10 @@ bool sha512(const char *filename, const char *gold_hash) {
   }
 HASHES
 #undef X
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBRHASH_H) &&                           \
           defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) */

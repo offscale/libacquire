@@ -7,11 +7,17 @@
 #ifndef LIBACQUIRE_ACQUIRE_COMMON_DEFS_H
 #define LIBACQUIRE_ACQUIRE_COMMON_DEFS_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#endif /* __cplusplus */
 
 #include "acquire_checksums.h"
 #include "acquire_download.h"
@@ -92,5 +98,9 @@
 #define _ARM_
 #endif
 #endif /* !defined(_AMD64_) && !defined(_X86_) && defined(_ARM_) */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_COMMON_DEFS_H */

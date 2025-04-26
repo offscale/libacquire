@@ -8,6 +8,10 @@
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "libacquire_export.h"
 #if defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
@@ -64,5 +68,9 @@ bool (*get_checksum_function(enum Checksum checksum))(const char *,
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_CHECKSUMS_H */

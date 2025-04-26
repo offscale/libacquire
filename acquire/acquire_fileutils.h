@@ -8,13 +8,15 @@
 #ifndef LIBACQUIRE_ACQUIRE_FILEUTILS_H
 #define LIBACQUIRE_ACQUIRE_FILEUTILS_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
 #include "libacquire_export.h"
+#endif /* __cplusplus */
 
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
 #include <string.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -126,5 +128,9 @@ const char *get_extension(const char *const filename) {
 }
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_FILEUTILS_H */

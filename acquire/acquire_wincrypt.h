@@ -18,11 +18,13 @@
 #include <wincrypt.h>
 
 #include "acquire_checksums.h"
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#endif /* __cplusplus */
 
 #define SHA256_BLOCK_BYTES 64 /* block size in bytes */
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
@@ -138,6 +140,10 @@ bool sha512(const char *filename, const char *hash) {
   return false;
 }
 #endif /* !LIBACQUIRE_IMPL_SHA512 */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&          \
           defined(LIBACQUIRE_IMPLEMENTATION) */

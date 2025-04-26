@@ -10,11 +10,13 @@
 
 #include <stdlib.h>
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif /* defined(HAS_STDBOOL) && !defined(bool) */
+#endif /* __cplusplus */
 #include "acquire_config.h"
 #include "acquire_fileutils.h"
 #include "acquire_url_utils.h"
@@ -40,5 +42,8 @@ extern LIBACQUIRE_LIB_EXPORT int download(const char *, enum Checksum,
 extern LIBACQUIRE_LIB_EXPORT int download_many(const char *[], const char *[],
                                                enum Checksum[], const char *,
                                                bool, size_t, size_t);
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_DOWNLOAD_H */

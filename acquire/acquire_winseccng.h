@@ -10,6 +10,10 @@
     defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WINSECCNG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <bcrypt.h>
 #include <stdio.h>
 
@@ -109,6 +113,10 @@ Cleanup:
     HeapFree(GetProcessHeap(), 0, pbHash);
   }
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) &&        \
           defined(LIBACQUIRE_IMPLEMENTATION) */

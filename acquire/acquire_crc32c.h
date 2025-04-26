@@ -12,11 +12,13 @@
     defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C)
 #define LIBACQUIRE_ACQUIRE_CRC32C_H
 
-#if defined(HAS_STDBOOL) && !defined(bool)
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* __cplusplus */
 
 #define CHUNK_SIZE 4096
 
@@ -114,6 +116,10 @@ bool crc32c(const char *filename, const char *hash) {
   }
   return true;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) &&                             \
           defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C) */

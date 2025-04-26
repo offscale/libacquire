@@ -802,7 +802,7 @@ static int http_parse_authenticate(const char *cp, http_auth_challenges_t *cs) {
         goto out;
 
     } /* End attributes loop */
-  }   /* End challenge loop */
+  } /* End challenge loop */
 
   /*
    * Challenges max count exceeded. This really can't happen

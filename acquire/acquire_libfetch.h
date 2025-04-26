@@ -15,6 +15,10 @@
     defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_LIBFETCH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <sys/ioctl.h>
 
 #include "acquire_checksums.h"
@@ -809,6 +813,10 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 
   return result;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) &&          \
           defined(LIBACQUIRE_IMPLEMENTATION) */

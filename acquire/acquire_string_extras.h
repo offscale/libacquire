@@ -6,6 +6,10 @@
 #ifndef LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 #define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <stdarg.h>
 #include <stdio.h>
 #ifdef HAVE_LIBBSD
@@ -269,5 +273,9 @@ size_t strerrorlen_s(errno_t errnum) {
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #endif /* !HAVE_STRERRORLEN_S */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ! LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H */

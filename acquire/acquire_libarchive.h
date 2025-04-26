@@ -6,6 +6,10 @@
  * https://github.com/libarchive/libarchive/wiki/Examples#a-complete-extractor
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "acquire_extract.h"
 
 #include <archive.h>
@@ -101,6 +105,10 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
   }
   return EXIT_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) \
           && defined(LIBACQUIRE_IMPLEMENTATION) */
