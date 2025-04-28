@@ -61,7 +61,7 @@ extern "C" {
 #endif /* defined(__APPLE__) && defined(__MACH__) */
 
 #if defined(BSD) && (BSD >= 199306) && !defined(__linux__) &&                  \
-    !defined(linux) && !defined(__linux)
+    !defined(linux) && !defined(__linux) && !defined(HAVE_STRNSTR)
 #define HAVE_STRNSTR
 #endif /* defined(BSD) && (BSD >= 199306) && !defined(__linux__) &&            \
           !defined(linux) && !defined(__linux) */
