@@ -224,7 +224,7 @@ int parse_args(struct Tokens *ts, struct Elements *elements) {
 }
 
 int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
-                  const int help, const char *version) {
+                  const bool help, const char *version) {
   struct Command *command;
   struct Argument *argument;
   struct Option *option;
@@ -282,39 +282,15 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
       args->url = (char *)argument->value;
     }
   }
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /*
  * Main docopt function
  */
-struct DocoptArgs docopt(int argc, char *argv[], const int help,
-                         const char *version) {
-  struct DocoptArgs args = {
-      NULL,
-      0,
-      0,
-      0,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      usage_pattern,
-      {"acquire: The core for your package manager, minus the dependency graph "
-       "components. Download, verify, and extract.",
-       "", "Usage:",
-       "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-       "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
-       "  acquire --output=<f> <url>...", "  acquire --help",
-       "  acquire --version", "",
-       "Options:", "  -h --help               Show this screen.",
-       "  --version               Show version.",
-       "  --check                 Check if already downloaded.",
-       "  --hash=<h>              Hash to verify.",
-       "  --checksum=<sha>        Checksum algorithm, e.g., SHA256 or SHA512.",
-       "  -d=<d>, --directory=<d> Location to download files to.",
-       "  -o=<f>, --output=<f>    Output file. If not specified, will derive "
-       "from URL."}};
+int docopt(struct DocoptArgs *args, int argc, char *argv[], const bool help,
+           const char *version) {
+  int rc = EXIT_SUCCESS;
   struct Command commands[1];
   struct Argument arguments[] = {{"<url>", NULL, {NULL}}};
   struct Option options[] = {
@@ -323,7 +299,35 @@ struct DocoptArgs docopt(int argc, char *argv[], const int help,
       {"-d", "--directory", 1, 0, NULL}, {NULL, "--hash", 1, 0, NULL},
       {"-o", "--output", 1, 0, NULL}};
   struct Elements elements;
-  int return_code = 0;
+  const char *help_message[17] = {
+      "acquire: The core for your package manager, minus the dependency graph "
+      "components. Download, verify, and extract.",
+      "",
+      "Usage:",
+      "  acquire --check --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+      "  acquire --directory=<d> --hash=<h> --checksum=<sha> <url>...",
+      "  acquire --output=<f> <url>...",
+      "  acquire --help",
+      "  acquire --version",
+      "",
+      "Options:",
+      "  -h --help               Show this screen.",
+      "  --version               Show version.",
+      "  --check                 Check if already downloaded.",
+      "  --hash=<h>              Hash to verify.",
+      "  --checksum=<sha>        Checksum algorithm, e.g., SHA256 or SHA512.",
+      "  -d=<d>, --directory=<d> Location to download files to.",
+      "  -o=<f>, --output=<f>    Output file. If not specified, will derive "
+      "from URL."};
+  args->url = NULL;
+  args->check = 0;
+  args->version = 0;
+  args->checksum = NULL;
+  args->directory = NULL;
+  args->hash = NULL;
+  args->output = NULL;
+  args->usage_pattern = usage_pattern;
+  memcpy(args->help_message, help_message, sizeof help_message);
 
   elements.n_commands = 0;
   elements.n_arguments = 1;
@@ -336,15 +340,15 @@ struct DocoptArgs docopt(int argc, char *argv[], const int help,
     /* No arguments, default to --help */
     argv[argc++] = "--help";
     argv[argc++] = NULL;
-    return_code = 1;
+    rc = 1;
   }
 
   {
     struct Tokens ts = tokens_new(argc, argv);
     if (parse_args(&ts, &elements))
-      exit(1);
+      return EXIT_FAILURE;
   }
-  if (elems_to_args(&elements, &args, help, version))
-    exit(return_code);
-  return args;
+  if (elems_to_args(&elements, args, help, version))
+    rc = EXIT_FAILURE;
+  return rc;
 }

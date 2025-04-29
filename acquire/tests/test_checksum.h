@@ -1,8 +1,9 @@
 #ifndef TEST_CHECKSUM_H
 #define TEST_CHECKSUM_H
 
-#include <greatest.h>
 #include <stdbool.h>
+
+#include <greatest.h>
 
 #include <acquire_common_defs.h>
 #include <acquire_config.h>
@@ -22,16 +23,23 @@
 #include <acquire_wincrypt.h>
 #endif
 
+#ifndef NUM_FORMAT
 #ifdef _MSC_VER
 #define NUM_FORMAT "zu"
 #define BOOL_FORMAT NUM_FORMAT
-#elifse ifdefined(__linux__) || defined(linux) || defined(__linux)
+typedef size_t num_type;
+#elif defined(__linux__) || defined(linux) || defined(__linux)
+#define NUM_FORMAT "d"
+typedef int num_type;
+#else
 #define NUM_FORMAT "d"
 #define BOOL_FORMAT "lu"
-#endif
+typedef unsigned long num_type;
+#endif /* _MSC_VER */
+#endif /* !NUM_FORMAT */
 
 TEST x_test_crc32c_should_be_true(void) {
-  printf("crc32c(GREATEST_FILE, \"%s\"): %" BOOL_FORMAendif, GREATE/* ! */ST_CRC32C,
+  printf("crc32c(GREATEST_FILE, \"%s\"): %" BOOL_FORMAT "\n", GREATEST_CRC32C,
          crc32c(GREATEST_FILE, GREATEST_CRC32C));
   ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
   PASS();

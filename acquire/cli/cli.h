@@ -7,12 +7,11 @@
 #ifndef LIBACQUIRE_DOCOPT_CLI_H
 #define LIBACQUIRE_DOCOPT_CLI_H
 
-#include <stddef.h>
-#include <string.h>
-
 #include "acquire_cli_lib_export.h"
 
-#if defined(__STDC__) && defined(__STDC_VERSION__) &&                          \
+#ifdef __cplusplus
+extern "C" {
+#elif defined(__STDC__) && defined(__STDC_VERSION__) &&                          \
     __STDC_VERSION__ >= 199901L
 
 #include <stdbool.h>
@@ -37,6 +36,10 @@
 typedef size_t bool;
 
 #endif
+
+#include <stddef.h>
+#include <string.h>
+
 
 /* ARG_MAX definition block kept as-is for compatibility */
 #if defined(_AIX)
@@ -114,7 +117,11 @@ struct DocoptArgs {
   const char *help_message[17];
 };
 
-extern ACQUIRE_CLI_LIB_EXPORT struct DocoptArgs docopt(int, char *[], int,
-                                                       const char *);
+extern ACQUIRE_CLI_LIB_EXPORT int docopt(struct DocoptArgs *, int, char *[],
+                                         bool, const char *);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_DOCOPT_CLI_H */
