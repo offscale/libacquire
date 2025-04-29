@@ -87,7 +87,7 @@ static const unsigned int crctable[256] = {
 unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len) {
   unsigned int crc = iv ^ ~0;
   for (; len; len--)
-    crc = ((crc >> 8) & ~0) ^ crctable[(crc & 0xff) ^ *(buf++)];
+    crc = (crc >> 8) ^ crctable[(crc & 0xff) ^ *buf++];
   return crc ^ ~0;
 }
 
@@ -104,6 +104,8 @@ unsigned int crc32_file(FILE *file) {
 bool crc32c(const char *filename, const char *hash) {
   unsigned int crc32_res;
   FILE *fh;
+  /* Format computed CRC32C in hex into buffer 9 chars, zero terminated */
+  char computed[9];
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
   fopen_s(&fh, filename, "rb");
 #else
@@ -113,6 +115,31 @@ bool crc32c(const char *filename, const char *hash) {
     crc32_res = crc32_file(fh);
     printf("crc32_res: %x\n", crc32_res);
     fclose(fh);
+  }
+  return true;
+
+  crc32_res = crc32_file(fh);
+  fclose(fh);
+
+  /* Verify CRC32C checksum: input hash string expected to be hex digits */
+  snprintf(computed, sizeof(computed), "%08x", crc32_res);
+
+  /* Case insensitive compare */
+  {
+    int i;
+    for (i = 0; computed[i] && hash[i]; i++) {
+      char c1 = computed[i];
+      char c2 = hash[i];
+      /* convert both to lowercase */
+      if (c1 >= 'A' && c1 <= 'F')
+        c1 += ('a' - 'A');
+      if (c2 >= 'A' && c2 <= 'F')
+        c2 += ('a' - 'A');
+      if (c1 != c2)
+        return false;
+    }
+    if (computed[i] != '\0' || hash[i] != '\0')
+      return false;
   }
   return true;
 }

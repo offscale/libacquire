@@ -7,7 +7,7 @@
 #ifndef LIBACQUIRE_VERSION_H
 #define LIBACQUIRE_VERSION_H
 
-#define VERSION "@libacquire_VERSION@"
+#define VERSION "@acquire_VERSION@"
 #define TMPDIR "@TMPDIR@"
 
 /* Crypto library */

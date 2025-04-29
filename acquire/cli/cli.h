@@ -38,6 +38,7 @@ typedef size_t bool;
 
 #endif
 
+/* ARG_MAX definition block kept as-is for compatibility */
 #if defined(_AIX)
 
 #include <sys/limits.h>
@@ -71,8 +72,6 @@ typedef size_t bool;
 #else
 
 #define ARG_MAX 131072 /* # bytes of args + environ for exec() */
-/* it's no longer defined, see this example and more at
- * https://unix.stackexchange.com/q/120642 */
 
 #endif
 
@@ -83,7 +82,7 @@ typedef size_t bool;
 #include <sys/param.h>
 
 #if defined(__APPLE__) || defined(__APPLE_CC__)
-/* ARG_MAX gives a segfault on macOS when used for array size below */
+/* ARG_MAX might cause issues on macOS, so we undefine */
 #undef ARG_MAX
 #undef NCARGS
 #endif
@@ -103,24 +102,19 @@ typedef size_t bool;
 #endif
 
 struct DocoptArgs {
-
-  /* arguments */
   char *url;
-  /* options without arguments */
   size_t check;
   size_t help;
   size_t version;
-  /* options with arguments */
   char *checksum;
   char *directory;
   char *hash;
   char *output;
-  /* special */
   const char *usage_pattern;
   const char *help_message[17];
 };
 
-extern ACQUIRE_CLI_LIB_EXPORT struct DocoptArgs docopt(int, char *[], bool,
+extern ACQUIRE_CLI_LIB_EXPORT struct DocoptArgs docopt(int, char *[], int,
                                                        const char *);
 
 #endif /* !LIBACQUIRE_DOCOPT_CLI_H */

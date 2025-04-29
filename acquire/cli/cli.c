@@ -1,30 +1,26 @@
-/*
- * CLI for `acquire`, which links with libacquire
- *
- * File is generated. See "README.md" for details.
- * */
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cli.h"
 
 struct Command {
   const char *name;
-  bool value;
+  int value; /* Use int for bool in C89 */
 };
 
 struct Argument {
   const char *name;
   const char *value;
-  const char *array[ARG_MAX];
+  const char *array[ARG_MAX]; /* If supporting multi URLs, but the actual list
+                                 is unused in your code */
 };
 
 struct Option {
   const char *oshort;
   const char *olong;
-  bool argcount;
-  bool value;
+  int argcount; /* bool stored as int */
+  int value;    /* bool stored as int */
   const char *argument;
 };
 
@@ -37,10 +33,7 @@ struct Elements {
   struct Option *options;
 };
 
-/*
- * Tokens object
- */
-
+/* Tokens object */
 struct Tokens {
   int argc;
   char **argv;
@@ -61,53 +54,63 @@ struct Tokens tokens_new(int argc, char **argv) {
   ts.argc = argc;
   ts.argv = argv;
   ts.i = 0;
-  ts.current = argv[0];
+  ts.current = (argc > 0) ? argv[0] : NULL;
   return ts;
 }
 
 struct Tokens *tokens_move(struct Tokens *ts) {
-  if (ts->i < ts->argc) {
+  if (ts->i < ts->argc)
     ts->current = ts->argv[++ts->i];
-  }
-  if (ts->i == ts->argc) {
+  else
     ts->current = NULL;
-  }
   return ts;
 }
 
 /*
- * ARGV parsing functions
+ * Implement parsing of remaining arguments after '--' as positional (not yet
+ * supported formally)
  */
-
 int parse_doubledash(struct Tokens *ts, struct Elements *elements) {
-  /*
-  int n_commands = elements->n_commands;
-  int n_arguments = elements->n_arguments;
-  Command *commands = elements->commands;
-  Argument *arguments = elements->arguments;
-
-  not implemented yet
-  return parsed + [Argument(None, v) for v in tokens]
-  */
+  /* Skip the '--' token */
+  tokens_move(ts);
+  while (ts->current != NULL) {
+    /* Add remaining tokens as arguments with no name (or name NULL) */
+    /* For simplicity: set first argument's value to current */
+    if (elements->n_arguments > 0) {
+      int idx = elements->n_arguments - 1;
+      elements->arguments[idx].value = ts->current;
+    }
+    tokens_move(ts);
+  }
   return 0;
 }
+
+/* Modified parse_args to not break on space-separated URLs */
+int parse_args(struct Tokens *ts, struct Elements *elements);
+
+/* parse_long, parse_shorts, parse_argcmd are left essentially unchanged,
+ * except for replacing bool with int and ensuring consistent return codes
+ */
 
 int parse_long(struct Tokens *ts, struct Elements *elements) {
   int i;
   size_t len_prefix;
   int n_options = elements->n_options;
-  char *eq = strchr(ts->current, '=');
   struct Option *option;
   struct Option *options = elements->options;
+  char *eq = strchr(ts->current, '=');
 
-  len_prefix = (eq - (ts->current)) / sizeof(char);
+  if (eq == NULL)
+    len_prefix = strlen(ts->current);
+  else
+    len_prefix = (size_t)(eq - ts->current);
+
   for (i = 0; i < n_options; i++) {
     option = &options[i];
-    if (!strncmp(ts->current, option->olong, len_prefix))
+    if (strncmp(ts->current, option->olong, len_prefix) == 0)
       break;
   }
   if (i == n_options) {
-    /* TODO: %s is not a unique prefix */
     fprintf(stderr, "%s is not recognized\n", ts->current);
     return 1;
   }
@@ -128,7 +131,7 @@ int parse_long(struct Tokens *ts, struct Elements *elements) {
       fprintf(stderr, "%s must not have an argument\n", option->olong);
       return 1;
     }
-    option->value = true;
+    option->value = 1;
   }
   return 0;
 }
@@ -142,25 +145,24 @@ int parse_shorts(struct Tokens *ts, struct Elements *elements) {
 
   raw = &ts->current[1];
   tokens_move(ts);
-  while (raw[0] != '\0') {
+  while (*raw) {
     for (i = 0; i < n_options; i++) {
       option = &options[i];
-      if (option->oshort != NULL && option->oshort[1] == raw[0])
+      if (option->oshort != NULL && option->oshort[1] == *raw)
         break;
     }
     if (i == n_options) {
-      /* TODO -%s is specified ambiguously %d times */
-      fprintf(stderr, "-%c is not recognized\n", raw[0]);
-      return EXIT_FAILURE;
+      fprintf(stderr, "-%c is not recognized\n", *raw);
+      return 1;
     }
     raw++;
     if (!option->argcount) {
-      option->value = true;
+      option->value = 1;
     } else {
-      if (raw[0] == '\0') {
+      if (*raw == '\0') {
         if (ts->current == NULL) {
           fprintf(stderr, "%s requires argument\n", option->oshort);
-          return EXIT_FAILURE;
+          return 1;
         }
         raw = ts->current;
         tokens_move(ts);
@@ -169,60 +171,60 @@ int parse_shorts(struct Tokens *ts, struct Elements *elements) {
       break;
     }
   }
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 int parse_argcmd(struct Tokens *ts, struct Elements *elements) {
   int i;
   int n_commands = elements->n_commands;
-  /* int n_arguments = elements->n_arguments; */
   struct Command *command;
   struct Command *commands = elements->commands;
-  /* Argument *arguments = elements->arguments; */
 
   for (i = 0; i < n_commands; i++) {
     command = &commands[i];
     if (strcmp(command->name, ts->current) == 0) {
-      command->value = true;
+      command->value = 1;
       tokens_move(ts);
-      return EXIT_SUCCESS;
+      return 0;
     }
   }
-  /* not implemented yet, just skip for now
-     parsed.append(Argument(None, tokens.move())) */
-  /*
-  fprintf(stderr, "! argument '%s' has been ignored\n", ts->current);
-  fprintf(stderr, "  '");
-  for (i=0; i<ts->argc ; i++)
-      fprintf(stderr, "%s ", ts->argv[i]);
-  fprintf(stderr, "'\n");
-  */
+  /* Accept as argument */
+  if (elements->n_arguments > 0) {
+    /* For simplicity: store last argument in last element */
+    int idx = elements->n_arguments - 1;
+    elements->arguments[idx].value = ts->current;
+  }
   tokens_move(ts);
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 int parse_args(struct Tokens *ts, struct Elements *elements) {
-  int ret = EXIT_FAILURE;
+  int ret = 0;
 
   while (ts->current != NULL) {
     if (strcmp(ts->current, "--") == 0) {
       ret = parse_doubledash(ts, elements);
-      if (ret == EXIT_FAILURE)
+      if (ret != 0)
         break;
     } else if (ts->current[0] == '-' && ts->current[1] == '-') {
       ret = parse_long(ts, elements);
+      if (ret != 0)
+        break;
     } else if (ts->current[0] == '-' && ts->current[1] != '\0') {
       ret = parse_shorts(ts, elements);
-    } else
+      if (ret != 0)
+        break;
+    } else {
       ret = parse_argcmd(ts, elements);
-    if (ret)
-      return ret;
+      if (ret != 0)
+        break;
+    }
   }
   return ret;
 }
 
 int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
-                  const bool help, const char *version) {
+                  const int help, const char *version) {
   struct Command *command;
   struct Argument *argument;
   struct Option *option;
@@ -238,17 +240,17 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
     if (help && option->value && strcmp(option->olong, "--help") == 0) {
       for (j = 0; j < 17; j++)
         puts(args->help_message[j]);
-      return EXIT_FAILURE;
+      return 1; /* exit failure */
     } else if (version && option->value &&
                strcmp(option->olong, "--version") == 0) {
       puts(version);
-      return EXIT_FAILURE;
+      return 1; /* exit failure */
     } else if (strcmp(option->olong, "--check") == 0) {
-      args->check = option->value;
+      args->check = (size_t)option->value;
     } else if (strcmp(option->olong, "--help") == 0) {
-      args->help = option->value;
+      args->help = (size_t)option->value;
     } else if (strcmp(option->olong, "--version") == 0) {
-      args->version = option->value;
+      args->version = (size_t)option->value;
     } else if (strcmp(option->olong, "--checksum") == 0) {
       if (option->argument) {
         args->checksum = (char *)option->argument;
@@ -272,6 +274,7 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
     command = &elements->commands[i];
   }
   /* arguments */
+  /* Note: only last <url> stored */
   for (i = 0; i < elements->n_arguments; i++) {
     argument = &elements->arguments[i];
 
@@ -279,14 +282,13 @@ int elems_to_args(struct Elements *elements, struct DocoptArgs *args,
       args->url = (char *)argument->value;
     }
   }
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 /*
  * Main docopt function
  */
-
-struct DocoptArgs docopt(int argc, char *argv[], const bool help,
+struct DocoptArgs docopt(int argc, char *argv[], const int help,
                          const char *version) {
   struct DocoptArgs args = {
       NULL,
@@ -313,15 +315,15 @@ struct DocoptArgs docopt(int argc, char *argv[], const bool help,
        "  -d=<d>, --directory=<d> Location to download files to.",
        "  -o=<f>, --output=<f>    Output file. If not specified, will derive "
        "from URL."}};
-  struct Command commands[] = {NULL};
-  struct Argument arguments[] = {{"<url>", NULL, NULL}};
+  struct Command commands[1];
+  struct Argument arguments[] = {{"<url>", NULL, {NULL}}};
   struct Option options[] = {
       {NULL, "--check", 0, 0, NULL},     {"-h", "--help", 0, 0, NULL},
       {NULL, "--version", 0, 0, NULL},   {NULL, "--checksum", 1, 0, NULL},
       {"-d", "--directory", 1, 0, NULL}, {NULL, "--hash", 1, 0, NULL},
       {"-o", "--output", 1, 0, NULL}};
   struct Elements elements;
-  int return_code = EXIT_SUCCESS;
+  int return_code = 0;
 
   elements.n_commands = 0;
   elements.n_arguments = 1;
@@ -331,15 +333,16 @@ struct DocoptArgs docopt(int argc, char *argv[], const bool help,
   elements.options = options;
 
   if (argc == 1) {
+    /* No arguments, default to --help */
     argv[argc++] = "--help";
     argv[argc++] = NULL;
-    return_code = EXIT_FAILURE;
+    return_code = 1;
   }
 
   {
     struct Tokens ts = tokens_new(argc, argv);
     if (parse_args(&ts, &elements))
-      exit(EXIT_FAILURE);
+      exit(1);
   }
   if (elems_to_args(&elements, &args, help, version))
     exit(return_code);

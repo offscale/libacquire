@@ -148,29 +148,31 @@ FILE *get_dnld_stream(char const *const fname) {
   return fp;
 }
 
-size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
-  size_t ret = 0;
-  struct dnld_params_t *dnld_params = (struct dnld_params_t *)userdata;
+size_t write_cb(const void *buffer, const size_t sz, size_t nmemb,
+                void *userdata) {
+  struct dnld_params_t *dnld_params = userdata;
 
   if (!dnld_params->dnld_remote_fname[0]) {
-    ret = get_oname_from_url(dnld_params->dnld_url,
-                             dnld_params->dnld_remote_fname);
+    get_oname_from_url(dnld_params->dnld_url, dnld_params->dnld_remote_fname);
   }
-
-  if (ret != 0)
-    return ret;
 
   if (!dnld_params->dnld_stream) {
     dnld_params->dnld_stream =
         get_dnld_stream(dnld_params->dnld_full_local_fname);
+    if (!dnld_params->dnld_stream)
+      return 0;
   }
 
-  ret = fwrite(buffer, sz, nmemb, dnld_params->dnld_stream);
-
-  if (ret == (sz * nmemb)) {
-    dnld_params->dnld_file_sz += ret;
+  {
+    const size_t bytes_written =
+        fwrite(buffer, sz, nmemb, dnld_params->dnld_stream);
+    if (bytes_written == sz * nmemb) {
+      dnld_params->dnld_file_sz += bytes_written;
+      return bytes_written;
+    }
   }
-  return ret;
+
+  return 0;
 }
 
 int download(const char *url, enum Checksum checksum, const char *hash,
@@ -179,34 +181,47 @@ int download(const char *url, enum Checksum checksum, const char *hash,
   CURL *curl;
   CURLcode cerr = CURLE_OK;
   struct dnld_params_t dnld_params;
-  size_t i;
   const char *path;
 
   memset(&dnld_params, 0, sizeof(dnld_params));
 
   if (is_file(target_location)) {
-    /* This next branch subsumes the `is_downloaded` function? */
-    if (filesize(target_location) > 0 /* && check checksum */) {
-      return EEXIST /*CURLE_ALREADY_COMPLETE*/;
-    } else
-    set_remote_fname_to_target_location: {
-      const size_t target_location_n = strlen(target_location);
+    if (filesize(target_location) > 0) {
+      return EEXIST;
+    } else {
+      /* treat target_location as a filename */
       strncpy(dnld_params.dnld_remote_fname, target_location,
-              target_location_n);
+              sizeof(dnld_params.dnld_remote_fname) - 1);
+      dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
+          '\0';
       strncpy(dnld_params.dnld_full_local_fname, target_location,
-              target_location_n);
+              sizeof(dnld_params.dnld_full_local_fname) - 1);
+      dnld_params
+          .dnld_full_local_fname[sizeof(dnld_params.dnld_full_local_fname) -
+                                 1] = '\0';
     }
   } else if (is_relative(target_location)) {
-    goto set_remote_fname_to_target_location;
+    /* same as above */
+    strncpy(dnld_params.dnld_remote_fname, target_location,
+            sizeof(dnld_params.dnld_remote_fname) - 1);
+    dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
+        '\0';
+    strncpy(dnld_params.dnld_full_local_fname, target_location,
+            sizeof(dnld_params.dnld_full_local_fname) - 1);
+    dnld_params
+        .dnld_full_local_fname[sizeof(dnld_params.dnld_full_local_fname) - 1] =
+        '\0';
   } else if (!is_directory(target_location)) {
-    fprintf(stderr, "Create \"%s\" and ensure its accessible, then try again\n",
+    fprintf(stderr,
+            "Create \"%s\" and ensure it's accessible, then try again\n",
             target_location);
     return CURLINFO_OS_ERRNO + 2;
   }
 
-  curl_global_init((size_t)CURL_GLOBAL_ALL);
+  strncpy(dnld_params.dnld_url, url, sizeof(dnld_params.dnld_url) - 1);
+  dnld_params.dnld_url[sizeof(dnld_params.dnld_url) - 1] = '\0';
 
-  strncpy(dnld_params.dnld_url, url, strlen(url));
+  curl_global_init(CURL_GLOBAL_ALL);
 
   curl = curl_easy_init();
   if (!curl) {
@@ -215,63 +230,71 @@ int download(const char *url, enum Checksum checksum, const char *hash,
     return EXIT_FAILURE;
   }
 
-#define handle_curl_error(cerr, name)                                          \
-  if ((cerr) != CURLE_OK) {                                                    \
-    fprintf(stderr, "%s: failed with err %d\n", name, cerr);                   \
+#define handle_curl_error(cerr_, name)                                         \
+  if ((cerr_) != CURLE_OK) {                                                   \
+    fprintf(stderr, "%s: failed with err %d: %s\n", name, cerr_,               \
+            curl_easy_strerror(cerr_));                                        \
     goto bail;                                                                 \
   } else
+
   cerr = curl_easy_setopt(curl, CURLOPT_URL, url);
   handle_curl_error(cerr, "CURLOPT_URL");
 
-  if (url[0] == 'f' && url[1] == 't' && url[2] == 'p' && url[3] == 's')
-    curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-  else
+  if (strncmp(url, "ftps", 4) == 0) {
+    curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
+  } else {
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+  }
 
   /* ask libcurl to use TLS version 1.2 or later */
   curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
 
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, verbosity);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, (long)verbosity);
 
-  /* disable progress meter, set to 0L to enable it */
+  /* disable progress meter by default */
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
   cerr = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, dnld_header_parse);
-  handle_curl_error(cerr, "CURLOPT_HEADERFUNCTION")
+  handle_curl_error(cerr, "CURLOPT_HEADERFUNCTION");
 
-      cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, &dnld_params);
+  cerr = curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&dnld_params);
   handle_curl_error(cerr, "CURLOPT_HEADERDATA");
 
   if (strlen(dnld_params.dnld_remote_fname) == 0 ||
       strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
     path = get_path_from_url(url);
-    for (i = 0; i < strlen(path); i++)
-      dnld_params.dnld_remote_fname[i] = path[i];
-    dnld_params.dnld_remote_fname[i + 1] = '\0';
+    if (strlen(path) >= sizeof(dnld_params.dnld_remote_fname))
+      path = ""; /* fail silently, will error below */
+
+    strncpy(dnld_params.dnld_remote_fname, path,
+            sizeof(dnld_params.dnld_remote_fname) - 1);
+    dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
+        '\0';
   }
 
-  if (dnld_params.dnld_full_local_fname[0] != 0)
-    /*pass*/;
-  else if (strlen(dnld_params.dnld_remote_fname) == 0 ||
-           strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
-    fprintf(stderr, "unable to derive a filename to save to, from: %s\n", url);
-    goto bail;
-  } else {
-    snprintf(dnld_params.dnld_full_local_fname, NAME_MAX + 1, "%s/%s",
-             target_location, dnld_params.dnld_remote_fname);
+  if (dnld_params.dnld_full_local_fname[0] == '\0') {
+    if (strlen(dnld_params.dnld_remote_fname) == 0 ||
+        strcmp(dnld_params.dnld_remote_fname, "/") == 0) {
+      fprintf(stderr, "unable to derive a filename to save to, from: %s\n",
+              url);
+      goto bail;
+    } else {
+      snprintf(dnld_params.dnld_full_local_fname,
+               sizeof(dnld_params.dnld_full_local_fname), "%s%c%s",
+               target_location, '/', dnld_params.dnld_remote_fname);
+    }
   }
 
-  /* fold this condition into one `stat` call? */
   if (is_file(dnld_params.dnld_full_local_fname) &&
       filesize(dnld_params.dnld_full_local_fname) > 0) {
-    cerr = CURLE_ALREADY_COMPLETE;
+    cerr = CURLE_OK /* simulate CURLE_ALREADY_COMPLETE */;
     goto bail;
   }
 
   cerr = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
   handle_curl_error(cerr, "CURLOPT_WRITEFUNCTION");
 
-  cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dnld_params);
+  cerr = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&dnld_params);
   handle_curl_error(cerr, "CURLOPT_WRITEDATA");
 
   cerr = curl_easy_perform(curl);
@@ -279,7 +302,10 @@ int download(const char *url, enum Checksum checksum, const char *hash,
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(cerr));
 
-  fclose(dnld_params.dnld_stream);
+  if (dnld_params.dnld_stream) {
+    fclose(dnld_params.dnld_stream);
+    dnld_params.dnld_stream = NULL;
+  }
 
   if (dnld_params.dnld_file_sz < 1) {
     fprintf(stderr, "Downloaded an empty file\n");
@@ -287,12 +313,10 @@ int download(const char *url, enum Checksum checksum, const char *hash,
   }
 
 bail:
-
-  /* always cleanup */
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  if (cerr != CURLE_OK && cerr != CURLE_ALREADY_COMPLETE) {
+  if (cerr != CURLE_OK) {
     fprintf(stderr, "curl failed with: %s\n", curl_easy_strerror(cerr));
     return EXIT_FAILURE;
   }

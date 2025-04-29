@@ -3,11 +3,11 @@
 
 #include <greatest.h>
 
+#define LIBACQUIRE_IMPLEMENTATION
+
 #include <acquire_common_defs.h>
 #include <acquire_config.h>
 #include <config_for_tests.h>
-
-#define LIBACQUIRE_IMPLEMENTATION
 
 #if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
 #include <acquire_openssl.h>

@@ -796,14 +796,22 @@ int download(const char *url, enum Checksum checksum, const char *hash,
              const char target_location[NAME_MAX], bool follow, size_t retry,
              size_t verbosity) {
   int result;
-
-  const char *file_name = get_path_from_url(url);
+  const char *file_name;
   char full_local_fname[NAME_MAX + 1];
 
-  if (verbosity < v_level)
+  file_name = get_path_from_url(url);
+
+  if (verbosity < (size_t)v_level)
     v_level = (int)verbosity;
 
-  snprintf(full_local_fname, NAME_MAX + 1, "%s/%s", target_location, file_name);
+  /* Construct full path */
+  if (strlen(target_location) + 1 + strlen(file_name) >=
+      sizeof(full_local_fname)) {
+    /* path too long */
+    return -1;
+  }
+  snprintf(full_local_fname, sizeof(full_local_fname), "%s/%s", target_location,
+           file_name);
 
   result = fetch((char *)url, full_local_fname);
   if (result != EXIT_SUCCESS)

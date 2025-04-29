@@ -1,23 +1,28 @@
 #ifndef TEST_FILEUTILS_H
 #define TEST_FILEUTILS_H
 
+#include <greatest.h>
+
 #define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
 #undef LIBACQUIRE_IMPLEMENTATION
 
 #include <config_for_tests.h>
-#include <greatest.h>
 
+#ifndef NUM_FORMAT
 #ifdef _MSC_VER
 #define NUM_FORMAT "zu"
+#define BOOL_FORMAT NUM_FORMAT
 typedef size_t num_type;
 #elif defined(__linux__) || defined(linux) || defined(__linux)
 #define NUM_FORMAT "d"
 typedef int num_type;
 #else
-#define NUM_FORMAT "lu"
+#define NUM_FORMAT "d"
+#define BOOL_FORMAT "lu"
 typedef unsigned long num_type;
 #endif /* _MSC_VER */
+#endif /* !NUM_FORMAT */
 
 TEST x_is_directory_should_be_true(void) {
   const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);
