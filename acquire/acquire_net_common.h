@@ -7,7 +7,7 @@
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
 #ifdef __cplusplus
-}
+extern "C" {
 #endif /* __cplusplus */
 
 #include "acquire_download.h"

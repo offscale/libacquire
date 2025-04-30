@@ -28,20 +28,27 @@ extern LIBACQUIRE_LIB_EXPORT bool is_url(const char *);
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
 const char *get_path_from_url(const char *url) {
+  static char buf[NAME_MAX + 1];
+  const char *last_slash;
   size_t i;
-  char *end_possible_query;
-  if (url[0] == '\0')
+
+  if (!url || url[0] == '\0')
     return NULL;
-  end_possible_query = strdup(url);
-  end_possible_query = strrchr(end_possible_query, '/') + 1;
-  if (end_possible_query == NULL)
-    return end_possible_query;
-  for (i = 0; i < strlen(end_possible_query); i++)
-    if (end_possible_query[i] == '?' || end_possible_query[i] == '#') {
-      end_possible_query[i] = '\0';
+
+  last_slash = strrchr(url, '/');
+  if (last_slash)
+    last_slash++;
+  else
+    last_slash = url;
+
+  for (i = 0; i < NAME_MAX && last_slash[i] != '\0'; i++) {
+    if (last_slash[i] == '?' || last_slash[i] == '#')
       break;
-    }
-  return end_possible_query;
+    buf[i] = last_slash[i];
+  }
+  buf[i] = '\0';
+
+  return buf;
 }
 
 bool is_url(const char *maybe_url) {
