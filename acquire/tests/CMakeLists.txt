@@ -156,5 +156,7 @@ foreach (ARCHIVE_LIB ${_archives})
             "lib${PROJECT_NAME}"
             "${archive_lib}"
     )
+    target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_IMPLEMENTATION=1)
+
     test_wrapper()
 endforeach (ARCHIVE_LIB ${_archives})

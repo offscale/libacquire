@@ -3,8 +3,6 @@
 
 #include <greatest.h>
 
-#define LIBACQUIRE_IMPLEMENTATION
-
 #include <acquire_common_defs.h>
 #include <acquire_config.h>
 #include <config_for_tests.h>

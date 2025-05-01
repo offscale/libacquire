@@ -13,10 +13,8 @@
 #define PATH_SEP "/"
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-#define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
 #include ARCHIVE_LIB_NAME
-#undef LIBACQUIRE_IMPLEMENTATION
 
 #include <acquire_common_defs.h>
 #include <acquire_config.h>

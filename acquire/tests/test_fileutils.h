@@ -3,9 +3,7 @@
 
 #include <greatest.h>
 
-#define LIBACQUIRE_IMPLEMENTATION
 #include <acquire_fileutils.h>
-#undef LIBACQUIRE_IMPLEMENTATION
 
 #include <config_for_tests.h>
 

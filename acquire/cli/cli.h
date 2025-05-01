@@ -11,7 +11,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#elif defined(__STDC__) && defined(__STDC_VERSION__) &&                          \
+#elif defined(__STDC__) && defined(__STDC_VERSION__) &&                        \
     __STDC_VERSION__ >= 199901L
 
 #include <stdbool.h>
@@ -39,7 +39,6 @@ typedef size_t bool;
 
 #include <stddef.h>
 #include <string.h>
-
 
 /* ARG_MAX definition block kept as-is for compatibility */
 #if defined(_AIX)

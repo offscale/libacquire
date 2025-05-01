@@ -4,8 +4,6 @@
 #include <greatest.h>
 #include <stdbool.h>
 
-#define LIBACQUIRE_IMPLEMENTATION
-
 #include <acquire.h>
 #include <acquire_config.h>
 #include <config_for_tests.h>

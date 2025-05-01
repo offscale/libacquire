@@ -9,8 +9,6 @@
 #include <acquire_config.h>
 #include <config_for_tests.h>
 
-#define LIBACQUIRE_IMPLEMENTATION
-
 #ifdef USE_CRC32C
 #include <acquire_crc32c.h>
 #elif defined(USE_LIBRHASH)

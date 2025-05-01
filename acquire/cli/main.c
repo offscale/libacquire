@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LIBACQUIRE_IMPLEMENTATION
+#include <errno.h>
 
 #include <acquire_common_defs.h>
 #include <acquire_config.h>
@@ -44,7 +44,7 @@
 
 int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;
-  struct DocoptArgs *args = malloc(sizeof *args);
+  struct DocoptArgs *args = calloc(1, sizeof *args);
   enum Checksum checksum = LIBACQUIRE_SHA256;
   char output_full_path[NAME_MAX + 1];
   const char *check_env = NULL;
