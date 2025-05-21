@@ -67,8 +67,10 @@ bool sha512(const char *filename, const char *gold_hash) {
 /* X(sha512, RHASH_SHA512, comma) \ */
 #define comma ,
 #define blank /* nothing */
+#ifndef HASHES
 #define HASHES                                                                 \
   X(crc32, RHASH_CRC32, comma)                                                 \
+  X(crc32c, RHASH_CRC32C, comma)                                               \
   X(md4, RHASH_MD4, comma)                                                     \
   X(md5, RHASH_MD5, comma)                                                     \
   X(tiger, RHASH_TIGER, comma)                                                 \
@@ -91,10 +93,10 @@ bool sha512(const char *filename, const char *gold_hash) {
   X(sha3_256, RHASH_SHA3_256, comma)                                           \
   X(sha3_384, RHASH_SHA3_384, comma)                                           \
   X(sha3_512, RHASH_SHA3_512, comma)                                           \
-  X(crc32c, RHASH_CRC32C, comma)                                               \
   X(snefru128, RHASH_SNEFRU128, comma)                                         \
   X(snefru256, RHASH_SNEFRU256, blank)
-
+#endif /* !HASHES */
+#ifndef X
 #define X(name, hash, unused)                                                  \
   bool name(const char *filename, const char *gold_hash) {                     \
     char gen_hash[130], digest[64];                                            \
@@ -103,6 +105,7 @@ bool sha512(const char *filename, const char *gold_hash) {
                : strcmp(gen_hash, gold_hash) == 0;                             \
   }
 HASHES
+#endif /* !X */
 #undef X
 
 #ifdef __cplusplus

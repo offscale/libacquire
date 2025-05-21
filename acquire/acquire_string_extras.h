@@ -12,6 +12,7 @@ extern "C" {
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <ctype.h>
 #ifdef HAVE_LIBBSD
 #include <bsd/string.h>
 #else
@@ -57,7 +58,7 @@ extern "C" {
 
 #if defined(__APPLE__) && defined(__MACH__)
 #define HAVE_SNPRINTF_H
-#define HAVE_STRNCASECMP_H
+#define HAVE_STRNCASECMP
 #endif /* defined(__APPLE__) && defined(__MACH__) */
 
 #if defined(BSD) && (BSD >= 199306) && !defined(__linux__) &&                  \
@@ -89,7 +90,7 @@ typedef int errno_t;
 
 #ifndef _MSC_VER
 #define HAVE_STRINGS_H
-#define HAVE_STRNCASECMP_H
+#define HAVE_STRNCASECMP
 #endif
 
 #if defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||             \
@@ -146,7 +147,7 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 
 #endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) */
 
-#ifndef HAVE_STRNCASECMP_H
+#ifndef HAVE_STRNCASECMP
 
 extern LIBACQUIRE_LIB_EXPORT int strncasecmp(const char *, const char *,
                                              size_t);
@@ -155,13 +156,24 @@ extern LIBACQUIRE_LIB_EXPORT int strcasecmp(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define strncasecmp _strnicmp
 
 #define strcasecmp _stricmp
+#else
+/* from MIT licensed musl @ e0ef93c20de1a9e0a6b8f4a4a951a8e61a1a2973 */
+  int strncasecmp(const char *_l, const char *_r, size_t n)
+  {
+    const unsigned char *l=(void *)_l, *r=(void *)_r;
+    if (!n--) return 0;
+    for (; *l && *r && n && (*l == *r || tolower(*l) == tolower(*r)); l++, r++, n--);
+    return tolower(*l) - tolower(*r);
+  }
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
-#endif /* !HAVE_STRNCASECMP_H */
+#endif /* !HAVE_STRNCASECMP */
 
 #ifndef HAVE_STRNSTR
 

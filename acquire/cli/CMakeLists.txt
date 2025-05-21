@@ -15,6 +15,10 @@ source_group("${LIBRARY_NAME} Source Files" FILES "${Source_Files}")
 add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 
 target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_compiler_flags")
+#foreach (lib ${LIBACQUIRE_LIBRARIES})
+#    message(STATUS "${LIBRARY_NAME} being linked with ${lib}")
+#    target_link_libraries("${LIBRARY_NAME}" PUBLIC "${lib}")
+#endforeach ()
 
 include(GNUInstallDirs)
 

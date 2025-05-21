@@ -789,8 +789,10 @@ done:
 }
 
 /* CUSTOM libacquire stuff */
-
+#ifndef DOWNLOAD_DIR_IMPL
+#define DOWNLOAD_DIR_IMPL
 const char *get_download_dir() { return ".downloads"; }
+#endif /* !DOWNLOAD_DIR_IMPL */
 
 int download(const char *url, enum Checksum checksum, const char *hash,
              const char target_location[NAME_MAX], bool follow, size_t retry,

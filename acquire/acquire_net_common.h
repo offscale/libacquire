@@ -12,6 +12,7 @@ extern "C" {
 
 #include "acquire_download.h"
 #include "acquire_string_extras.h"
+#include "acquire_common_defs.h"
 
 bool LIBACQUIRE_LIB_EXPORT is_downloaded(const char *url,
                                          enum Checksum checksum,
@@ -19,6 +20,12 @@ bool LIBACQUIRE_LIB_EXPORT is_downloaded(const char *url,
                                          const char *target_location);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
+
+#ifndef DOWNLOAD_DIR_IMPL
+#define DOWNLOAD_DIR_IMPL
+const char *get_download_dir() { return ".downloads"; }
+#endif /* !DOWNLOAD_DIR_IMPL */
+
 bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
                    const char *target_location) {
   char full_local_fname[NAME_MAX + 1];
