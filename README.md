@@ -27,7 +27,7 @@ Supports:
 
   - Extremely portable C code (ANSI C: C89)
   - link with different libraries, including those built in to your OS
-  - very small executable size (thanks to above)
+  - _very_ small executable size (thanks to above)
   - fast
   - simple API, easy to integrate in your C project (or really any language, they all have nice FFI back to C or a C intermediary language)
   - default cipher selection >= TLS 1.2
@@ -82,9 +82,10 @@ Note that most checksum libraries are crypto libraries so working with these API
 ## Docker
 
 `Dockerfile`s are provided for convenience, try them out, e.g., by running:
-
-    docker build . -f Dockerfile.alpine --tag libacquire
-    docker run libacquire
+```sh
+docker build . -f Dockerfile.alpine --tag libacquire
+docker run libacquire
+```
 
 ## Shell script equivalent (UNIX with `grep`, `curl`, and `tar`)
 

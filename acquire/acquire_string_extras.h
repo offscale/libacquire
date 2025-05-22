@@ -10,9 +10,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <ctype.h>
 #ifdef HAVE_LIBBSD
 #include <bsd/string.h>
 #else
@@ -162,13 +162,15 @@ extern LIBACQUIRE_LIB_EXPORT int strcasecmp(const char *, const char *);
 #define strcasecmp _stricmp
 #else
 /* from MIT licensed musl @ e0ef93c20de1a9e0a6b8f4a4a951a8e61a1a2973 */
-  int strncasecmp(const char *_l, const char *_r, size_t n)
-  {
-    const unsigned char *l=(void *)_l, *r=(void *)_r;
-    if (!n--) return 0;
-    for (; *l && *r && n && (*l == *r || tolower(*l) == tolower(*r)); l++, r++, n--);
-    return tolower(*l) - tolower(*r);
-  }
+int strncasecmp(const char *_l, const char *_r, size_t n) {
+  const unsigned char *l = (void *)_l, *r = (void *)_r;
+  if (!n--)
+    return 0;
+  for (; *l && *r && n && (*l == *r || tolower(*l) == tolower(*r));
+       l++, r++, n--)
+    ;
+  return tolower(*l) - tolower(*r);
+}
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
 #endif /* LIBACQUIRE_IMPLEMENTATION */
