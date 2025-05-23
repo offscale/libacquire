@@ -83,7 +83,7 @@ Note that most checksum libraries are crypto libraries so working with these API
 
 `Dockerfile`s are provided for convenience, try them out, e.g., by running:
 ```sh
-docker build . -f Dockerfile.alpine --tag libacquire
+docker build . -f alpine.Dockerfile --tag libacquire
 docker run libacquire
 ```
 

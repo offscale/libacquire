@@ -540,9 +540,15 @@ else ()
     set(gen_header_files "")
     set(gen_source_files "")
     foreach (header_file #${_Header_Files} ${Header_Files}
-            "acquire_checksums.h" "acquire_common_defs.h" "acquire_download.h"
-            "acquire_extract.h" "acquire_fileutils.h" "acquire_net_common.h"
-            "acquire_string_extras.h" "acquire_url_utils.h")
+            "acquire_checksums.h"
+            "acquire_common_defs.h"
+            "acquire_crc32c.h"
+            "acquire_download.h"
+            "acquire_extract.h"
+            "acquire_fileutils.h"
+            "acquire_net_common.h"
+            "acquire_string_extras.h"
+            "acquire_url_utils.h")
         get_filename_component(name_no_ext "${header_file}" NAME_WLE)
         set(gen_header_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.h")
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")

@@ -15,18 +15,20 @@ extern "C" {
 #include "acquire_common_defs.h"
 
 /**
- * Check if a file represented by URL is already downloaded locally and matches the checksum.
+ * Check if a file represented by URL is already downloaded locally and matches
+ * the checksum.
  *
  * @param url URL or filename
  * @param checksum checksum enum type, e.g., LIBACQUIRE_SHA256
  * @param hash expected hash string to verify
- * @param target_location directory to check in (if NULL, defaults to ".downloads")
+ * @param target_location directory to check in (if NULL, defaults to
+ * ".downloads")
  * @return true if already downloaded and checksum verifies, else false
  */
 extern LIBACQUIRE_LIB_EXPORT bool is_downloaded(const char *url,
-                                         enum Checksum checksum,
-                                         const char *hash,
-                                         const char *target_location);
+                                                enum Checksum checksum,
+                                                const char *hash,
+                                                const char *target_location);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
@@ -37,7 +39,8 @@ const char *get_download_dir() { return ".downloads"; }
 
 /**
  * Implementation of is_downloaded.
- * Uses fileutils functions for existence checks and checksum functions for verification.
+ * Uses fileutils functions for existence checks and checksum functions for
+ * verification.
  */
 bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
                    const char *target_location) {

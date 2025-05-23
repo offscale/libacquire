@@ -20,9 +20,6 @@ extern "C" {
 #endif
 #include "acquire_config.h"
 #include "acquire_string_extras.h"
-#ifdef USE_LIBRHASH
-#include "acquire_librhash.h"
-#endif /* USE_LIBRHASH */
 
 extern LIBACQUIRE_LIB_EXPORT bool crc32c(const char *, const char *);
 

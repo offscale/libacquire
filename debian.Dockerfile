@@ -5,7 +5,14 @@ ADD 'https://github.com/Kitware/CMake/releases/download/v3.21.4/cmake-3.21.4-lin
 RUN sh /tmp/cmake.sh --prefix='/usr/local' --skip-license
 
 RUN apt-get update -qq && \
-    apt-get install -y gcc make pkg-config libc-dev libssl-dev libcurl4-openssl-dev
+    apt-get install -y \
+      gcc \
+      libc-dev \
+      libcurl4-openssl-dev \
+      librhash-dev \
+      libssl-dev \
+      make \
+      pkg-config
 
 COPY . /libacquire
 
