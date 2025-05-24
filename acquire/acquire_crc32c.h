@@ -1,3 +1,39 @@
+#ifndef LIBACQUIRE_ACQUIRE_CRC32C_H
+#define LIBACQUIRE_ACQUIRE_CRC32C_H
+
+/**
+ * @file acquire_crc32c.h
+ * @brief Header declaring the CRC32C checksum verification function.
+ *
+ * This header provides the interface and implementation of a function
+ * to compute and verify the CRC32C checksum of a file against a known hash.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif /* __cplusplus */
+
+#include <stdio.h>
+
+/**
+ * @brief Verify the CRC32C checksum of a given file against an expected hash
+ * string.
+ *
+ * Opens the file, computes its CRC32C checksum, then compares it with the input
+ * hash string case-insensitively.
+ *
+ * @param filename Path to the file to be validated.
+ * @param hash Expected CRC32C checksum string in hexadecimal (8 characters).
+ *
+ * @return true if computed checksum matches input hash, false otherwise or on
+ * error.
+ */
+extern bool crc32c(const char *filename, const char *hash);
+
 /*
  * Taken from FreeBSD implementation of CRC32C, specifically:
  * - usr.bin\cksum\crc32_algo.c @ d91d2b513eb30a226e87f0e52e2f9f232a2e1ca3
@@ -7,18 +43,6 @@
  *
  * Alternatives are to use `zlib`'s CRC32C impl conditionally or RHash or miniz
  * */
-
-#if !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) &&                                   \
-    defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C)
-#define LIBACQUIRE_ACQUIRE_CRC32C_H
-
-#ifdef __cplusplus
-extern "C" {
-#elif defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include "acquire_stdbool.h"
-#endif /* __cplusplus */
 
 #define CHUNK_SIZE 4096
 
@@ -33,7 +57,7 @@ extern "C" {
 
 #ifndef O_BINARY
 #define O_BINARY 0
-#endif
+#endif /* !O_BINARY */
 
 unsigned int crc32_file(FILE *file);
 unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len);
@@ -101,40 +125,43 @@ unsigned int crc32_file(FILE *file) {
   return crc;
 }
 
+#ifdef LIBACQUIRE_IMPLEMENTATION
+#ifdef USE_CRC32C
+
+/**
+ * @brief Implementation of CRC32C checksum verification.
+ *
+ * Reads the file and computes its CRC32C checksum, then compares with
+ * the hash string ignoring character cases.
+ */
 bool crc32c(const char *filename, const char *hash) {
   unsigned int crc32_res;
   FILE *fh;
-  /* Format computed CRC32C in hex into buffer 9 chars, zero terminated */
   char computed[9];
-#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+
+#if defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__)
   fopen_s(&fh, filename, "rb");
 #else
   fh = fopen(filename, "rb");
-#endif
-  if (fh != NULL) {
-    crc32_res = crc32_file(fh);
-    printf("crc32_res: %x\n", crc32_res);
-    fclose(fh);
-  }
-  return true;
+#endif /* defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) &&                  \
+          __STDC_WANT_LIB_EXT1__) */
+  if (fh == NULL)
+    return false;
 
   crc32_res = crc32_file(fh);
   fclose(fh);
 
-  /* Verify CRC32C checksum: input hash string expected to be hex digits */
   snprintf(computed, sizeof(computed), "%08x", crc32_res);
 
-  /* Case insensitive compare */
   {
     int i;
     for (i = 0; computed[i] && hash[i]; i++) {
       char c1 = computed[i];
       char c2 = hash[i];
-      /* convert both to lowercase */
       if (c1 >= 'A' && c1 <= 'F')
-        c1 += ('a' - 'A');
+        c1 += 'a' - 'A';
       if (c2 >= 'A' && c2 <= 'F')
-        c2 += ('a' - 'A');
+        c2 += 'a' - 'A';
       if (c1 != c2)
         return false;
     }
@@ -144,9 +171,11 @@ bool crc32c(const char *filename, const char *hash) {
   return true;
 }
 
+#endif /* USE_CRC32C */
+#endif /* LIBACQUIRE_IMPLEMENTATION */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_CRC32C_H) &&                             \
-          defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_CRC32C) */
+#endif /* !LIBACQUIRE_ACQUIRE_CRC32C_H */

@@ -1,11 +1,13 @@
-/*
- * Common definitions used through libacquire
- *
- * Defines things like `PATH_SEP`, `MAX_FILENAME`, and `NAME_MAX`
- * */
-
 #ifndef LIBACQUIRE_ACQUIRE_COMMON_DEFS_H
 #define LIBACQUIRE_ACQUIRE_COMMON_DEFS_H
+
+/**
+ * @file acquire_common_defs.h
+ * @brief Common macros, constants, and definitions used throughout libacquire.
+ *
+ * This header defines frequently used constants, macros for error handling,
+ * log level definitions, and other common values.
+ */
 
 #ifdef __cplusplus
 extern "C" {

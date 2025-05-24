@@ -90,9 +90,11 @@ endmacro (test_wrapper)
 foreach (EXEC_NAME ${_targets})
     math(EXPR "${exec_name}_count" "${${exec_name}_count} + 1")
     set(Header_Files
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_checksum.h"
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_download.h"
             "${CMAKE_SOURCE_DIR}/acquire/tests/test_fileutils.h"
             "${CMAKE_SOURCE_DIR}/acquire/tests/test_string_extras.h"
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_checksum.h"
+            "${CMAKE_SOURCE_DIR}/acquire/tests/test_url_utils.h"
     )
     source_group("Header Files" FILES "${Header_Files}")
 

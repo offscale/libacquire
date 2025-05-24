@@ -1,12 +1,16 @@
-/*
- * Prototype for download API
- *
- * Always `#include` this when adding new download implementations,
- * to ensure the implementation matches the prototype.
- * */
-
 #ifndef LIBACQUIRE_ACQUIRE_DOWNLOAD_H
 #define LIBACQUIRE_ACQUIRE_DOWNLOAD_H
+
+/**
+ * @file acquire_download.h
+ * @brief Functionality to download files from network locations.
+ *
+ * This module handles downloading files via protocols like HTTP(S),
+ * providing progress monitoring and retry logic support.
+ *
+ * NOTE: Always `#include` this when adding new download implementations,
+ * to ensure the implementation matches the prototype.
+ */
 
 #include <stdlib.h>
 

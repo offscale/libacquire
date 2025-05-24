@@ -21,9 +21,33 @@ extern "C" {
           defined(__NT__) */
 #include <string.h>
 
-extern LIBACQUIRE_LIB_EXPORT const char *get_path_from_url(const char *);
+/**
+ * @brief Extract the path component (filename) from a URL string.
+ *
+ * Given a URL string, returns a pointer to a static buffer holding
+ * everything after the last '/' character in the URL, stopping before any
+ * query ('?') or fragment ('#') delimiter.
+ *
+ * If the URL is NULL or empty, returns NULL.
+ *
+ * @param url Input URL string.
+ * @return Pointer to static buffer with filepath component xor `NULL`.
+ *
+ * @note Returned pointer points to a static buffer that may be overwritten
+ * on later calls.
+ */
+extern LIBACQUIRE_LIB_EXPORT const char *get_path_from_url(const char *url);
 
-extern LIBACQUIRE_LIB_EXPORT bool is_url(const char *);
+/**
+ * @brief Check whether a given string appears to be a URL.
+ *
+ * Performs a basic heuristic check that string starts with "http://",
+ * "https://", "ftp://", or "ftps://".
+ *
+ * @param maybe_url String to be tested.
+ * @return true if string looks like a URL, false otherwise.
+ */
+extern LIBACQUIRE_LIB_EXPORT bool is_url(const char *maybe_url);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 

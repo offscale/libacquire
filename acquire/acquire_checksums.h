@@ -1,12 +1,17 @@
-/*
- * Prototype for checksum API
- *
- * Always `#include` this when adding new checksum implementations,
- * to ensure the implementation matches the prototype.
- * */
-
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_H
+
+/**
+ * @file acquire_checksums.h
+ * @brief Collection of checksum function declarations and interface.
+ *
+ * This header declares typedefs and functions for computing and verifying
+ * various checksum algorithms like crc32c, md5, sha1, etc.
+ * Also provides functionality to get checksum function by name.
+ *
+ * NOTE: Always `#include` this when adding new checksum implementations,
+ * to ensure the implementation matches the prototype.
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,11 +26,42 @@ extern "C" {
 #include "acquire_config.h"
 #include "acquire_string_extras.h"
 
-extern LIBACQUIRE_LIB_EXPORT bool crc32c(const char *, const char *);
+/**
+ * @brief Boolean result type alias for checksum validation functions.
+ */
 
-extern LIBACQUIRE_LIB_EXPORT bool sha256(const char *, const char *);
+/**
+ * @brief Verify file using CRC32C checksum.
+ *
+ * @param filename Path to file.
+ * @param hash Expected CRC32C checksum string.
+ *
+ * @return true if valid.
+ */
+extern LIBACQUIRE_LIB_EXPORT bool crc32c(const char *filename,
+                                         const char *hash);
 
-extern LIBACQUIRE_LIB_EXPORT bool sha512(const char *, const char *);
+/**
+ * @brief Verify file using SHA256 checksum.
+ *
+ * @param filename Path to file.
+ * @param hash Expected checksum string.
+ *
+ * @return true if valid.
+ */
+extern LIBACQUIRE_LIB_EXPORT bool sha256(const char *filename,
+                                         const char *hash);
+
+/**
+ * @brief Verify file using SHA256 checksum.
+ *
+ * @param filename Path to file.
+ * @param hash Expected checksum string.
+ *
+ * @return true if valid.
+ */
+extern LIBACQUIRE_LIB_EXPORT bool sha512(const char *filename,
+                                         const char *hash);
 
 enum Checksum {
   LIBACQUIRE_CRC32C,
@@ -36,8 +72,19 @@ enum Checksum {
 
 extern LIBACQUIRE_LIB_EXPORT enum Checksum string2checksum(const char *);
 
-extern LIBACQUIRE_LIB_EXPORT bool (*get_checksum_function(enum Checksum))(
-    const char *, const char *);
+/**
+ * @brief Obtain a pointer to a checksum function by name.
+ *
+ * Returns a pointer to a function matching the
+ * signature of checksum_func_t, or NULL if not found.
+ *
+ * @param checksum Discriminant from `enum Checksum` representing checksum
+ * algorithm
+ *
+ * @return Function pointer on success; NULL on failure.
+ */
+extern LIBACQUIRE_LIB_EXPORT bool (
+    *get_checksum_function(enum Checksum checksum))(const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 

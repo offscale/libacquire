@@ -1,12 +1,17 @@
-/*
- * Cross-platform fileutils API
- *
- * Not trying to be fully-featured, just enough cross-platform building blocks
- * to build basic nvm-style version managers.
- * */
-
 #ifndef LIBACQUIRE_ACQUIRE_FILEUTILS_H
 #define LIBACQUIRE_ACQUIRE_FILEUTILS_H
+
+/**
+ * @file acquire_fileutils.h
+ * @brief File utility functions.
+ *
+ * Cross-platform collection of common filesystem operations like file existence
+ * checks, path manipulation, temporary filename generation, and directory
+ * creation.
+ *
+ * NOTE: This is not trying to be fully-featured, just enough cross-platform
+ * building blocks to build basic nvm-style version managers.
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,13 +46,38 @@ extern LIBACQUIRE_LIB_EXPORT bool is_directory(const char *);
 
 extern LIBACQUIRE_LIB_EXPORT bool is_file(const char *);
 
-extern LIBACQUIRE_LIB_EXPORT bool exists(const char *);
+/**
+ * @brief Check if a file exists.
+ *
+ * @param path Path of the file to check.
+ * @return `true` if path is present
+ */
+extern LIBACQUIRE_LIB_EXPORT bool exists(const char *path);
 
-extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *);
+/**
+ * @brief Get the size of a given path
+ *
+ * @param path Path of the file to get the size of.
+ * @return `-1` if file doesn't exist otherwise its size
+ */
+extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *path);
 
-extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *);
+/**
+ * @brief Get the size of a given path
+ *
+ * @param path Path of the file to determine relativity of
+ * @return `true` if the path is a relative
+ */
+extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *path);
 
-extern LIBACQUIRE_LIB_EXPORT const char *get_extension(const char *);
+/**
+ * @brief Get the extension from a path
+ *
+ * @param path Path of the file to get the file-extension from
+ * @return `path` if the path failed to determine extension otherwise extension
+ * (with leading ".").
+ */
+extern LIBACQUIRE_LIB_EXPORT const char *get_extension(const char *path);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 bool is_directory(const char *const path) {
