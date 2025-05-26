@@ -7,13 +7,13 @@ libacquire
 
 The core for your package manager, minus the dependency graph components. Features: **download**, **verify**, and **extract**.
 
-By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DUSE_LIBCURL` or  `-DUSE_LIBFETCH`.
+By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DUSE_LIBCURL` or `-DUSE_LIBFETCH`.
 
 By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DUSE_OPENSSL`.
 
 By default—for crc32c—this uses `rhash` if available (also giving access to: CRC32, MD4, MD5, SHA1, SHA256, SHA512, SHA3, AICH, ED2K, DC++ TTH, BitTorrent BTIH, Tiger, GOST R 34.11-94, GOST R 34.11-2012, RIPEMD-160, HAS-160, EDON-R, and Whirlpool); otherwise uses included crc32c implementation. Override with `-DUSE_CRC32C`.
 
-By default—for decompression—this uses `compressapi.h` on Windows; then, in order of precedence tries: libarchive, zlib, or downloads miniz.
+By default—for decompression—this uses `compressapi.h` on Windows; then, in order of precedence tries: libarchive; zlib; or downloads miniz.
 
 Supports:
 
@@ -36,7 +36,7 @@ Supports:
 
 Dynamically links to shared libraries, defaulting to what's already installed on your OS by default.
 
-If your OS doesn't have the dependency, an optimised dependency free version will be `add_library`'d and depended upon.
+If your OS doesn't have the dependency, an optimised dependency-free version will be `add_library`'d and depended upon.
 
 *† default on that OS*
 
@@ -72,7 +72,8 @@ If your OS doesn't have the dependency, an optimised dependency free version wil
   | [miniz](https://github.com/richgel999/miniz) with [zip](https://github.com/kuba--/zip) API | `USE_MINIZ` | All that miniz + zip supports; default † fallback
 
 ### Checksum
-Note that most checksum libraries are crypto libraries so working with these APIs isn't required for libacquire:
+
+Note that most checksum libraries are crypto libraries, so working with these APIs isn't required for libacquire:
 
   | API                                                           | Package enable flag | OS support                      |
   ----------------------------------------------------------------| ------------------- |---------------------------------|
@@ -83,8 +84,8 @@ Note that most checksum libraries are crypto libraries so working with these API
 
 `Dockerfile`s are provided for convenience, try them out, e.g., by running:
 ```sh
-docker build . -f alpine.Dockerfile --tag libacquire
-docker run libacquire
+docker build . -f alpine.Dockerfile --tag libacquire:alpine_latest
+docker run libacquire:alpine_latest
 ```
 
 ## Shell script equivalent (UNIX with `grep`, `curl`, and `tar`)
@@ -139,10 +140,22 @@ Want different options for libcurl, OpenSSL, or any of the other dependencies? -
 ### Build
 
 ```bash
-mkdir build && cd build
-cmake ..
-cmake --build .
+$ mkdir build && cd build
+$ cmake ..
+$ cmake --build .
 ```
+
+(alternatively to system search, you can also use vcpkg by explicitly overriding `-DCMAKE_TOOLCHAIN_FILE`)
+
+### Build intricacies
+
+Care is taken, starting with:
+- header only modular functionality in separate .h files
+
+…these are created:
+- amalgamation header with all header content added to one;
+- separate .h and .c files to enable common use-cases;
+- amalgamation header with just prototypes, .c content expected to be contained in a shared library.
 
 ### CLI interface
 
@@ -154,6 +167,10 @@ $ python -m docopt_c '.docopt' -o 'libacquire/acquire/cli'
 ## See also
 
   - https://github.com/SamuelMarks/curl-simple-https
+  - https://github.com/SamuelMarks/cdd-c
+  - https://verMan.io
+  - https://github.com/offscale/postgres-version-manager-go
+  - ["version-manager-rs" suffixed](https://github.com/orgs/offscale/repositories?q=-version-manager-rs&language=rust) and [verman-schema-rs]
 
 ---
 

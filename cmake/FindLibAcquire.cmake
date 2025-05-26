@@ -125,7 +125,7 @@ message(STATUS "crypt LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 #########################
 
 macro (download_extract_miniz download_dir)
-    set(MINIZ_VERSION "2.2.0")
+    set(MINIZ_VERSION "3.0.2")
     set(MINIZ_BASENAME "miniz-${MINIZ_VERSION}.zip")
     get_filename_component(MINIZ_BASENAME_NO_EXT "${MINIZ_BASENAME}" NAME_WLE)
     set(MINIZ_ZIP_FILE "${download_dir}/${MINIZ_BASENAME}")
@@ -133,28 +133,27 @@ macro (download_extract_miniz download_dir)
         file(DOWNLOAD
                 "https://github.com/richgel999/miniz/releases/download/${MINIZ_VERSION}/miniz-${MINIZ_VERSION}.zip"
                 "${MINIZ_ZIP_FILE}"
-                EXPECTED_HASH "SHA256=e4aa5078999c7f7466fa6b8f9848e39ddfff9a4bafc50215764aebe1f13b3841")
-        #file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
-        #        DESTINATION "${download_dir}")
+                EXPECTED_HASH "SHA256=ada38db0b703a56d3dd6d57bf84a9c5d664921d870d8fea4db153979fb5332c5")
+        file(ARCHIVE_EXTRACT INPUT "${MINIZ_ZIP_FILE}"
+                DESTINATION "${download_dir}")
     endif (NOT EXISTS "${MINIZ_ZIP_FILE}")
 
     if (NOT EXISTS "${download_dir}/zip.h")
+        set(KUBA_ZIP_VER "d7a2252")
         file(DOWNLOAD
-                "https://raw.githubusercontent.com/kuba--/zip/5b3f387/src/zip.h"
+                "https://raw.githubusercontent.com/kuba--/zip/${KUBA_ZIP_VER}/src/zip.h"
                 "${download_dir}/zip.h"
-                EXPECTED_HASH "SHA256=f2f9ecb2a5c9d9fa489c278c011aedb4752567b17d41912b57eb148f05774e4e")
+                EXPECTED_HASH "SHA256=3dda9a244fe05a8f003477a6e1dfb6844071d003773ab18a7708b860d8896506")
 
-        # My C89 compatible PR
         file(DOWNLOAD
-                "https://raw.githubusercontent.com/kuba--/zip/42dc4ce/src/zip.c"
+                "https://raw.githubusercontent.com/kuba--/zip/${KUBA_ZIP_VER}/src/zip.c"
                 "${download_dir}/zip.c"
-                EXPECTED_HASH "SHA256=ceafe6f3a7788697eb639ccc17788f2d9618ff6a573b96a6fb9db044eb19a7b7")
+                EXPECTED_HASH "SHA256=cec3b7ef189510255b3b2b80dcfa7fe767c26e01dd14ec0cf0fbf1940e7e86c7")
 
-        # Looks like they changed miniz, but are still on 2.2.0
         file(DOWNLOAD
-                "https://raw.githubusercontent.com/kuba--/zip/5b3f387/src/miniz.h"
+                "https://raw.githubusercontent.com/kuba--/zip/${KUBA_ZIP_VER}/src/miniz.h"
                 "${download_dir}/miniz.h"
-                EXPECTED_HASH "SHA256=ce02b94490b7a24cc24d2426869a04239ff47dd29d133f9a57625afc0f4a0e87")
+                EXPECTED_HASH "SHA256=6f2b1d7d368fecadf21ddf330634dabb250e505834fe1b76394aa5834e6e0869")
     endif (NOT EXISTS "${download_dir}/zip.h")
 
     file(TO_NATIVE_PATH "${MINIZ_ZIP_FILE}" MINIZ_ZIP_FILE)

@@ -35,7 +35,7 @@ extern "C" {
 
 #ifndef DOWNLOAD_DIR_IMPL
 #define DOWNLOAD_DIR_IMPL
-const char *get_download_dir() { return TMPDIR "//.downloads"; }
+const char *get_download_dir(void) { return TMPDIR "//.downloads"; }
 #endif /* !DOWNLOAD_DIR_IMPL */
 
 int download(const char *url, enum Checksum checksum, const char *hash,
