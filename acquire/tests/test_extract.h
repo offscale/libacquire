@@ -14,7 +14,12 @@
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
 #include <acquire_fileutils.h>
-#include ARCHIVE_LIB_NAME
+
+#ifdef ARCHIVE_LIB
+  #include STR(ARCHIVE_HEADER_NAME)
+#else
+  #error "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)"
+#endif
 
 #include <acquire_common_defs.h>
 #include <acquire_config.h>
@@ -22,24 +27,23 @@
 #include <config_for_tests.h>
 
 TEST x_test_extract_archive(void) {
-#define EXTRACT_DIR DOWNLOAD_DIR PATH_SEP "extract" PATH_SEP ARCHIVE_LIB
-  puts("\"test_extract.h\" for ARCHIVE_LIB: \"" ARCHIVE_LIB
-       "\" into EXTRACT_DIR: \"" EXTRACT_DIR "\"");
+#define EXTRACT_DIR DOWNLOAD_DIR PATH_SEP "extract" PATH_SEP STR(ARCHIVE_LIB)
+    puts("\"test_extract.h\" for ARCHIVE_LIB: \"" STR(ARCHIVE_LIB)
+         "\" into EXTRACT_DIR: \"" EXTRACT_DIR "\"");
 
-  ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, EXTRACT_DIR) !=
-               EXIT_SUCCESS);
+    ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, EXTRACT_DIR) !=
+                 EXIT_SUCCESS);
 
-  /* Could do the whole `find zlib-1.2.11 -type f | sha256sum` test to be proper
-   */
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "readme.md"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.h"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.c"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "ChangeLog.md"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "LICENSE"));
-  ASSERT_FALSE(!is_directory(EXTRACT_DIR PATH_SEP "examples"));
+    /* Could add a comprehensive file check here */
+    ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "readme.md"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.h"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.c"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "ChangeLog.md"));
+    ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "LICENSE"));
+    ASSERT_FALSE(!is_directory(EXTRACT_DIR PATH_SEP "examples"));
 
 #undef EXTRACT_DIR
-  PASS();
+    PASS();
 }
 
 /* Suites can group multiple tests with common setup. */

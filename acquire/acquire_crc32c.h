@@ -126,6 +126,11 @@ unsigned int crc32_file(FILE *file) {
 }
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
+#ifndef LIBACQUIRE_ACQUIRE_CRC32C_IMPL
+#define LIBACQUIRE_ACQUIRE_CRC32C_IMPL 1
+#ifndef USE_CRC32C
+#define USE_CRC32C 1
+#endif /* !USE_CRC32C */
 #ifdef USE_CRC32C
 
 /**
@@ -172,6 +177,7 @@ bool crc32c(const char *filename, const char *hash) {
 }
 
 #endif /* USE_CRC32C */
+#endif /* !LIBACQUIRE_ACQUIRE_CRC32C_IMPL */
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #ifdef __cplusplus

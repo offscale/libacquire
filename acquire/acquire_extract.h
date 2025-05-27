@@ -25,7 +25,7 @@ extern "C" {
 
 #include "libacquire_export.h"
 
-enum LIBACQUIRE_LIB_EXPORT Archive {
+enum LIBACQUIRE_EXPORT Archive {
   LIBACQUIRE_ZIP,
   LIBACQUIRE_INFER,
   LIBACQUIRE_UNSUPPORTED_ARCHIVE
@@ -43,7 +43,7 @@ enum LIBACQUIRE_LIB_EXPORT Archive {
  * @return `EXIT_SUCCESS` if extraction succeeds;
  * `EXIT_FAILURE` or non-`EXIT_SUCCESS` otherwise.
  */
-extern LIBACQUIRE_LIB_EXPORT int extract_archive(enum Archive archive,
+extern LIBACQUIRE_EXPORT int extract_archive(enum Archive archive,
                                                  const char *archive_filepath,
                                                  const char *output_folder);
 
@@ -57,22 +57,24 @@ extern LIBACQUIRE_LIB_EXPORT int extract_archive(enum Archive archive,
  * @return `enum Archive` discriminant; including potential values of
  * `LIBACQUIRE_UNSUPPORTED_ARCHIVE` xor `LIBACQUIRE_INFER`.
  */
-extern LIBACQUIRE_LIB_EXPORT enum Archive
+extern LIBACQUIRE_EXPORT enum Archive
 extension2archive(const char *extension);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
-
+#ifndef LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H
+#define LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H
 #include <acquire_string_extras.h>
 
-extern enum Archive extension2archive(const char *const s) {
-  if (strncasecmp(s, ".zip", 6) == 0)
+extern enum Archive extension2archive(const char *const extension) {
+  if (strncasecmp(extension, ".zip", 6) == 0)
     return LIBACQUIRE_ZIP;
-  else if (strlen(s) == 0)
+  else if (strlen(extension) == 0)
     return LIBACQUIRE_UNSUPPORTED_ARCHIVE;
   else
     return LIBACQUIRE_INFER;
 }
 
+#endif /* !LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H */
 #endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #ifdef __cplusplus

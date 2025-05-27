@@ -81,7 +81,9 @@ typedef int errno_t;
 #endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
 
 #if defined(__linux__) || defined(linux) || defined(__linux) || defined(ANY_BSD)
+#ifndef strerror_s
 #define strerror_s strerror_r
+#endif /* !strerror_s */
 #define HAVE_STRERRORLEN_S
 #endif /* defined(__linux__) || defined(linux) || defined(__linux) ||          \
           defined(ANY_BSD) */
@@ -91,7 +93,7 @@ typedef int errno_t;
 #ifndef _MSC_VER
 #define HAVE_STRINGS_H
 #define HAVE_STRNCASECMP
-#endif
+#endif /* !_MSC_VER */
 
 #if defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||             \
     defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -103,7 +105,8 @@ typedef int errno_t;
 #include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
-#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION)
+#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(SNPRINTF_IMPL)
+#define SNPRINTF_IMPL
 
 /*
  * `snprintf`, `vsnprintf`, `strnstr` taken from:
@@ -145,16 +148,17 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #define vsnprintf(buffer, count, format, args)                                 \
   wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(SNPRINTF_IMPL) */
 
 #ifndef HAVE_STRNCASECMP
 
-extern LIBACQUIRE_LIB_EXPORT int strncasecmp(const char *, const char *,
+extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *,
                                              size_t);
 
-extern LIBACQUIRE_LIB_EXPORT int strcasecmp(const char *, const char *);
+extern LIBACQUIRE_EXPORT int strcasecmp(const char *, const char *);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
+#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNCASECMP_IMPL)
+#define STRNCASECMP_IMPL
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define strncasecmp _strnicmp
@@ -173,15 +177,16 @@ int strncasecmp(const char *_l, const char *_r, size_t n) {
 }
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNCASECMP_IMPL) */
 
 #endif /* !HAVE_STRNCASECMP */
 
 #ifndef HAVE_STRNSTR
 
-extern LIBACQUIRE_LIB_EXPORT char *strnstr(const char *, const char *, size_t);
+extern LIBACQUIRE_EXPORT char *strnstr(const char *, const char *, size_t);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
+#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNSTR_IMPL)
+#define STRNSTR_IMPL
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   /*
      Find the first occurrence of find in s, where the search is limited to the
@@ -212,15 +217,15 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   }
   return 0;
 }
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNSTR_IMPL) */
 
 #endif /* ! HAVE_STRNSTR */
 
 #ifndef HAVE_STRCASESTR_H
-extern LIBACQUIRE_LIB_EXPORT char *strcasestr(const char *, const char *);
+extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
-
+#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRCASESTR_IMPL)
+#define STRCASESTR_IMPL
 /* `strcasestr` from MUSL */
 
 char *strcasestr(const char *h, const char *n) {
@@ -231,15 +236,16 @@ char *strcasestr(const char *h, const char *n) {
   return 0;
 }
 
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRCASESTR_IMPL) */
 
 #endif /* ! HAVE_STRCASESTR_H */
 
 #ifndef HAVE_STRERRORLEN_S
 
-extern size_t LIBACQUIRE_LIB_EXPORT strerrorlen_s(errno_t);
+extern size_t LIBACQUIRE_EXPORT strerrorlen_s(errno_t);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
+#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRERRORLEN_IMPL)
+#define STRERRORLEN_IMPL
 /* MIT licensed function from Safe C Library */
 
 size_t strerrorlen_s(errno_t errnum) {
@@ -284,7 +290,7 @@ size_t strerrorlen_s(errno_t errnum) {
   }
 }
 
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRERRORLEN_IMPL) */
 
 #endif /* !HAVE_STRERRORLEN_S */
 

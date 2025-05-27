@@ -105,6 +105,7 @@ else()
     list(APPEND _libs "${PROJECT_NAME}")
 endif ()
 
+list(REMOVE_DUPLICATES _libs)
 target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_libs}")
 
 include(GNUInstallDirs)

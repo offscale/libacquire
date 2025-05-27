@@ -36,7 +36,7 @@ extern "C" {
  * @note Returned pointer points to a static buffer that may be overwritten
  * on later calls.
  */
-extern LIBACQUIRE_LIB_EXPORT const char *get_path_from_url(const char *url);
+extern LIBACQUIRE_EXPORT const char *get_path_from_url(const char *url);
 
 /**
  * @brief Check whether a given string appears to be a URL.
@@ -47,7 +47,7 @@ extern LIBACQUIRE_LIB_EXPORT const char *get_path_from_url(const char *url);
  * @param maybe_url String to be tested.
  * @return true if string looks like a URL, false otherwise.
  */
-extern LIBACQUIRE_LIB_EXPORT bool is_url(const char *maybe_url);
+extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 

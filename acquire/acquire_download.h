@@ -34,16 +34,16 @@ extern "C" {
 #include "acquire_wincrypt.h"
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
-extern LIBACQUIRE_LIB_EXPORT const char *get_download_dir(void);
+extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 
-extern LIBACQUIRE_LIB_EXPORT bool is_downloaded(const char *, enum Checksum,
+extern LIBACQUIRE_EXPORT bool is_downloaded(const char *, enum Checksum,
                                                 const char *, const char *);
 
-extern LIBACQUIRE_LIB_EXPORT int download(const char *, enum Checksum,
+extern LIBACQUIRE_EXPORT int download(const char *, enum Checksum,
                                           const char *, const char[NAME_MAX],
                                           bool, size_t, size_t);
 
-extern LIBACQUIRE_LIB_EXPORT int download_many(const char *[], const char *[],
+extern LIBACQUIRE_EXPORT int download_many(const char *[], const char *[],
                                                enum Checksum[], const char *,
                                                bool, size_t, size_t);
 #ifdef __cplusplus

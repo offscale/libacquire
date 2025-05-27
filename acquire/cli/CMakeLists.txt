@@ -54,7 +54,8 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
         "${LIBRARY_NAME}"
-        "lib${PROJECT_NAME}"
+        "${PROJECT_NAME}"
+        "${PROJECT_NAME}_impl"
 )
 target_include_directories(
         "${EXEC_NAME}"

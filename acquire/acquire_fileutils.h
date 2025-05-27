@@ -42,9 +42,9 @@ extern "C" {
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
           defined(__NT__) */
 
-extern LIBACQUIRE_LIB_EXPORT bool is_directory(const char *);
+extern LIBACQUIRE_EXPORT bool is_directory(const char *);
 
-extern LIBACQUIRE_LIB_EXPORT bool is_file(const char *);
+extern LIBACQUIRE_EXPORT bool is_file(const char *);
 
 /**
  * @brief Check if a file exists.
@@ -52,7 +52,7 @@ extern LIBACQUIRE_LIB_EXPORT bool is_file(const char *);
  * @param path Path of the file to check.
  * @return `true` if path is present
  */
-extern LIBACQUIRE_LIB_EXPORT bool exists(const char *path);
+extern LIBACQUIRE_EXPORT bool exists(const char *path);
 
 /**
  * @brief Get the size of a given path
@@ -60,7 +60,7 @@ extern LIBACQUIRE_LIB_EXPORT bool exists(const char *path);
  * @param path Path of the file to get the size of.
  * @return `-1` if file doesn't exist otherwise its size
  */
-extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *path);
+extern LIBACQUIRE_EXPORT off_t filesize(const char *path);
 
 /**
  * @brief Get the size of a given path
@@ -68,7 +68,7 @@ extern LIBACQUIRE_LIB_EXPORT off_t filesize(const char *path);
  * @param path Path of the file to determine relativity of
  * @return `true` if the path is a relative
  */
-extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *path);
+extern LIBACQUIRE_EXPORT bool is_relative(const char *path);
 
 /**
  * @brief Get the extension from a path
@@ -77,9 +77,11 @@ extern LIBACQUIRE_LIB_EXPORT bool is_relative(const char *path);
  * @return `path` if the path failed to determine extension otherwise extension
  * (with leading ".").
  */
-extern LIBACQUIRE_LIB_EXPORT const char *get_extension(const char *path);
+extern LIBACQUIRE_EXPORT const char *get_extension(const char *path);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
+#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
+#define LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL
+
 bool is_directory(const char *const path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   const DWORD dwAttrib = GetFileAttributes(path);
@@ -157,7 +159,7 @@ const char *get_extension(const char *const filename) {
   return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
 
 #ifdef __cplusplus
 }

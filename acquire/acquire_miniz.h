@@ -31,6 +31,7 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
     return UNIMPLEMENTED;
   {
     static int arg = 2;
+    printf("Extracting archive %s to %s\n", archive_filepath, output_folder);
     return zip_extract(archive_filepath, output_folder, on_extract_entry, &arg);
   }
 }
