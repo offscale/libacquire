@@ -105,7 +105,8 @@ typedef int errno_t;
 #include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
-#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(SNPRINTF_IMPL)
+#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) &&         \
+    !defined(SNPRINTF_IMPL)
 #define SNPRINTF_IMPL
 
 /*
@@ -148,12 +149,12 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #define vsnprintf(buffer, count, format, args)                                 \
   wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(SNPRINTF_IMPL) */
+#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) &&   \
+          !defined(SNPRINTF_IMPL) */
 
 #ifndef HAVE_STRNCASECMP
 
-extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *,
-                                             size_t);
+extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *, size_t);
 
 extern LIBACQUIRE_EXPORT int strcasecmp(const char *, const char *);
 

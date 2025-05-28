@@ -26,11 +26,12 @@ extern "C" {
  * @return true if already downloaded and checksum verifies, else false
  */
 extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
-                                                enum Checksum checksum,
-                                                const char *hash,
-                                                const char *target_location);
+                                            enum Checksum checksum,
+                                            const char *hash,
+                                            const char *target_location);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON)
+#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON)
 #define LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON 1
 
 #ifndef DOWNLOAD_DIR_IMPL
@@ -76,7 +77,8 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
   }
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON) */
 
 #ifdef __cplusplus
 }

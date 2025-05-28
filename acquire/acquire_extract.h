@@ -44,8 +44,8 @@ enum LIBACQUIRE_EXPORT Archive {
  * `EXIT_FAILURE` or non-`EXIT_SUCCESS` otherwise.
  */
 extern LIBACQUIRE_EXPORT int extract_archive(enum Archive archive,
-                                                 const char *archive_filepath,
-                                                 const char *output_folder);
+                                             const char *archive_filepath,
+                                             const char *output_folder);
 
 /**
  * @brief Determine archive type based on extension
@@ -57,8 +57,7 @@ extern LIBACQUIRE_EXPORT int extract_archive(enum Archive archive,
  * @return `enum Archive` discriminant; including potential values of
  * `LIBACQUIRE_UNSUPPORTED_ARCHIVE` xor `LIBACQUIRE_INFER`.
  */
-extern LIBACQUIRE_EXPORT enum Archive
-extension2archive(const char *extension);
+extern LIBACQUIRE_EXPORT enum Archive extension2archive(const char *extension);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 #ifndef LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H

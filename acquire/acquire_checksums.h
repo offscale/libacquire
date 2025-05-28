@@ -38,8 +38,7 @@ extern "C" {
  *
  * @return true if valid.
  */
-extern LIBACQUIRE_EXPORT bool crc32c(const char *filename,
-                                         const char *hash);
+extern LIBACQUIRE_EXPORT bool crc32c(const char *filename, const char *hash);
 
 /**
  * @brief Verify file using SHA256 checksum.
@@ -49,8 +48,7 @@ extern LIBACQUIRE_EXPORT bool crc32c(const char *filename,
  *
  * @return true if valid.
  */
-extern LIBACQUIRE_EXPORT bool sha256(const char *filename,
-                                         const char *hash);
+extern LIBACQUIRE_EXPORT bool sha256(const char *filename, const char *hash);
 
 /**
  * @brief Verify file using SHA256 checksum.
@@ -60,8 +58,7 @@ extern LIBACQUIRE_EXPORT bool sha256(const char *filename,
  *
  * @return true if valid.
  */
-extern LIBACQUIRE_EXPORT bool sha512(const char *filename,
-                                         const char *hash);
+extern LIBACQUIRE_EXPORT bool sha512(const char *filename, const char *hash);
 
 enum Checksum {
   LIBACQUIRE_CRC32C,
@@ -83,8 +80,8 @@ extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *);
  *
  * @return Function pointer on success; NULL on failure.
  */
-extern LIBACQUIRE_EXPORT bool (
-    *get_checksum_function(enum Checksum checksum))(const char *, const char *);
+extern LIBACQUIRE_EXPORT bool (*get_checksum_function(enum Checksum checksum))(
+    const char *, const char *);
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL

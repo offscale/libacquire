@@ -37,15 +37,15 @@ extern "C" {
 extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 
 extern LIBACQUIRE_EXPORT bool is_downloaded(const char *, enum Checksum,
-                                                const char *, const char *);
+                                            const char *, const char *);
 
-extern LIBACQUIRE_EXPORT int download(const char *, enum Checksum,
-                                          const char *, const char[NAME_MAX],
-                                          bool, size_t, size_t);
+extern LIBACQUIRE_EXPORT int download(const char *, enum Checksum, const char *,
+                                      const char[NAME_MAX], bool, size_t,
+                                      size_t);
 
 extern LIBACQUIRE_EXPORT int download_many(const char *[], const char *[],
-                                               enum Checksum[], const char *,
-                                               bool, size_t, size_t);
+                                           enum Checksum[], const char *, bool,
+                                           size_t, size_t);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -79,7 +79,8 @@ extern LIBACQUIRE_EXPORT bool is_relative(const char *path);
  */
 extern LIBACQUIRE_EXPORT const char *get_extension(const char *path);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
+#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
 #define LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL
 
 bool is_directory(const char *const path) {
@@ -159,7 +160,8 @@ const char *get_extension(const char *const filename) {
   return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
 
 #ifdef __cplusplus
 }
