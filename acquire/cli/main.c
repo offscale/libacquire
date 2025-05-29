@@ -16,7 +16,7 @@
 #include <acquire_crc32c.h>
 #elif defined(USE_LIBRHASH)
 #include <acquire_librhash.h>
-#endif
+#endif /* USE_CRC32C */
 
 #ifdef USE_LIBCURL
 
@@ -34,13 +34,22 @@
 
 #include <acquire_openbsd_ftp.h>
 
-#endif
+#endif /* USE_LIBCURL */
 
 #if defined(USE_OPENSSL) || defined(USE_LIBRESSL) || defined(USE_COMMON_CRYPTO)
 #include <acquire_openssl.h>
 #elif defined(USE_WINCRYPT)
 #include <acquire_wincrypt.h>
-#endif
+#endif /* defined(USE_OPENSSL) || defined(USE_LIBRESSL) ||                     \
+          defined(USE_COMMON_CRYPTO) */
+
+#ifdef USE_MINIZ
+#include <acquire_miniz.h>
+#elif defined(USE_LIBARCHIVE)
+#include <acquire_libarchive.h>
+#elif
+#error "Extract library must be specified"
+#endif /* USE_MINIZ */
 
 int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;

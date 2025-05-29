@@ -69,25 +69,25 @@ list(REMOVE_DUPLICATES CHECKSUM_LIBRARIES)
 set(_targets "${exec_name}" "test_amalgamation")
 set(_archives "libarchive" "miniz")
 
-macro (set_backend_definitions TARGET)
-    if(USE_LIBCURL)
+macro(set_backend_definitions TARGET)
+    if (USE_LIBCURL)
         target_compile_definitions(${TARGET} PRIVATE USE_LIBCURL=1)
-    elseif(USE_LIBFETCH)
+    elseif (USE_LIBFETCH)
         target_compile_definitions(${TARGET} PRIVATE USE_LIBFETCH=1)
-    elseif(USE_WININET)
+    elseif (USE_WININET)
         target_compile_definitions(${TARGET} PRIVATE USE_WININET=1)
-    elseif(USE_OPENBSD_FTP)
+    elseif (USE_OPENBSD_FTP)
         target_compile_definitions(${TARGET} PRIVATE USE_OPENBSD_FTP=1)
-    endif()
+    endif ()
 
-    if(USE_MINIZ)
+    if (USE_MINIZ)
         target_compile_definitions(${TARGET} PRIVATE USE_MINIZ=1)
-    elseif(USE_LIBARCHIVE)
+    elseif (USE_LIBARCHIVE)
         target_compile_definitions(${TARGET} PRIVATE USE_LIBARCHIVE=1)
-    endif()
+    endif ()
 endmacro()
 
-macro (test_wrapper)
+macro(test_wrapper)
     target_include_directories(
             "${EXEC_NAME}"
             PRIVATE
@@ -134,7 +134,7 @@ foreach (EXEC_NAME ${_targets})
             "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
     )
     test_wrapper()
-endforeach()
+endforeach ()
 
 # Extraction archive tests
 foreach (ARCHIVE_LIB ${_archives})
@@ -148,15 +148,42 @@ foreach (ARCHIVE_LIB ${_archives})
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
-    if(ARCHIVE_LIB STREQUAL "miniz")
+    if (ARCHIVE_LIB STREQUAL "miniz")
         target_compile_definitions("${EXEC_NAME}" PRIVATE USE_MINIZ=1)
-    elseif(ARCHIVE_LIB STREQUAL "libarchive")
+    elseif (ARCHIVE_LIB STREQUAL "libarchive")
         target_compile_definitions("${EXEC_NAME}" PRIVATE USE_LIBARCHIVE=1)
         include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
         target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
-    else()
+    else ()
         message(FATAL_ERROR "Unknown ARCHIVE_LIB: ${ARCHIVE_LIB}")
-    endif()
+    endif ()
+
+    if (USE_MINIZ)
+        set(Header_Files_Zip
+                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/miniz.h"
+                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.h")
+        source_group("Header Files zip_miniz" FILES "${Header_Files_Zip}")
+
+        set(Source_Files_Zip
+                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.c")
+        source_group("Source Files zip_miniz" FILES "${Source_Files_Zip}")
+
+        set_source_files_properties("test_extract.c"
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
+
+        add_library("${EXEC_NAME}_zip_miniz" "${Header_Files_Zip}" "${Source_Files_Zip}")
+
+        target_include_directories("${EXEC_NAME}_zip_miniz" PUBLIC
+                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}")
+
+        target_link_libraries("${EXEC_NAME}" PRIVATE "${EXEC_NAME}_zip_miniz")
+    elseif (USE_LIBARCHIVE)
+        set_source_files_properties("test_extract.c"
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBARCHIVE=1")
+    else ()
+        set_source_files_properties("test_extract.c"
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
+    endif ()
 
     target_compile_definitions("${EXEC_NAME}" PRIVATE ARCHIVE_LIB=${ARCHIVE_LIB})
 
@@ -174,4 +201,4 @@ foreach (ARCHIVE_LIB ${_archives})
     )
 
     test_wrapper()
-endforeach()
+endforeach ()

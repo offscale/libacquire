@@ -1,6 +1,8 @@
 #if !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) &&    \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+    defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    !defined(LIBACQUIRE_ACQUIRE_EXTRACT_IMPL)
 #define LIBACQUIRE_ACQUIRE_LIBARCHIVE_H
+#define LIBACQUIRE_ACQUIRE_EXTRACT_IMPL
 
 /* Note this file is mostly the
  * https://github.com/libarchive/libarchive/wiki/Examples#a-complete-extractor
@@ -111,4 +113,5 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) \
-          && defined(LIBACQUIRE_IMPLEMENTATION) */
+          && defined(LIBACQUIRE_IMPLEMENTATION) &&                             \
+          !defined(LIBACQUIRE_ACQUIRE_EXTRACT_IMPL) */

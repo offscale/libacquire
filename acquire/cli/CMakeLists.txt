@@ -60,10 +60,10 @@ target_link_libraries(
 target_include_directories(
         "${EXEC_NAME}"
         PRIVATE
-        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
-        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
         "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire>"
+        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
         "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
@@ -79,8 +79,8 @@ set_target_properties(
 #######################################
 
 # setup the version numbering
-set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
-set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "${${PROJECT_NAME}_VERSION}")
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}")
 
 # install rules
 set(installable_libs "${EXEC_NAME}" "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")

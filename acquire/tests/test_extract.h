@@ -13,17 +13,22 @@
 #define PATH_SEP "/"
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
+#include <acquire_config.h>
 #include <acquire_fileutils.h>
 
 #ifdef ARCHIVE_LIB
 #include STR(ARCHIVE_HEADER_NAME)
+#elif defined(USE_MINIZ)
+#include <acquire_miniz.h>
+#elif defined(USE_LIBARCHIVE)
+#include <acquire_libarchive.h>
 #else
 #error                                                                         \
-    "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)"
-#endif
+    "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)
+or USE_MINIZ or USE_LIBARCHIVE must be defined"
+#endif /* ARCHIVE_LIB */
 
 #include <acquire_common_defs.h>
-#include <acquire_config.h>
 #include <acquire_extract.h>
 #include <config_for_tests.h>
 

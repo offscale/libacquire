@@ -52,7 +52,7 @@ extern LIBACQUIRE_EXPORT int extract_archive(enum Archive archive,
  *
  * TODO: magic bytes whence `LIBACQUIRE_INFER`
  *
- * @param extension Simple end of path, like ".zip" or ".tar.gz".
+ * @param extension Simple end of filepath, like ".zip" or ".tar.gz".
  *
  * @return `enum Archive` discriminant; including potential values of
  * `LIBACQUIRE_UNSUPPORTED_ARCHIVE` xor `LIBACQUIRE_INFER`.
