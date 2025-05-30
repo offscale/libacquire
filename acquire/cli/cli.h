@@ -41,7 +41,7 @@ typedef size_t bool;
 #include <string.h>
 
 /* ARG_MAX definition block kept as-is for compatibility */
-#if defined(_AIX)
+#ifdef _AIX
 
 #include <sys/limits.h>
 

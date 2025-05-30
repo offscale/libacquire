@@ -18,11 +18,13 @@ extern "C" {
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* !DOWNLOAD_DIR_IMPL */
 
+#ifdef DOWNLOAD_IMPL
 int download(const char *url, enum Checksum checksum, const char *hash,
              const char target_location[NAME_MAX], bool follow, size_t retry,
              size_t verbosity) {
   sendrequest();
 }
+#endif /* DOWNLOAD_IMPL */
 
 #ifdef __cplusplus
 }

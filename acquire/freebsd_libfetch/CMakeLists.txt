@@ -9,7 +9,7 @@ include(GenerateExportHeader)
 # Generate error files #
 ########################
 
-function (parse_emit_errors name in_fname out_fname)
+function(parse_emit_errors name in_fname out_fname)
     file(READ "${in_fname}" contents)
     string(TOUPPER "${name}" upper_name)
     set(new_contents "static struct fetcherr ${name}_errlist[] = {")
@@ -60,7 +60,7 @@ function (parse_emit_errors name in_fname out_fname)
     string(APPEND new_contents "\n};\n")
     file(WRITE "${out_fname}" "${new_contents}")
     message(STATUS "Generated \"${out_fname}\" from \"${in_fname}\"")
-endfunction (parse_emit_errors name in_fname out_fname)
+endfunction(parse_emit_errors name in_fname out_fname)
 
 foreach (proto "ftp" "http")
     parse_emit_errors("${proto}" "${proto}.errors" "${proto}err.h")
@@ -76,7 +76,7 @@ set(Header_Files
         "ftperr.h"
         "httperr.h"
         "shim.h"
-        )
+)
 source_group("Header Files" FILES "${Header_Files}")
 
 set(Source_Files
@@ -86,7 +86,7 @@ set(Source_Files
         "ftp.c"
         "http.c"
         "shim.c"
-        )
+)
 source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" SHARED "${Header_Files}" "${Source_Files}")
@@ -101,7 +101,7 @@ check_symbol_exists(strnstr "string.h" HAS_STRNSTR)
 
 if (HAS_STRNSTR)
     add_compile_definitions(HAS_STRNSTR=1)
-else()
+else ()
     list(APPEND _libs "${PROJECT_NAME}")
 endif ()
 

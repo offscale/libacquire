@@ -11,10 +11,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
-
-#ifdef __cplusplus
-extern "C" {
 #elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
 #else
@@ -73,7 +69,7 @@ extern "C" {
 #define NAME_MAX 4096
 #endif /* PATH_MAX */
 
-#endif /* NAME_MAX */
+#endif /* !NAME_MAX */
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define PATH_SEP "\\"

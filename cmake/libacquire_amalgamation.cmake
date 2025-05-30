@@ -7,7 +7,7 @@ Function to generate the amalgamated header.
 
 ]=======================================================================]
 
-function (generate_amalgamation_header)
+function(generate_amalgamation_header)
     set(amalgam
             "acquire/acquire_stdbool.h"
             "acquire/acquire_errors.h"
@@ -39,7 +39,7 @@ function (generate_amalgamation_header)
             "acquire/acquire_libarchive.h"
             "acquire/acquire_miniz.h"
             # "acquire/acquire_zlib.h"  # TODO
-            )
+    )
 
     set(amalgam_files "")
     set(all_contents "")
@@ -48,7 +48,7 @@ function (generate_amalgamation_header)
         string(APPEND all_contents "\n/* Generated from: ${_amalgam} */\n\n")
         file(READ "${_amalgam}" contents)
         string(APPEND all_contents "${contents}")
-    endforeach ()
+    endforeach (_amalgam ${amalgam})
 
     set(all_contents_filtered "")
     set(line "")
@@ -75,7 +75,7 @@ function (generate_amalgamation_header)
         else ()
             string(APPEND line "${char}")
         endif ()
-    endforeach ()
+    endforeach (char_index RANGE ${len})
 
     # I suppose this could be further extended, deduplicating headers and putting them all to the top…
 
@@ -87,10 +87,10 @@ function (generate_amalgamation_header)
             "#define LIBACQUIRE_H\n"
             "${all_contents_filtered}\n"
             "#endif /* ! LIBACQUIRE_H */\n"
-            )
-endfunction (generate_amalgamation_header)
+    )
+endfunction(generate_amalgamation_header)
 
-function (create_amalgamation_target amalgamation_header)
+function(create_amalgamation_target amalgamation_header)
     set(LIBRARY_NAME "libacquire")
 
     if (NOT TARGET "${LIBRARY_NAME}")
@@ -121,7 +121,7 @@ function (create_amalgamation_target amalgamation_header)
             if (maybe_use STREQUAL "USE_")
                 target_compile_definitions("${LIBRARY_NAME}" INTERFACE "${_variableName}=${${_variableName}}")
             endif (maybe_use STREQUAL "USE_")
-        endforeach(_variableName ${_variableNames})
+        endforeach (_variableName ${_variableNames})
 
         set_target_properties(
                 "${LIBRARY_NAME}"
@@ -149,4 +149,4 @@ function (create_amalgamation_target amalgamation_header)
                 TYPE "INCLUDE")
         install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}")
     endif (NOT TARGET "${LIBRARY_NAME}")
-endfunction (create_amalgamation_target amalgamation_header)
+endfunction(create_amalgamation_target amalgamation_header)

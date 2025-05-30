@@ -15,7 +15,7 @@ header_file
 
 ]=======================================================================]
 
-function (get_libacquire_header header_file)
+function(get_libacquire_header header_file)
     set(json_file "${CMAKE_BINARY_DIR}/libacquire.json")
 
     if (EXISTS "${header_file}")
@@ -40,7 +40,6 @@ function (get_libacquire_header header_file)
     math(EXPR json_contents_n "${json_contents_n} - 1")
 
     foreach (i RANGE 0 "${json_contents_n}")
-
         string(JSON type TYPE "${json_contents}" "${i}")
         if (NOT type STREQUAL "OBJECT")
             continue ()
@@ -75,12 +74,12 @@ function (get_libacquire_header header_file)
             if (name STREQUAL "acquire.h")
                 string(JSON browser_download_url
                         GET "${asset_json}" "browser_download_url"
-                        )
+                )
                 file(DOWNLOAD "${browser_download_url}" "${header_file}")
                 return()
             endif (name STREQUAL "acquire.h")
-        endforeach ()
-    endforeach ()
+        endforeach (j RANGE 0 "${assets_json_n}")
+    endforeach (i RANGE 0 "${json_contents_n}")
 
     message(FATAL_ERROR "Unable to find downloadable \"acquire.h\"")
-endfunction (get_libacquire_header)
+endfunction(get_libacquire_header)

@@ -225,8 +225,7 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
 #ifndef HAVE_STRCASESTR_H
 extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRCASESTR_IMPL)
-#define STRCASESTR_IMPL
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRCASESTR_IMPL)
 /* `strcasestr` from MUSL */
 
 char *strcasestr(const char *h, const char *n) {
@@ -237,7 +236,7 @@ char *strcasestr(const char *h, const char *n) {
   return 0;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRCASESTR_IMPL) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRCASESTR_IMPL) */
 
 #endif /* ! HAVE_STRCASESTR_H */
 
@@ -245,8 +244,7 @@ char *strcasestr(const char *h, const char *n) {
 
 extern size_t LIBACQUIRE_EXPORT strerrorlen_s(errno_t);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRERRORLEN_IMPL)
-#define STRERRORLEN_IMPL
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRERRORLEN_IMPL)
 /* MIT licensed function from Safe C Library */
 
 size_t strerrorlen_s(errno_t errnum) {
@@ -291,7 +289,7 @@ size_t strerrorlen_s(errno_t errnum) {
   }
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRERRORLEN_IMPL) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRERRORLEN_IMPL) */
 
 #endif /* !HAVE_STRERRORLEN_S */
 

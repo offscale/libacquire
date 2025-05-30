@@ -23,7 +23,7 @@ LIBACQUIRE_LIBRARIES
 # Networking libraries #
 ########################
 
-function (set_networking_lib HTTPS_LIBRARY)
+function(set_networking_lib HTTPS_LIBRARY)
     if (DEFINED HTTPS_LIB)
         set("USE_${HTTPS_LIB}" 1 PARENT_SCOPE)
     else ()
@@ -42,7 +42,7 @@ function (set_networking_lib HTTPS_LIBRARY)
     elseif (DEFINED USE_LIBFETCH)
         set(HTTPS_LIBRARY "fetch" PARENT_SCOPE)
     endif ()
-endfunction (set_networking_lib HTTPS_LIBRARY)
+endfunction(set_networking_lib HTTPS_LIBRARY)
 
 set_networking_lib(HTTPS_LIBRARY)
 
@@ -52,14 +52,14 @@ else ()
     message(FATAL_ERROR "HTTPS_LIBRARY not set for linkage")
 endif ()
 
-message(STATUS "net LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+message(STATUS "net LIBACQUIRE_LIBRARIES      = ${LIBACQUIRE_LIBRARIES}")
 
 
 ######################
 # Checksum libraries #
 ######################
 
-function (set_checksum_libraries CHECKSUM_LIBRARIES)
+function(set_checksum_libraries CHECKSUM_LIBRARIES)
     # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
     if (USE_LIBRHASH)
         # list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -68,7 +68,7 @@ function (set_checksum_libraries CHECKSUM_LIBRARIES)
         endif (NOT TARGET LibRHash)
         set(CHECKSUM_LIBRARIES "LibRHash::LibRHash" PARENT_SCOPE)
     endif (USE_LIBRHASH)
-endfunction (set_checksum_libraries CHECKSUM_LIBRARIES)
+endfunction(set_checksum_libraries CHECKSUM_LIBRARIES)
 
 set_checksum_libraries(CHECKSUM_LIBRARIES)
 
@@ -86,7 +86,7 @@ message(STATUS "checksum LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
 # Cryptographic libraries #
 ###########################
 
-function (set_cryptography_lib CRYPTO_LIBRARIES)
+function(set_cryptography_lib CRYPTO_LIBRARIES)
     if (NOT DEFINED CRYPTO_LIB)
         message(FATAL_ERROR "Crypto library could not be inferred so must be specified for linkage")
     endif (NOT DEFINED CRYPTO_LIB)
@@ -104,7 +104,7 @@ function (set_cryptography_lib CRYPTO_LIBRARIES)
         list(APPEND CRYPTO_LIBRARIES "crypt32")
     endif (DEFINED USE_WINCRYPT)
     set(CRYPTO_LIBRARIES "${CRYPTO_LIBRARIES}" PARENT_SCOPE)
-endfunction (set_cryptography_lib)
+endfunction(set_cryptography_lib)
 
 set_cryptography_lib(CRYPTO_LIBRARIES)
 
@@ -114,21 +114,23 @@ elseif (NOT DEFINED USE_COMMON_CRYPTO AND  # Link not needed
         NOT DEFINED CHECKSUM_LIBRARIES OR
         CHECKSUM_LIBRARIES STREQUAL "" OR
         CHECKSUM_LIBRARIES STREQUAL "crc32c" # Needs actual crypto not just crc32c impl
-        )
+)
     message(FATAL_ERROR "CRYPTO_LIBRARIES not set for linkage")
 endif ()
 
-message(STATUS "crypt LIBACQUIRE_LIBRARIES = ${LIBACQUIRE_LIBRARIES}")
+message(STATUS "crypt LIBACQUIRE_LIBRARIES    = ${LIBACQUIRE_LIBRARIES}")
 
 #########################
 # Compression libraries #
 #########################
 
-macro (download_extract_miniz download_dir)
+macro(download_extract_miniz download_dir)
     set(MINIZ_VERSION "3.0.2")
     set(MINIZ_BASENAME "miniz-${MINIZ_VERSION}.zip")
     get_filename_component(MINIZ_BASENAME_NO_EXT "${MINIZ_BASENAME}" NAME_WLE)
-    set(MINIZ_ZIP_FILE "${download_dir}/${MINIZ_BASENAME}")
+    set(MINIZ_BASENAME_NO_EXT "${MINIZ_BASENAME_NO_EXT}" CACHE "STRING"
+            "Basename extension free location of miniz zip archive")
+    set(MINIZ_ZIP_FILE "${download_dir}/${MINIZ_BASENAME}" CACHE "FILEPATH" "Location of miniz zip archive")
     if (NOT EXISTS "${MINIZ_ZIP_FILE}")
         file(DOWNLOAD
                 "https://github.com/richgel999/miniz/releases/download/${MINIZ_VERSION}/miniz-${MINIZ_VERSION}.zip"
@@ -161,9 +163,9 @@ macro (download_extract_miniz download_dir)
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
         string(REPLACE "\\" "\\\\" MINIZ_ZIP_FILE "${MINIZ_ZIP_FILE}")
     endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
-endmacro (download_extract_miniz download_dir)
+endmacro(download_extract_miniz download_dir)
 
-function (download_unarchiver EXTRACT_LIB)
+function(download_unarchiver EXTRACT_LIB)
     ###############################################################
     # Download and setup miniz, a modern zero-dependency zlib alt #
     ###############################################################
@@ -222,9 +224,9 @@ function (download_unarchiver EXTRACT_LIB)
                 TYPE "INCLUDE")
         install(EXPORT "${EXTRACT_LIB}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${EXTRACT_LIB}")
     endif (NOT TARGET "${EXTRACT_LIB}")
-endfunction (download_unarchiver EXTRACT_LIB)
+endfunction(download_unarchiver EXTRACT_LIB)
 
-function (set_download_unarchiver EXTRACT_LIB)
+function(set_download_unarchiver EXTRACT_LIB)
     download_unarchiver(EXTRACT_LIB)
     if (NOT DEFINED EXTRACT_LIB)
         message(FATAL_ERROR "EXTRACT_LIB is not defined")
@@ -236,7 +238,7 @@ function (set_download_unarchiver EXTRACT_LIB)
     add_compile_definitions(USE_MINIZ=1)
     set(USE_MINIZ 1)
     set(USE_MINIZ "${USE_MINIZ}" PARENT_SCOPE)
-endfunction (set_download_unarchiver EXTRACT_LIB)
+endfunction(set_download_unarchiver EXTRACT_LIB)
 
 if (DEFINED EXTRACT_LIB)
     set("USE_${EXTRACT_LIB}" "1" PARENT_SCOPE)
@@ -244,7 +246,7 @@ else ()
     message(FATAL_ERROR "Compression API not set, did you run `set_extract_lib()`?")
 endif ()
 
-function (set_extraction_api)
+function(set_extraction_api)
     if (DEFINED USE_ZLIB)
         include(FindZLIB)
         find_package(ZLIB QUIET)
@@ -265,12 +267,12 @@ function (set_extraction_api)
         else ()
             set_download_unarchiver(EXTRACT_LIB)
         endif (ZLIB_FOUND)
-    else()
+    else ()
         set_download_unarchiver(EXTRACT_LIB)
         set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
     endif (DEFINED USE_ZLIB)
     set(EXTRACT_LIBRARIES "${EXTRACT_LIB}" PARENT_SCOPE)
-endfunction (set_extraction_api)
+endfunction(set_extraction_api)
 
 set_extraction_api(EXTRACT_LIBRARIES)
 

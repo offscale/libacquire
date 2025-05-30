@@ -12,7 +12,7 @@ set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
 file(TO_NATIVE_PATH "${DOWNLOAD_DIR}" DOWNLOAD_DIR)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" DOWNLOAD_DIR "${DOWNLOAD_DIR}")
-endif ()
+endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
 file(MAKE_DIRECTORY "${DOWNLOAD_DIR}")
 
@@ -21,7 +21,7 @@ set(GREATEST_FILE "${DOWNLOAD_DIR}/${GREATEST_BASEFILENAME}")
 file(TO_NATIVE_PATH "${GREATEST_FILE}" GREATEST_FILE)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
-endif ()
+endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
 set(GREATEST_URL "https://raw.githubusercontent.com/SamuelMarks/greatest/cmake-and-msvc/greatest.h")
 
@@ -39,9 +39,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_SOURCE_DIR "${_CMAKE_CURRENT_SOURCE_DIR}")
     string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_LIST_FILE "${_CMAKE_CURRENT_LIST_FILE}")
     string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
-endif ()
-
-configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
+endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
 ###############################
 # Set libacquire dependencies #
@@ -62,7 +60,7 @@ set_checksum_lib()
 
 foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
     message(STATUS "[test_libacquire] ${_library}_LIB: \t${${_library}_LIB}")
-endforeach ()
+endforeach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
 
 list(REMOVE_DUPLICATES CHECKSUM_LIBRARIES)
 
@@ -101,6 +99,10 @@ macro(test_wrapper)
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
 endmacro()
 
+
+message(STATUS "MINIZ_ZIP_FILE = ${MINIZ_ZIP_FILE}")
+configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
+
 foreach (EXEC_NAME ${_targets})
     set(Header_Files
             "${CMAKE_SOURCE_DIR}/acquire/tests/test_checksum.h"
@@ -121,8 +123,8 @@ foreach (EXEC_NAME ${_targets})
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
-            "${PROJECT_NAME}"
             "${PROJECT_NAME}_impl"
+            "${PROJECT_NAME}"
             "${PROJECT_NAME}_compiler_flags"
             "${CHECKSUM_LIBRARIES}"
     )
@@ -134,7 +136,7 @@ foreach (EXEC_NAME ${_targets})
             "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
     )
     test_wrapper()
-endforeach ()
+endforeach (EXEC_NAME ${_targets})
 
 # Extraction archive tests
 foreach (ARCHIVE_LIB ${_archives})
@@ -185,20 +187,23 @@ foreach (ARCHIVE_LIB ${_archives})
                 PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
     endif ()
 
-    target_compile_definitions("${EXEC_NAME}" PRIVATE ARCHIVE_LIB=${ARCHIVE_LIB})
-
-    target_compile_definitions("${EXEC_NAME}" PRIVATE ARCHIVE_HEADER_NAME=acquire_${ARCHIVE_LIB}.h)
+    target_compile_definitions(
+            "${EXEC_NAME}"
+            PRIVATE
+            "ARCHIVE_LIB=${ARCHIVE_LIB}"
+            "ARCHIVE_HEADER_NAME=acquire_${ARCHIVE_LIB}.h"
+    )
 
     set_backend_definitions(${EXEC_NAME})
 
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
-            "${PROJECT_NAME}"
             "${PROJECT_NAME}_impl"
-            $<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>
-            $<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>
+            "${PROJECT_NAME}"
+            "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
+            "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
     )
 
     test_wrapper()
-endforeach ()
+endforeach (ARCHIVE_LIB ${_archives})

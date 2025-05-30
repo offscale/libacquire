@@ -1,5 +1,7 @@
-#if !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) &&                  \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+#ifndef LIBACQUIRE_LIBCURL_H
+#define LIBACQUIRE_LIBCURL_H
+
+#if defined(USE_LIBCURL) && defined(LIBACQUIRE_IMPLEMENTATION)
 
 /*
  * libcurl implementation of libacquire's download API
@@ -11,10 +13,8 @@
  *   - Elsewhere that curl supports (not tested, but shouldn't be an issue)
  * */
 
-#define LIBACQUIRE_LIBCURL_H
-
 #ifdef __cplusplus
-}
+extern "C" {
 #endif /* __cplusplus */
 
 #include <stdint.h>
@@ -175,6 +175,7 @@ size_t write_cb(const void *buffer, const size_t sz, size_t nmemb,
   return 0;
 }
 
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(DOWNLOAD_IMPL)
 int download(const char *url, enum Checksum checksum, const char *hash,
              const char target_location[NAME_MAX], bool follow, size_t retry,
              size_t verbosity) {
@@ -325,6 +326,7 @@ bail:
 
 #undef handle_curl_error
 }
+#endif /* LIBACQUIRE_IMPLEMENTATION && DOWNLOAD_IMPL */
 
 int download_many(const char *url[], const char *hashes[],
                   enum Checksum checksums[], const char *target_location,
@@ -333,8 +335,9 @@ int download_many(const char *url[], const char *hashes[],
 }
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_LIBCURL_H) && defined(USE_LIBCURL) &&            \
-          defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* defined(USE_LIBCURL) && defined(LIBACQUIRE_IMPLEMENTATION) */
+
+#endif /* LIBACQUIRE_LIBCURL_H */

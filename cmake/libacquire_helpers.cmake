@@ -20,29 +20,29 @@ if (NOT DEFINED abs_folder_path)
     )
 endif (NOT DEFINED abs_folder_path)
 
-function (find_set_abs basename filepath)
+function(find_set_abs basename filepath)
     find_file(
             abs_folder_path "${basename}"
             HINTS
-              "${CMAKE_SOURCE_DIR}"
-              "${CMAKE_CURRENT_SOURCE_DIR}"
-              "${CMAKE_BINARY_DIR}"
-              "${CMAKE_BINARY_DIR}/downloads"
+            "${CMAKE_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_BINARY_DIR}"
+            "${CMAKE_BINARY_DIR}/downloads"
             NO_DEFAULT_PATH
             REQUIRED
     )
     message("find_set_abs::abs_folder_path = ${abs_folder_path}")
     set("${filepath}" "${abs_folder_path}" PARENT_SCOPE)
-endfunction (find_set_abs basename filepath)
+endfunction(find_set_abs basename filepath)
 
 ####################
 # crypto libraries #
 ####################
 
-macro (set_crypto_lib)
+macro(set_crypto_lib)
     if (DEFINED CRYPTO_LIB)
         # pass
-    # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
+        # "Crypto library to use, defaults to Linux,BSD,SunOS: OpenSSL; Windows: STunnel; macOS: LibreSSL"
     elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         check_include_files("CommonCrypto/CommonCrypto.h;CommonCrypto/CommonDigest.h" HAVE_COMMON_CRYPTO_H)
         if (NOT HAVE_COMMON_CRYPTO_H)
@@ -72,13 +72,13 @@ macro (set_crypto_lib)
         set(USE_LIBRESSL 1)
         add_compile_definitions(USE_LIBRESSL=1)
     endif ((CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" AND NOT DEFINED CRYPTO_LIB) OR CRYPTO_LIB STREQUAL "LibreSSL")
-endmacro (set_crypto_lib)
+endmacro(set_crypto_lib)
 
 #################
 # SSL libraries #
 #################
 
-macro (set_ssl_lib)
+macro(set_ssl_lib)
     if (CRYPTO_LIB STREQUAL "OpenSSL")
         if ((NOT DEFINED OPENSSL_ROOT_DIR OR NOT IS_DIRECTORY OPENSSL_ROOT_DIR)
                 AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND IS_DIRECTORY "/usr/local/opt/openssl")
@@ -103,13 +103,13 @@ macro (set_ssl_lib)
     else ()
         message(FATAL_ERROR "Not implemented CRYPTO_LIB of '${CRYPTO_LIB}'")
     endif ()
-endmacro (set_ssl_lib)
+endmacro(set_ssl_lib)
 
 ########################
 # HTTP/HTTPS libraries #
 ########################
 
-macro (set_http_https_lib)
+macro(set_http_https_lib)
     if (DEFINED USE_LIBFETCH
             OR (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD"
             OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
@@ -141,13 +141,13 @@ macro (set_http_https_lib)
         list(APPEND _Header_Files "acquire_libcurl.h")
         set(HTTPS_LIB "LIBCURL")
     endif ()
-endmacro (set_http_https_lib)
+endmacro(set_http_https_lib)
 
 ########################
 # Extraction libraries #
 ########################
 
-function (set_extract_lib)
+function(set_extract_lib)
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED USE_ZLIB AND NOT DEFINED USE_LIBARCHIVE)
         set(USE_WINCOMPRESSAPI 1 PARENT_SCOPE)
         set(EXTRACT_LIB "WINCOMPRESSAPI" PARENT_SCOPE)
@@ -167,13 +167,13 @@ function (set_extract_lib)
         set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
         list(APPEND _Header_Files "acquire_miniz.h")
     endif ()
-endfunction (set_extract_lib)
+endfunction(set_extract_lib)
 
 ######################
 # Checksum libraries #
 ######################
 
-function (set_checksum_lib)
+function(set_checksum_lib)
     # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
     find_package(LibRHash)
 
@@ -195,4 +195,4 @@ function (set_checksum_lib)
         set(USE_CRC32C 1 PARENT_SCOPE)
         add_compile_definitions(USE_CRC32C=1)
     endif ()
-endfunction (set_checksum_lib)
+endfunction(set_checksum_lib)

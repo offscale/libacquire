@@ -7,7 +7,7 @@ Function to get the architecture intended to be built for (Windows focus)
 
 ]=======================================================================]
 
-macro (get_arch)
+macro(get_arch)
     if (NOT DEFINED TARGET_ARCH)
         # Needed by Windows SDK
         if (MSVC)
@@ -31,8 +31,8 @@ macro (get_arch)
                 CMAKE_GENERATOR_PLATFORM MATCHES "^[Xx]64$")
             set(TARGET_ARCH "AMD64")
         else ()
-            set(TARGET_ARCH "ARM")
+            # set(TARGET_ARCH "ARM")
+            set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
         endif (MSVC)
-        set(TARGET_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
     endif (NOT DEFINED TARGET_ARCH)
-endmacro (get_arch)
+endmacro(get_arch)

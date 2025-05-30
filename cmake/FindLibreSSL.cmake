@@ -74,26 +74,22 @@ INCLUDE(FindPackageHandleStandardArgs)
 set(_LIBRESSL_ROOT_HINTS
         ${LIBRESSL_ROOT_DIR}
         ENV LIBRESSL_ROOT_DIR
-        )
+)
 
 # Set Paths
 if (WIN32)
     file(TO_CMAKE_PATH "$ENV{PROGRAMFILES}" _programfiles)
-    set(_LIBRESSL_ROOT_PATHS
-            "${_programfiles}/LibreSSL"
-            )
+    set(_LIBRESSL_ROOT_PATHS "${_programfiles}/LibreSSL")
     unset(_programfiles)
 else ()
-    set(_LIBRESSL_ROOT_PATHS
-            "/usr/local/"
-            )
+    set(_LIBRESSL_ROOT_PATHS "/usr/local/")
 endif ()
 
 # Combine
 set(_LIBRESSL_ROOT_HINTS_AND_PATHS
         HINTS ${_LIBRESSL_ROOT_HINTS}
         PATHS ${_LIBRESSL_ROOT_PATHS}
-        )
+)
 
 # Find Include Path
 find_path(LIBRESSL_INCLUDE_DIR
@@ -102,7 +98,7 @@ find_path(LIBRESSL_INCLUDE_DIR
         ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
         PATH_SUFFIXES
         include
-        )
+)
 
 # Find Crypto Library
 find_library(LIBRESSL_CRYPTO_LIBRARY
@@ -113,7 +109,7 @@ find_library(LIBRESSL_CRYPTO_LIBRARY
         ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
         PATH_SUFFIXES
         lib
-        )
+)
 
 # Find SSL Library
 find_library(LIBRESSL_SSL_LIBRARY
@@ -124,7 +120,7 @@ find_library(LIBRESSL_SSL_LIBRARY
         ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
         PATH_SUFFIXES
         lib
-        )
+)
 
 # Find TLS Library
 find_library(LIBRESSL_TLS_LIBRARY
@@ -135,7 +131,7 @@ find_library(LIBRESSL_TLS_LIBRARY
         ${_LIBRESSL_ROOT_HINTS_AND_PATHS}
         PATH_SUFFIXES
         lib
-        )
+)
 
 # Set Libraries
 set(LIBRESSL_LIBRARIES ${LIBRESSL_CRYPTO_LIBRARY} ${LIBRESSL_SSL_LIBRARY} ${LIBRESSL_TLS_LIBRARY})
@@ -145,7 +141,6 @@ mark_as_advanced(LIBRESSL_INCLUDE_DIR LIBRESSL_LIBRARIES LIBRESSL_CRYPTO_LIBRARY
 
 # Find Version File
 if (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
-
     # Get Version From File
     file(STRINGS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h" OPENSSLV.H REGEX "#define LIBRESSL_VERSION_TEXT[ ]+\".*\"")
 
@@ -159,7 +154,6 @@ if (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h"
 
     # Set Version String
     set(LIBRESSL_VERSION "${LIBRESSL_VERSION_MAJOR}.${LIBRESSL_VERSION_MINOR}.${LIBRESSL_VERSION_REVISION}")
-
 endif (LIBRESSL_INCLUDE_DIR AND EXISTS "${LIBRESSL_INCLUDE_DIR}/openssl/opensslv.h")
 
 # Set Find Package Arguments
@@ -172,11 +166,10 @@ find_package_handle_standard_args(LibreSSL
         HANDLE_COMPONENTS
         FAIL_MESSAGE
         "Could NOT find LibreSSL, try setting the path to LibreSSL using the LIBRESSL_ROOT_DIR environment variable"
-        )
+)
 
 # LibreSSL Found
 if (LIBRESSL_FOUND)
-
     # Set LibreSSL::Crypto
     if (NOT TARGET LibreSSL::Crypto AND EXISTS "${LIBRESSL_CRYPTO_LIBRARY}")
 
@@ -191,7 +184,6 @@ if (LIBRESSL_FOUND)
                 IMPORTED_LINK_INTERFACE_LANGUAGES "C"
                 IMPORTED_LOCATION "${LIBRESSL_CRYPTO_LIBRARY}"
         )
-
     endif (NOT TARGET LibreSSL::Crypto AND EXISTS "${LIBRESSL_CRYPTO_LIBRARY}") # LibreSSL::Crypto
 
     # Set LibreSSL::SSL
@@ -209,7 +201,6 @@ if (LIBRESSL_FOUND)
                 IMPORTED_LOCATION "${LIBRESSL_SSL_LIBRARY}"
                 INTERFACE_LINK_LIBRARIES LibreSSL::Crypto
         )
-
     endif (NOT TARGET LibreSSL::SSL AND EXISTS "${LIBRESSL_SSL_LIBRARY}") # LibreSSL::SSL
 
     # Set LibreSSL::TLS
@@ -223,7 +214,5 @@ if (LIBRESSL_FOUND)
                 IMPORTED_LOCATION "${LIBRESSL_TLS_LIBRARY}"
                 INTERFACE_LINK_LIBRARIES LibreSSL::SSL
         )
-
     endif (NOT TARGET LibreSSL::TLS AND EXISTS "${LIBRESSL_TLS_LIBRARY}") # LibreSSL::TLS
-
 endif (LIBRESSL_FOUND)

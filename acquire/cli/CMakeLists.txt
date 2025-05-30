@@ -18,7 +18,7 @@ target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_compiler_flags"
 #foreach (lib ${LIBACQUIRE_LIBRARIES})
 #    message(STATUS "${LIBRARY_NAME} being linked with ${lib}")
 #    target_link_libraries("${LIBRARY_NAME}" PUBLIC "${lib}")
-#endforeach ()
+#endforeach (lib ${LIBACQUIRE_LIBRARIES})
 
 include(GNUInstallDirs)
 
@@ -54,9 +54,26 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
         "${LIBRARY_NAME}"
-        "${PROJECT_NAME}"
         "${PROJECT_NAME}_impl"
+        "${PROJECT_NAME}"
 )
+
+if (USE_LIBCURL)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBCURL=1)
+elseif (USE_LIBFETCH)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBFETCH=1)
+elseif (USE_WININET)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_WININET=1)
+elseif (USE_OPENBSD_FTP)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_OPENBSD_FTP=1)
+endif ()
+
+if (USE_MINIZ)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_MINIZ=1)
+elseif (USE_LIBARCHIVE)
+    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBARCHIVE=1)
+endif ()
+
 target_include_directories(
         "${EXEC_NAME}"
         PRIVATE
