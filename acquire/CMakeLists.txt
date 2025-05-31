@@ -107,6 +107,7 @@ else ()
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
 
         generate_header_and_source_from_header_only(
+                "LIBACQUIRE_IMPLEMENTATION"
                 "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}"
                 "${gen_header_file}"
                 "${gen_source_file}"
