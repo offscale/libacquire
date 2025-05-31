@@ -87,6 +87,7 @@ extern LIBACQUIRE_EXPORT bool (*get_checksum_function(enum Checksum checksum))(
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL
 
+/* foo foo foo */
 enum Checksum string2checksum(const char *const s) {
   if (strncasecmp(s, "CRC32C", 6) == 0)
     return LIBACQUIRE_CRC32C;

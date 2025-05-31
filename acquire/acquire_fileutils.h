@@ -61,7 +61,6 @@ extern LIBACQUIRE_EXPORT bool exists(const char *path);
  * @return `-1` if file doesn't exist otherwise its size
  */
 extern LIBACQUIRE_EXPORT off_t filesize(const char *path);
-
 /**
  * @brief Get the size of a given path
  *

@@ -99,8 +99,6 @@ macro(test_wrapper)
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
 endmacro()
 
-
-message(STATUS "MINIZ_ZIP_FILE = ${MINIZ_ZIP_FILE}")
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
 foreach (EXEC_NAME ${_targets})
@@ -123,7 +121,6 @@ foreach (EXEC_NAME ${_targets})
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
-            "${PROJECT_NAME}_impl"
             "${PROJECT_NAME}"
             "${PROJECT_NAME}_compiler_flags"
             "${CHECKSUM_LIBRARIES}"
@@ -137,6 +134,19 @@ foreach (EXEC_NAME ${_targets})
     )
     test_wrapper()
 endforeach (EXEC_NAME ${_targets})
+
+if (USE_MINIZ)
+    set(Header_Files_Zip
+            "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/miniz.h"
+            "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.h")
+    source_group("Header Files zip_miniz" FILES "${Header_Files_Zip}")
+
+    set(Source_Files_Zip
+            "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.c")
+    source_group("Source Files zip_miniz" FILES "${Source_Files_Zip}")
+
+    add_library("${PROJECT_NAME}_zip_miniz" "${Header_Files_Zip}" "${Source_Files_Zip}")
+endif (USE_MINIZ)
 
 # Extraction archive tests
 foreach (ARCHIVE_LIB ${_archives})
@@ -161,24 +171,11 @@ foreach (ARCHIVE_LIB ${_archives})
     endif ()
 
     if (USE_MINIZ)
-        set(Header_Files_Zip
-                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/miniz.h"
-                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.h")
-        source_group("Header Files zip_miniz" FILES "${Header_Files_Zip}")
-
-        set(Source_Files_Zip
-                "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.c")
-        source_group("Source Files zip_miniz" FILES "${Source_Files_Zip}")
-
         set_source_files_properties("test_extract.c"
                 PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
-
-        add_library("${EXEC_NAME}_zip_miniz" "${Header_Files_Zip}" "${Source_Files_Zip}")
-
-        target_include_directories("${EXEC_NAME}_zip_miniz" PUBLIC
+        target_include_directories("${PROJECT_NAME}_zip_miniz" PUBLIC
                 "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}")
-
-        target_link_libraries("${EXEC_NAME}" PRIVATE "${EXEC_NAME}_zip_miniz")
+        target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}_zip_miniz")
     elseif (USE_LIBARCHIVE)
         set_source_files_properties("test_extract.c"
                 PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBARCHIVE=1")
@@ -199,7 +196,6 @@ foreach (ARCHIVE_LIB ${_archives})
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
-            "${PROJECT_NAME}_impl"
             "${PROJECT_NAME}"
             "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
             "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"

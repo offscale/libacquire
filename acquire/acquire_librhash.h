@@ -14,7 +14,7 @@ extern "C" {
 #include <stdbool.h>
 #else
 #include "acquire_stdbool.h"
-#endif
+#endif /* __cplusplus */
 
 #include <rhash.h>
 

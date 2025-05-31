@@ -35,7 +35,7 @@ extern "C" {
 #define false (!true)
 typedef size_t bool;
 
-#endif
+#endif /* __cplusplus */
 
 #include <stddef.h>
 #include <string.h>

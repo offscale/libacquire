@@ -41,7 +41,7 @@ set_extract_lib()
 include("${CMAKE_SOURCE_DIR}/cmake/FindLibAcquire.cmake")
 
 foreach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
-    message(STATUS "[libacquire] ${_library}_LIB:\t${${_library}_LIB}")
+    message(STATUS "[libacquire] ${_library}_LIB:\t\t${${_library}_LIB}")
 endforeach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
 
 set_checksum_lib()
@@ -68,241 +68,8 @@ source_group("Header Files" FILES "${Header_Files}")
 
 option(DEBUG_TOKENISER "OFF")
 
-function(generate_source_file_from_header_only filepath header_filepath source_filepath)
-    if (NOT EXISTS "${filepath}")
-        message(FATAL_ERROR "Input file does not exist: ${filepath}")
-        return()
-    endif (NOT EXISTS "${filepath}")
-
-    get_filename_component(header_basename "${header_filepath}" NAME)
-    set(header_contents "")
-    set(source_contents "")
-
-    # Parsing State
-    set(parsing_mode "HEADER") # HEADER or SOURCE (based on LIBACQUIRE_IMPLEMENTATION block)
-    set(current_line "")      # Accumulates characters for the current logical line/directive
-    set(state "CODE")          # Current lexical state: CODE, BLOCK_COMMENT, LINE_COMMENT, STRING, CHAR_LITERAL
-    set(escape_next_char OFF)  # Flag for handling backslash escapes
-
-    # Parenthesis/Brace/Bracket Balancing (within CODE state)
-    set(lparen 0)
-    set(rparen 0)
-    set(lbrace 0) # Not used for line ending detection, but might be useful
-    set(rbrace 0) # Not used for line ending detection
-    set(lsquare 0)
-    set(rsquare 0)
-
-    # Preprocessor Condition Stack
-    # Each element is "TYPE;CONDITION_STRING" e.g., "IF;FEATURE_A" or "IFDEF;FOO"
-    set(pp_conditions_stack "")
-    # Tracks if we are inside the target implementation block
-    set(in_implementation_block OFF)
-    set(implementation_block_depth 0) # Depth specifically for LIBACQUIRE_IMPLEMENTATION blocks
-
-    # --- Character-by-Character Processing ---
-    file(READ "${filepath}" file_content)
-    string(LENGTH "${file_content}" file_len)
-    math(EXPR last_index "${file_len} - 1")
-
-    set(prev_char "") # Store previous character for multi-char checks like /*, //
-
-    foreach (char_index RANGE ${last_index})
-        string(SUBSTRING "${file_content}" ${char_index} 1 char)
-        string(APPEND current_line "${char}")
-
-        # --- State Machine ---
-        if (state STREQUAL "CODE")
-            if (escape_next_char)
-                set(escape_next_char OFF)
-            elseif (char STREQUAL "\\")
-                set(escape_next_char ON)
-            elseif (char STREQUAL "/" AND prev_char STREQUAL "/")
-                set(state "LINE_COMMENT")
-            elseif (char STREQUAL "*" AND prev_char STREQUAL "/")
-                set(state "BLOCK_COMMENT")
-            elseif (char STREQUAL "\"")
-                set(state "STRING")
-                set(escape_next_char OFF)
-            elseif (char STREQUAL "'")
-                set(state "CHAR_LITERAL")
-                set(escape_next_char OFF)
-            else ()
-                # Balance parens/brackets only in code state
-                if (char STREQUAL "(")
-                    math(EXPR lparen "${lparen} + 1")
-                elseif (char STREQUAL ")")
-                    math(EXPR rparen "${rparen} + 1")
-                elseif (char STREQUAL "[")
-                    math(EXPR lsquare "${lsquare} + 1")
-                elseif (char STREQUAL "]")
-                    math(EXPR rsquare "${rsquare} + 1")
-                elseif (char STREQUAL "{")
-                    math(EXPR lbrace "${lbrace} + 1")
-                elseif (char STREQUAL "}")
-                    math(EXPR rbrace "${rbrace} + 1")
-                endif ()
-            endif ()
-        elseif (state STREQUAL "BLOCK_COMMENT")
-            if (char STREQUAL "/" AND prev_char STREQUAL "*")
-                set(state "CODE")
-            endif (char STREQUAL "/" AND prev_char STREQUAL "*")
-        elseif (state STREQUAL "LINE_COMMENT")
-            if (char STREQUAL "\n")
-                set(state "CODE")
-            endif (char STREQUAL "\n")
-        elseif (state STREQUAL "STRING")
-            if (escape_next_char)
-                set(escape_next_char OFF)
-            elseif (char STREQUAL "\\")
-                set(escape_next_char ON)
-            elseif (char STREQUAL "\"")
-                set(state "CODE")
-            endif ()
-        elseif (state STREQUAL "CHAR_LITERAL")
-            if (escape_next_char)
-                set(escape_next_char OFF)
-            elseif (char STREQUAL "\\")
-                set(escape_next_char ON)
-            elseif (char STREQUAL "'")
-                set(state "CODE")
-            endif ()
-        endif ()
-
-        set(prev_char "${char}")
-
-        # --- Line Boundary Detection (Highly Fragile) ---
-        set(process_line OFF)
-        if (char STREQUAL "\n" AND state STREQUAL "CODE")
-            if (lparen EQUAL rparen AND lsquare EQUAL rsquare)
-                string(STRIP "${current_line}" trimmed_line)
-                string(LENGTH "${trimmed_line}" trimmed_len)
-                if (trimmed_len GREATER 0)
-                    math(EXPR last_trimmed_idx "${trimmed_len} - 1")
-                    string(SUBSTRING "${trimmed_line}" ${last_trimmed_idx} 1 last_trimmed_char)
-                    string(REGEX MATCH "^[ \t]*#" is_preprocessor "${trimmed_line}")
-
-                    if (last_trimmed_char STREQUAL ";")
-                        set(process_line ON)
-                    elseif (last_trimmed_char STREQUAL "{")
-                        set(process_line ON)
-                    elseif (last_trimmed_char STREQUAL "}")
-                        set(process_line ON)
-                    elseif (is_preprocessor)
-                        set(process_line ON)
-                    elseif (last_trimmed_char STREQUAL ":")
-                        if (NOT trimmed_line MATCHES "[;={}(]")
-                            set(process_line ON)
-                        endif ()
-                    endif ()
-                else ()
-                    set(process_line ON)
-                endif ()
-            endif ()
-        endif ()
-
-        if (process_line)
-            string(STRIP "${current_line}" line_for_match)
-            set(append_to_header OFF)
-            set(append_to_source OFF)
-
-            if (in_implementation_block)
-                set(append_to_source ON)
-            else ()
-                set(append_to_header ON)
-            endif ()
-
-            if (line_for_match MATCHES "^[ \t]*#")
-                if (line_for_match MATCHES "^[ \t]*#[ \t]*if(n?def)?")
-                    string(REGEX REPLACE "^[ \t]*#[ \t]*if(n?def)?[ \t]+" "" condition_str "${line_for_match}")
-                    set(directive_type "IF")
-                    if (line_for_match MATCHES "^[ \t]*#[ \t]*ifdef")
-                        set(directive_type "IFDEF")
-                    endif (line_for_match MATCHES "^[ \t]*#[ \t]*ifdef")
-                    if (line_for_match MATCHES "^[ \t]*#[ \t]*ifndef")
-                        set(directive_type "IFNDEF")
-                    endif (line_for_match MATCHES "^[ \t]*#[ \t]*ifndef")
-
-                    list(APPEND pp_conditions_stack "${directive_type};${condition_str}")
-
-                    if (condition_str MATCHES "LIBACQUIRE_IMPLEMENTATION")
-                        if (implementation_block_depth EQUAL 0)
-                            set(in_implementation_block ON)
-                            set(append_to_header OFF)
-                            set(append_to_source ON)
-                        endif (implementation_block_depth EQUAL 0)
-                        math(EXPR implementation_block_depth "${implementation_block_depth} + 1")
-                    endif (condition_str MATCHES "LIBACQUIRE_IMPLEMENTATION")
-
-                elseif (line_for_match MATCHES "^[ \t]*#[ \t]*else")
-                    # pass through
-                elseif (line_for_match MATCHES "^[ \t]*#[ \t]*elif")
-                    # pass through
-                elseif (line_for_match MATCHES "^[ \t]*#[ \t]*endif")
-                    if (pp_conditions_stack)
-                        set(is_impl_endif OFF)
-                        if (line_for_match MATCHES "LIBACQUIRE_IMPLEMENTATION")
-                            if (implementation_block_depth GREATER 0)
-                                set(is_impl_endif ON)
-                            endif (implementation_block_depth GREATER 0)
-                        endif (line_for_match MATCHES "LIBACQUIRE_IMPLEMENTATION")
-                        if (is_impl_endif)
-                            math(EXPR implementation_block_depth "${implementation_block_depth} - 1")
-                            if (implementation_block_depth EQUAL 0)
-                                set(in_implementation_block OFF)
-                                set(append_to_header OFF)
-                                set(append_to_source ON)
-                            endif (implementation_block_depth EQUAL 0)
-                        endif (is_impl_endif)
-                        list(POP_BACK pp_conditions_stack)
-                    else ()
-                        message(WARNING "Unmatched #endif encountered: ${current_line}")
-                    endif ()
-                endif ()
-            endif (line_for_match MATCHES "^[ \t]*#")
-
-            if (append_to_source)
-                string(APPEND source_contents "${current_line}")
-            elseif (append_to_header)
-                string(APPEND header_contents "${current_line}")
-            endif ()
-
-            set(current_line "")
-            set(lparen 0)
-            set(rparen 0)
-            set(lbrace 0)
-            set(rbrace 0)
-            set(lsquare 0)
-            set(rsquare 0)
-        endif (process_line)
-    endforeach (char_index RANGE ${last_index})
-
-    if (NOT state STREQUAL "CODE")
-        message(WARNING "File ended while in state: ${state}")
-    endif (NOT state STREQUAL "CODE")
-    if (NOT lparen EQUAL rparen OR NOT lsquare EQUAL rsquare)
-        message(WARNING "File ended with unbalanced parentheses/brackets")
-    endif (NOT lparen EQUAL rparen OR NOT lsquare EQUAL rsquare)
-    if (pp_conditions_stack)
-        message(WARNING "File ended with unbalanced preprocessor directives. Stack: ${pp_conditions_stack}")
-    endif (pp_conditions_stack)
-    if (NOT implementation_block_depth EQUAL 0)
-        message(WARNING "File ended with unbalanced LIBACQUIRE_IMPLEMENTATION blocks. Depth: ${implementation_block_depth}")
-    endif (NOT implementation_block_depth EQUAL 0)
-
-    file(WRITE "${header_filepath}" "${header_contents}")
-    string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" header_filepath_rel "${header_filepath}")
-    message(STATUS "Generated header (via character-by-character): ${header_filepath_rel}")
-
-    string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" source_filepath_rel "${source_filepath}")
-    if (source_contents OR in_implementation_block)
-        set(final_source_content "#include \"${header_basename}\"\n\n${source_contents}")
-        file(WRITE "${source_filepath}" "${final_source_content}")
-        message(STATUS "Generated source (via character-by-character): ${source_filepath_rel}")
-    else ()
-        message(STATUS "Failed to source gen (character-by-character): ${source_filepath_rel}")
-    endif ()
-
-endfunction(generate_source_file_from_header_only filepath header_filepath source_filepath)
+include("${CMAKE_SOURCE_DIR}/cmake/generate_header_and_source_from_header_only.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/SplitHeaderOnly.cmake")
 
 if (LIBACQUIRE_HEADER_ONLY)
     add_library("${LIBRARY_NAME}" INTERFACE "${_Header_Files}" "${Header_Files}")
@@ -324,16 +91,33 @@ else ()
             "acquire_url_utils.h"
     )
 
+    if (USE_LIBCURL)
+        list(APPEND header_impls "acquire_libcurl.h")
+    elseif (USE_LIBFETCH)
+        list(APPEND header_impls "acquire_libfetch.h")
+    elseif (USE_WININET)
+        list(APPEND header_impls "acquire_wininet.h")
+    elseif (USE_OPENBSD_FTP)
+        list(APPEND header_impls "acquire_openbsd_ftp.h")
+    endif ()
+
+
     foreach (header_file IN LISTS header_impls)
         get_filename_component(name_no_ext "${header_file}" NAME_WE)
         set(gen_header_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.h")
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
 
-        generate_source_file_from_header_only(
+        generate_header_and_source_from_header_only(
                 "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}"
                 "${gen_header_file}"
                 "${gen_source_file}"
         )
+        #        split_header_only(
+        #                "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}"
+        #                "${gen_header_file}"
+        #                "${gen_source_file}"
+        #                "LIBACQUIRE_IMPLEMENTATION"
+        #        )
 
         if (EXISTS "${gen_header_file}")
             list(APPEND gen_header_files "${gen_header_file}")
@@ -403,14 +187,20 @@ else ()
         endif ()
     endforeach (src IN LISTS gen_source_files)
 
-    if (USE_LIBRHASH)
+    if (DEFINED CHECKSUM_LIBRARIES)
+        message(STATUS "[libacquire] Using var ${CHECKSUM_LIBRARIES} for checksums")
+        target_link_libraries("${LIBRARY_NAME}_impl" PUBLIC "${CHECKSUM_LIBRARIES}")
+        target_compile_definitions("${LIBRARY_NAME}_impl" PRIVATE "${CHECKSUM_LIBRARIES_USE}=1")
+    elseif (USE_LIBRHASH)
         message(STATUS "[libacquire] Using LibRHash for checksums")
 
         find_package(LibRHash REQUIRED)
         target_compile_definitions("${LIBRARY_NAME}_impl" PRIVATE USE_LIBRHASH=1)
 
         get_target_property(linked_libs "${LIBRARY_NAME}_impl" LINK_LIBRARIES)
-        list(FIND linked_libs "${_lib}" lib_index)
+        message(STATUS "linked_libs = ${linked_libs}")
+        message(STATUS "CHECKSUM_LIBRARIES at here is ${CHECKSUM_LIBRARIES}")
+        list(FIND linked_libs "${LibRHash_LIBRARIES}" lib_index)
         if (lib_index EQUAL -1)
             target_include_directories("${LIBRARY_NAME}_impl" PUBLIC "${LibRHash_INCLUDE_DIRS}")
             list(REMOVE_DUPLICATES LibRHash_LIBRARIES)
@@ -422,7 +212,7 @@ else ()
         message(STATUS "[libacquire] Using internal CRC32C implementation")
         target_compile_definitions("${LIBRARY_NAME}_impl" PRIVATE USE_CRC32C=1)
     else ()
-        message(FATAL_ERROR "No checksum implementation selected: define USE_LIBRHASH or USE_CRC32C")
+        message(FATAL_ERROR "No checksum implementation selected: define `USE_LIBRHASH` or `USE_CRC32C`")
     endif ()
 
     if (NOT BSD)
