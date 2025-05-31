@@ -69,7 +69,6 @@ source_group("Header Files" FILES "${Header_Files}")
 option(DEBUG_TOKENISER "OFF")
 
 include("${CMAKE_SOURCE_DIR}/cmake/generate_header_and_source_from_header_only.cmake")
-include("${CMAKE_SOURCE_DIR}/cmake/SplitHeaderOnly.cmake")
 
 if (LIBACQUIRE_HEADER_ONLY)
     add_library("${LIBRARY_NAME}" INTERFACE "${_Header_Files}" "${Header_Files}")
@@ -112,19 +111,13 @@ else ()
                 "${gen_header_file}"
                 "${gen_source_file}"
         )
-        #        split_header_only(
-        #                "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}"
-        #                "${gen_header_file}"
-        #                "${gen_source_file}"
-        #                "LIBACQUIRE_IMPLEMENTATION"
-        #        )
 
         if (EXISTS "${gen_header_file}")
             list(APPEND gen_header_files "${gen_header_file}")
             string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_header_file_rel "${gen_header_file}")
             message(STATUS "Generated header:                              ${gen_header_file_rel}")
         else ()
-            message(WARNING "Missing generated header: ${gen_header_file}")
+            message(WARNING "Missing generated header:                      ${gen_header_file}")
         endif ()
 
         if (EXISTS "${gen_source_file}")
@@ -132,7 +125,7 @@ else ()
             string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_source_file_rel "${gen_source_file}")
             message(STATUS "Generated source:                              ${gen_source_file_rel}")
         else ()
-            message(WARNING "Missing generated source: ${gen_source_file}")
+            message(WARNING "Missing generated source: ${gen_source_file_rel}")
         endif ()
     endforeach (header_file IN LISTS header_impls)
 
