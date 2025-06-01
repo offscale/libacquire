@@ -2,11 +2,10 @@
  * librhash implementation of libacquire's checksum API
  * */
 
-#if !defined(LIBACQUIRE_ACQUIRE_LIBRHASH_H) &&                                 \
-    defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH)
+#ifndef LIBACQUIRE_ACQUIRE_LIBRHASH_H
 #define LIBACQUIRE_ACQUIRE_LIBRHASH_H
 
-#include <errno.h>
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH)
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,6 +14,8 @@ extern "C" {
 #else
 #include "acquire_stdbool.h"
 #endif /* __cplusplus */
+
+#include <errno.h>
 
 #include <rhash.h>
 
@@ -112,5 +113,6 @@ HASHES
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_LIBRHASH_H) &&                           \
-          defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) */
+
+#endif /* !LIBACQUIRE_ACQUIRE_LIBRHASH_H */

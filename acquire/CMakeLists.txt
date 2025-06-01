@@ -91,14 +91,15 @@ else ()
     )
 
     if (USE_LIBCURL)
-        list(APPEND header_impls "acquire_libcurl.h")
+        set(NETWORK_LIB "acquire_libcurl.h")
     elseif (USE_LIBFETCH)
-        list(APPEND header_impls "acquire_libfetch.h")
+        set(NETWORK_LIB "acquire_libfetch.h")
     elseif (USE_WININET)
-        list(APPEND header_impls "acquire_wininet.h")
+        set(NETWORK_LIB "acquire_wininet.h")
     elseif (USE_OPENBSD_FTP)
-        list(APPEND header_impls "acquire_openbsd_ftp.h")
+        set(NETWORK_LIB "acquire_openbsd_ftp.h")
     endif ()
+    list(APPEND header_impls "${NETWORK_LIB}")
 
 
     foreach (header_file IN LISTS header_impls)
@@ -106,8 +107,14 @@ else ()
         set(gen_header_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.h")
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
 
+        set(associated_header "")
+        if(header_file STREQUAL NETWORK_LIB)
+            set(associated_header "gen_acquire_download.h")
+        endif (header_file STREQUAL NETWORK_LIB)
+
         generate_header_and_source_from_header_only(
                 "LIBACQUIRE_IMPLEMENTATION"
+                "${associated_header}"
                 "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}"
                 "${gen_header_file}"
                 "${gen_source_file}"
@@ -116,22 +123,19 @@ else ()
         if (EXISTS "${gen_header_file}")
             list(APPEND gen_header_files "${gen_header_file}")
             string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_header_file_rel "${gen_header_file}")
-            message(STATUS "Generated header:                              ${gen_header_file_rel}")
+            message(STATUS "Generated header: ${gen_header_file_rel}")
         else ()
-            message(WARNING "Missing generated header:                      ${gen_header_file}")
+            message(WARNING "Missing generated header: ${gen_header_file}")
         endif ()
 
         if (EXISTS "${gen_source_file}")
             list(APPEND gen_source_files "${gen_source_file}")
             string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_source_file_rel "${gen_source_file}")
-            message(STATUS "Generated source:                              ${gen_source_file_rel}")
+            message(STATUS "Generated source: ${gen_source_file_rel}")
         else ()
             message(WARNING "Missing generated source: ${gen_source_file_rel}")
         endif ()
     endforeach (header_file IN LISTS header_impls)
-
-    # Implement the internal implementation library as STATIC
-    add_library("${LIBRARY_NAME}_impl" STATIC ${gen_header_files} ${gen_source_files})
 
     # Set compile definitions per source file to avoid multiple definitions
     foreach (src IN LISTS gen_source_files)
@@ -180,6 +184,9 @@ else ()
             set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "")
         endif ()
     endforeach (src IN LISTS gen_source_files)
+
+    # Implement the internal implementation library as STATIC
+    add_library("${LIBRARY_NAME}_impl" STATIC ${gen_header_files} ${gen_source_files})
 
     if (DEFINED CHECKSUM_LIBRARIES)
         message(STATUS "[libacquire] Using var ${CHECKSUM_LIBRARIES} for checksums")

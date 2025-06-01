@@ -103,11 +103,11 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 
 foreach (EXEC_NAME ${_targets})
     set(Header_Files
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_checksum.h"
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_download.h"
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_fileutils.h"
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_string_extras.h"
-            "${CMAKE_SOURCE_DIR}/acquire/tests/test_url_utils.h"
+            "test_checksum.h"
+            "test_download.h"
+            "test_fileutils.h"
+            "test_string_extras.h"
+            "test_url_utils.h"
     )
     source_group("Header Files" FILES "${Header_Files}")
 
@@ -123,7 +123,7 @@ foreach (EXEC_NAME ${_targets})
             PRIVATE
             "${PROJECT_NAME}"
             "${PROJECT_NAME}_compiler_flags"
-            "${CHECKSUM_LIBRARIES}"
+            #"${CHECKSUM_LIBRARIES}"
     )
 
     target_include_directories(

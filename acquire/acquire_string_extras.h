@@ -98,6 +98,7 @@ typedef int errno_t;
 #if defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||             \
     defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define HAVE_ASPRINTF
+#define HAVE_SNPRINTF
 #endif /* defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||       \
           defined(_GNU_SOURCE) || defined(_BSD_SOURCE) */
 
@@ -105,8 +106,40 @@ typedef int errno_t;
 #include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
-#if !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) &&         \
-    !defined(SNPRINTF_IMPL)
+#ifndef HAVE_STRNCASECMP
+
+extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *, size_t);
+
+extern LIBACQUIRE_EXPORT int strcasecmp(const char *, const char *);
+
+#endif /* !HAVE_STRNCASECMP */
+
+#ifndef HAVE_STRNSTR
+
+extern LIBACQUIRE_EXPORT char *strnstr(const char *, const char *, size_t);
+
+#endif /* ! HAVE_STRNSTR */
+
+#ifndef HAVE_STRCASESTR_H
+
+extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
+
+#endif /* ! HAVE_STRCASESTR_H */
+
+#ifndef HAVE_STRERRORLEN_S
+
+extern size_t LIBACQUIRE_EXPORT strerrorlen_s(errno_t);
+
+#endif /* !HAVE_STRERRORLEN_S */
+
+#ifndef HAVE_SNPRINTF
+extern LIBACQUIRE_IMPLEMENTATION int snprintf(char *buffer, size_t count,
+                                              const char *format, ...);
+#endif /* !HAVE_SNPRINTF */
+
+#ifdef LIBACQUIRE_IMPLEMENTATION
+
+#if !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL)
 #define SNPRINTF_IMPL
 
 /*
@@ -120,7 +153,7 @@ typedef int errno_t;
  * SPDX-License-Identifier:  BSD-2-Clause
  */
 
-inline int snprintf(char *buffer, size_t count, const char *format, ...) {
+int snprintf(char *buffer, size_t count, const char *format, ...) {
   int result;
   va_list args;
   va_start(args, format);
@@ -149,16 +182,9 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #define vsnprintf(buffer, count, format, args)                                 \
   wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* !defined(HAVE_SNPRINTF_H) && defined(LIBACQUIRE_IMPLEMENTATION) &&   \
-          !defined(SNPRINTF_IMPL) */
+#endif /* !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) */
 
-#ifndef HAVE_STRNCASECMP
-
-extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *, size_t);
-
-extern LIBACQUIRE_EXPORT int strcasecmp(const char *, const char *);
-
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNCASECMP_IMPL)
+#if !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL)
 #define STRNCASECMP_IMPL
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
@@ -178,15 +204,9 @@ int strncasecmp(const char *_l, const char *_r, size_t n) {
 }
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNCASECMP_IMPL) */
+#endif /* !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL) */
 
-#endif /* !HAVE_STRNCASECMP */
-
-#ifndef HAVE_STRNSTR
-
-extern LIBACQUIRE_EXPORT char *strnstr(const char *, const char *, size_t);
-
-#if defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNSTR_IMPL)
+#if !defined(HAVE_STRNSTR) && !defined(STRNSTR_IMPL)
 #define STRNSTR_IMPL
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   /*
@@ -218,14 +238,9 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   }
   return 0;
 }
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && !defined(STRNSTR_IMPL) */
+#endif /* !defined(HAVE_STRNSTR) && !defined(STRNSTR_IMPL) */
 
-#endif /* ! HAVE_STRNSTR */
-
-#ifndef HAVE_STRCASESTR_H
-extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
-
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRCASESTR_IMPL)
+#ifdef STRCASESTR_IMPL
 /* `strcasestr` from MUSL */
 
 char *strcasestr(const char *h, const char *n) {
@@ -236,15 +251,9 @@ char *strcasestr(const char *h, const char *n) {
   return 0;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRCASESTR_IMPL) */
+#endif /* STRCASESTR_IMPL */
 
-#endif /* ! HAVE_STRCASESTR_H */
-
-#ifndef HAVE_STRERRORLEN_S
-
-extern size_t LIBACQUIRE_EXPORT strerrorlen_s(errno_t);
-
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRERRORLEN_IMPL)
+#if !defined(HAVE_STRERRORLEN_S) && defined(STRERRORLEN_IMPL)
 /* MIT licensed function from Safe C Library */
 
 size_t strerrorlen_s(errno_t errnum) {
@@ -289,9 +298,9 @@ size_t strerrorlen_s(errno_t errnum) {
   }
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(STRERRORLEN_IMPL) */
+#endif /* !defined(HAVE_STRERRORLEN_S) && defined(STRERRORLEN_IMPL) */
 
-#endif /* !HAVE_STRERRORLEN_S */
+#endif /* ! LIBACQUIRE_IMPLEMENTATION */
 
 #ifdef __cplusplus
 }

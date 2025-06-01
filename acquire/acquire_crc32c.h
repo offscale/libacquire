@@ -19,6 +19,12 @@ extern "C" {
 
 #include <stdio.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#else
+#include <unistd.h>
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+defined(__NT__) */
+
 /**
  * @brief Verify the CRC32C checksum of a given file against an expected hash
  * string.
@@ -43,17 +49,9 @@ extern bool crc32c(const char *filename, const char *hash);
  *
  * Alternatives are to use `zlib`'s CRC32C impl conditionally or RHash or miniz
  * */
-
+#ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
-
-#include <stdio.h>
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-
-#else
-#include <unistd.h>
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
-          defined(__NT__) */
+#endif /* !CHUNK_SIZE */
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -108,6 +106,10 @@ static const unsigned int crctable[256] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
 };
 
+#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    !defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL)
+#define LIBACQUIRE_ACQUIRE_CRC32C_IMPL
+
 unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len) {
   unsigned int crc = iv ^ ~0;
   for (; len; len--)
@@ -120,18 +122,10 @@ unsigned int crc32_file(FILE *file) {
   unsigned crc = 0;
   size_t len;
   while ((len = fread(&buf[0], sizeof(char), CHUNK_SIZE, file)) > 0) {
-    crc = crc32_algo(crc, buf, len);
+    crc = crc32_algo(crc, buf, (long long)len);
   }
   return crc;
 }
-
-#ifdef LIBACQUIRE_IMPLEMENTATION
-#ifndef LIBACQUIRE_ACQUIRE_CRC32C_IMPL
-#define LIBACQUIRE_ACQUIRE_CRC32C_IMPL 1
-#ifndef USE_CRC32C
-#define USE_CRC32C 1
-#endif /* !USE_CRC32C */
-#ifdef USE_CRC32C
 
 /**
  * @brief Implementation of CRC32C checksum verification.
@@ -176,9 +170,8 @@ bool crc32c(const char *filename, const char *hash) {
   return true;
 }
 
-#endif /* USE_CRC32C */
-#endif /* !LIBACQUIRE_ACQUIRE_CRC32C_IMPL */
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          !defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL) */
 
 #ifdef __cplusplus
 }
