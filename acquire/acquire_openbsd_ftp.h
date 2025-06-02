@@ -13,10 +13,9 @@ extern "C" {
 
 #include "openbsd.ftp/extern.h"
 
-#ifndef DOWNLOAD_DIR_IMPL
-#define DOWNLOAD_DIR_IMPL
+#ifdef DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
-#endif /* !DOWNLOAD_DIR_IMPL */
+#endif /* DOWNLOAD_DIR_IMPL */
 
 #ifdef DOWNLOAD_IMPL
 int download(const char *url, enum Checksum checksum, const char *hash,

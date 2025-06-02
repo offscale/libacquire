@@ -8,7 +8,7 @@
  * YMMV. Any issues, post to source GitHub.
  * */
 
-#if !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION)
+#ifndef LIBACQUIRE_OPENSSL_H
 #define LIBACQUIRE_OPENSSL_H
 
 #ifdef __cplusplus
@@ -54,6 +54,8 @@ extern "C" {
 
 #include <errno.h>
 #include <stdio.h>
+
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL)
 
 int sha256_file(const char *filename,
                 unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1]) {
@@ -246,11 +248,13 @@ bool sha512(const char *filename, const char *hash) {
 }
 #endif /* !LIBACQUIRE_IMPL_SHA512 */
 
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_CRYPTO_IMPL) */
+
 #endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_OPENSSL_H) && defined(LIBACQUIRE_IMPLEMENTATION) \
-        */
+#endif /* !LIBACQUIRE_OPENSSL_H */

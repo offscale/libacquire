@@ -6,7 +6,7 @@ function(generate_header_and_source_from_header_only guard_name associated_heade
     # - doesn't evaluate macros, so `!defined(LIBACQUIRE_IMPLEMENTATION)` will still move that block to .c file
 
     # implementation
-    # - superior to basic find, as it parses string literals, char literals, comments (both kinds)
+    # - superior to basic find/extract, as it parses: str & char literals; comments (both kinds); and line-continuation.
 
     if (NOT EXISTS "${input_file}")
         message(FATAL_ERROR "Input file not found: ${input_file}")

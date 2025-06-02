@@ -17,17 +17,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <errno.h>
+#include <memory.h>
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <acquire_common_defs.h>
 #include <acquire_fileutils.h>
-
-#include "acquire_common_defs.h"
-#include "acquire_string_extras.h"
+#include <acquire_string_extras.h>
 
 #include <curl/curl.h>
-
-#include <memory.h>
 
 const char *get_download_dir(void) { return ".downloads"; }
 

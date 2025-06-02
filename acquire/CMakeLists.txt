@@ -71,6 +71,7 @@ option(DEBUG_TOKENISER "OFF")
 include("${CMAKE_SOURCE_DIR}/cmake/generate_header_and_source_from_header_only.cmake")
 
 if (LIBACQUIRE_HEADER_ONLY)
+    message(STATUS "LIBACQUIRE_HEADER_ONLY")
     add_library("${LIBRARY_NAME}" INTERFACE "${_Header_Files}" "${Header_Files}")
     set(lib_vis "INTERFACE")
 else ()
@@ -80,11 +81,9 @@ else ()
     set(header_impls
             "acquire_checksums.h"
             "acquire_common_defs.h"
-            "acquire_crc32c.h"
             "acquire_download.h"
             "acquire_extract.h"
             "acquire_fileutils.h"
-            "acquire_librhash.h"
             "acquire_net_common.h"
             "acquire_string_extras.h"
             "acquire_url_utils.h"
@@ -101,6 +100,28 @@ else ()
     endif ()
     list(APPEND header_impls "${NETWORK_LIB}")
 
+    message(STATUS "CRYPTO_LIB was ${CRYPTO_LIB}")
+    set(CHECKSUM_SRC_CRC32c "")
+    # TODO: Decide more granularly which implementation to take for SHA256, &etc.
+    # E.g., on Windows you might want librhash if `USE_LIBRHASH` but on non-Windows OpenSSL.
+    if (CRYPTO_LIB STREQUAL "CommonCrypto" OR
+            CRYPTO_LIB STREQUAL "OpenSSL" OR
+            CRYPTO_LIB STREQUAL "LibreSSL"
+    )
+        set(CHECKSUM_SRC "acquire_openssl.h")
+        set(CHECKSUM_SRC_CRC32c "acquire_crc32c.h")
+        list(APPEND header_impls "${CHECKSUM_SRC_CRC32c}")
+    elseif (USE_LIBRHASH)
+        set(CHECKSUM_SRC "acquire_librhash.h")
+    elseif (CRYPTO_LIB STREQUAL "WinCrypt")
+        set(CHECKSUM_SRC "acquire_wincrypt.h")
+    elseif (USE_CRC32C)
+        set(CHECKSUM_SRC "acquire_crc32c.h")
+    else ()
+        # set(CRYPTO_LIB "acquire_crc32c.h")
+        message(FATAL_ERROR "TODO")
+    endif ()
+    list(APPEND header_impls "${CHECKSUM_SRC}")
 
     foreach (header_file IN LISTS header_impls)
         get_filename_component(name_no_ext "${header_file}" NAME_WE)
@@ -108,9 +129,13 @@ else ()
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
 
         set(associated_header "")
-        if(header_file STREQUAL NETWORK_LIB)
+        if (header_file STREQUAL NETWORK_LIB)
             set(associated_header "gen_acquire_download.h")
-        endif (header_file STREQUAL NETWORK_LIB)
+        elseif (header_file STREQUAL CHECKSUM_SRC)
+            # set(associated_header "gen_acquire_checksums.h")
+        else (header_file STREQUAL CHECKSUM_SRC_CRC32c)
+            #
+        endif ()
 
         generate_header_and_source_from_header_only(
                 "LIBACQUIRE_IMPLEMENTATION"
@@ -133,54 +158,87 @@ else ()
             string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_source_file_rel "${gen_source_file}")
             message(STATUS "Generated source: ${gen_source_file_rel}")
         else ()
+            string(REGEX REPLACE "^${CMAKE_BINARY_DIR}." "" gen_source_file_rel "${gen_source_file}")
             message(WARNING "Missing generated source: ${gen_source_file_rel}")
         endif ()
     endforeach (header_file IN LISTS header_impls)
 
     # Set compile definitions per source file to avoid multiple definitions
     foreach (src IN LISTS gen_source_files)
-        if (src MATCHES "/gen_acquire_librhash.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBRHASH=1")
+        if (src MATCHES "/gen_acquire_checksums.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL=1"
+            )
         elseif (src MATCHES "/gen_acquire_crc32c.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_CRC32C=1")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_CRC32C=1"
+            )
         elseif (src MATCHES "/gen_acquire_fileutils.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
-        elseif (src MATCHES "/gen_acquire_checksums.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
-        elseif (src MATCHES "/gen_acquire_download.c$")
-            if (USE_LIBCURL)
-                set_source_files_properties(${src}
-                        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_IMPL;USE_LIBCURL=1")
-            elseif (USE_LIBFETCH)
-                set_source_files_properties(${src}
-                        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_IMPL;USE_LIBFETCH=1")
-            elseif (USE_WININET)
-                set_source_files_properties(${src}
-                        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_IMPL;USE_WININET=1")
-            elseif (USE_OPENBSD_FTP)
-                set_source_files_properties(${src}
-                        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_IMPL;USE_OPENBSD_FTP=1")
-            else ()
-                set_source_files_properties(${src}
-                        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_IMPL;USE_LIBCURL=1")
-            endif ()
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS=1"
+            )
+        elseif (src MATCHES "/gen_acquire_libcurl.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_DIR_IMPL;DOWNLOAD_IMPL;USE_LIBCURL=1"
+            )
+        elseif (src MATCHES "/gen_acquire_libfetch.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_DIR_IMPL;DOWNLOAD_IMPL;USE_LIBFETCH=1"
+            )
+        elseif (src MATCHES "/gen_acquire_librhash.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBRHASH=1"
+            )
+        elseif (src MATCHES "/gen_acquire_libwininet.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_DIR_IMPL;DOWNLOAD_IMPL;USE_WININET=1"
+            )
+        elseif (src MATCHES "/gen_acquire_net_common.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION"
+            )
+        elseif (src MATCHES "/gen_acquire_openbsd_ftp.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;DOWNLOAD_DIR_IMPL;DOWNLOAD_IMPL;USE_OPENBSD_FTP=1"
+            )
+        elseif (src MATCHES "/gen_acquire_openssl.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;STRCASESTR_IMPL;STRERRORLEN_IMPL;LIBACQUIRE_CRYPTO_IMPL"
+            )
+        elseif (src MATCHES "/gen_acquire_string_extras.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;STRCASESTR_IMPL;STRERRORLEN_IMPL"
+            )
+        elseif (src MATCHES "/gen_acquire_url_utils.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS=1"
+            )
         elseif (src MATCHES "/gen_acquire_extract.c$")
             # For extract, could detect MINIZ or LIBARCHIVE
             if (USE_MINIZ)
-                set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
+                set_source_files_properties(${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
             elseif (USE_LIBARCHIVE)
-                set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBARCHIVE=1")
+                set_source_files_properties(${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBARCHIVE=1")
             else ()
-                set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
+                set_source_files_properties(${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
             endif ()
-        elseif (src MATCHES "/gen_acquire_net_common.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
-        elseif (src MATCHES "/gen_acquire_string_extras.c$")
-            set_source_files_properties(${src}
-                    PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;STRCASESTR_IMPL;STRERRORLEN_IMPL")
-        elseif (src MATCHES "/gen_acquire_url_utils.c$")
-            set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
         else ()
+            message(STATUS "Nothing special with ${src}")
             set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "")
         endif ()
     endforeach (src IN LISTS gen_source_files)

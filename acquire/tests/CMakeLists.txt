@@ -121,6 +121,7 @@ foreach (EXEC_NAME ${_targets})
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
+#            "${PROJECT_NAME}_impl"
             "${PROJECT_NAME}"
             "${PROJECT_NAME}_compiler_flags"
             #"${CHECKSUM_LIBRARIES}"

@@ -49,7 +49,8 @@ extern LIBACQUIRE_EXPORT const char *get_path_from_url(const char *url);
  */
 extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
+#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
 
 const char *get_path_from_url(const char *url) {
   static char buf[NAME_MAX + 1];
@@ -92,7 +93,8 @@ bool is_url(const char *maybe_url) {
   return false /* strchr(maybe_url, '/') != NULL */;
 }
 
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
 
 #ifdef __cplusplus
 }

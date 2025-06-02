@@ -5,7 +5,7 @@
  * */
 
 #if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&                \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+    defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL)
 #define LIBACQUIRE_WINCRYPT_H
 
 #include <stdio.h>
@@ -146,4 +146,5 @@ bool sha512(const char *filename, const char *hash) {
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&          \
-          defined(LIBACQUIRE_IMPLEMENTATION) */
+          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_CRYPTO_IMPL) */

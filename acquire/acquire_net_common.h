@@ -34,10 +34,9 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
     !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON)
 #define LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON 1
 
-#ifndef DOWNLOAD_DIR_IMPL
-#define DOWNLOAD_DIR_IMPL
+#ifdef DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
-#endif /* !DOWNLOAD_DIR_IMPL */
+#endif /* DOWNLOAD_DIR_IMPL */
 
 /**
  * Implementation of is_downloaded.

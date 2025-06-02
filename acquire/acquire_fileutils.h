@@ -61,6 +61,7 @@ extern LIBACQUIRE_EXPORT bool exists(const char *path);
  * @return `-1` if file doesn't exist otherwise its size
  */
 extern LIBACQUIRE_EXPORT off_t filesize(const char *path);
+
 /**
  * @brief Get the size of a given path
  *
@@ -78,9 +79,8 @@ extern LIBACQUIRE_EXPORT bool is_relative(const char *path);
  */
 extern LIBACQUIRE_EXPORT const char *get_extension(const char *path);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
-#define LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL
+#ifdef LIBACQUIRE_IMPLEMENTATION
+#ifdef LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS
 
 bool is_directory(const char *const path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -159,8 +159,8 @@ const char *get_extension(const char *const filename) {
   return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          !defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
+#endif /* LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS */
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #ifdef __cplusplus
 }
