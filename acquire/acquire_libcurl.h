@@ -20,7 +20,9 @@ extern "C" {
 #include <errno.h>
 #include <memory.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <acquire_common_defs.h>
 #include <acquire_fileutils.h>
@@ -67,7 +69,7 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
   /* If filename is present */
   val = strcasestr((const char *)cd, (const char *)key);
   if (!val) {
-    fprintf(stderr, "No key-value for \"%s\" in \"%s\"", key, cdtag);
+    fprintf(stderr, "No key-value for \"%s\" in \"%s\"\n", key, cdtag);
     return EXIT_FAILURE;
   }
 
@@ -94,8 +96,12 @@ static int get_oname_from_url(char const *url, char *oname) {
 
   u = strrchr(u, '/');
 
+  if (!u)
+    u = url; /* fallback if no '/' */
+
   /* Remove last '/' */
-  u++;
+  else
+    u++;
 
   /* Copy value as oname */
   while (*u != '\0') {
@@ -109,9 +115,9 @@ static int get_oname_from_url(char const *url, char *oname) {
 
 size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
   const size_t cb = size * nmemb;
-  const char *hdr_str = hdr;
+  const char *hdr_str = (const char *)hdr;
   struct dnld_params_t *dnld_params = (struct dnld_params_t *)userdata;
-  char const *const cdtag = "Content-disposition:";
+  const char *const cdtag = "Content-disposition:";
 
   /* Example:
    * ...
@@ -126,16 +132,18 @@ size_t dnld_header_parse(void *hdr, size_t size, size_t nmemb, void *userdata) {
     int ret = get_oname_from_cd(hdr_str + strlen(cdtag),
                                 dnld_params->dnld_remote_fname);
     if (ret)
-      fprintf(stderr, "ERR: bad remote name");
+      fprintf(stderr, "ERR: bad remote name\n");
   }
 
   return cb;
 }
 
-FILE *get_dnld_stream(char const *const fname) {
-  FILE *fp;
-#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-  fopen_s(&fp, fname, "wb");
+static FILE *get_dnld_stream(const char *const fname) {
+  FILE *fp = NULL;
+#if defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__)
+  /* Use fopen_s if available */
+  if (fopen_s(&fp, fname, "wb") != 0)
+    fp = NULL;
 #else
   fp = fopen(fname, "wb");
 #endif
@@ -147,9 +155,8 @@ FILE *get_dnld_stream(char const *const fname) {
   return fp;
 }
 
-size_t write_cb(const void *buffer, const size_t sz, size_t nmemb,
-                void *userdata) {
-  struct dnld_params_t *dnld_params = userdata;
+size_t write_cb(const void *buffer, size_t sz, size_t nmemb, void *userdata) {
+  struct dnld_params_t *dnld_params = (struct dnld_params_t *)userdata;
 
   if (!dnld_params->dnld_remote_fname[0]) {
     get_oname_from_url(dnld_params->dnld_url, dnld_params->dnld_remote_fname);
@@ -163,11 +170,11 @@ size_t write_cb(const void *buffer, const size_t sz, size_t nmemb,
   }
 
   {
-    const size_t bytes_written =
+    size_t elements_written =
         fwrite(buffer, sz, nmemb, dnld_params->dnld_stream);
-    if (bytes_written == sz * nmemb) {
-      dnld_params->dnld_file_sz += bytes_written;
-      return bytes_written;
+    if (elements_written == nmemb) {
+      dnld_params->dnld_file_sz += sz * elements_written;
+      return sz * elements_written;
     }
   }
 
@@ -176,8 +183,8 @@ size_t write_cb(const void *buffer, const size_t sz, size_t nmemb,
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) && defined(DOWNLOAD_IMPL)
 int download(const char *url, enum Checksum checksum, const char *hash,
-             const char target_location[NAME_MAX], bool follow, size_t retry,
-             size_t verbosity) {
+             const char *target_location /*[NAME_MAX]*/, bool follow,
+             size_t retry, size_t verbosity) {
   CURL *curl;
   CURLcode cerr = CURLE_OK;
   struct dnld_params_t dnld_params;
@@ -190,27 +197,37 @@ int download(const char *url, enum Checksum checksum, const char *hash,
       return EEXIST;
     } else {
       /* treat target_location as a filename */
-      strncpy(dnld_params.dnld_remote_fname, target_location,
-              sizeof(dnld_params.dnld_remote_fname) - 1);
-      dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
-          '\0';
-      strncpy(dnld_params.dnld_full_local_fname, target_location,
-              sizeof(dnld_params.dnld_full_local_fname) - 1);
-      dnld_params
-          .dnld_full_local_fname[sizeof(dnld_params.dnld_full_local_fname) -
-                                 1] = '\0';
+      {
+        size_t len = strlen(target_location);
+        if (len >= sizeof(dnld_params.dnld_remote_fname))
+          len = sizeof(dnld_params.dnld_remote_fname) - 1;
+        memcpy(dnld_params.dnld_remote_fname, target_location, len);
+        dnld_params.dnld_remote_fname[len] = '\0';
+      }
+      {
+        size_t len = strlen(target_location);
+        if (len >= sizeof(dnld_params.dnld_full_local_fname))
+          len = sizeof(dnld_params.dnld_full_local_fname) - 1;
+        memcpy(dnld_params.dnld_full_local_fname, target_location, len);
+        dnld_params.dnld_full_local_fname[len] = '\0';
+      }
     }
   } else if (is_relative(target_location)) {
     /* same as above */
-    strncpy(dnld_params.dnld_remote_fname, target_location,
-            sizeof(dnld_params.dnld_remote_fname) - 1);
-    dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
-        '\0';
-    strncpy(dnld_params.dnld_full_local_fname, target_location,
-            sizeof(dnld_params.dnld_full_local_fname) - 1);
-    dnld_params
-        .dnld_full_local_fname[sizeof(dnld_params.dnld_full_local_fname) - 1] =
-        '\0';
+    {
+      size_t len = strlen(target_location);
+      if (len >= sizeof(dnld_params.dnld_remote_fname))
+        len = sizeof(dnld_params.dnld_remote_fname) - 1;
+      memcpy(dnld_params.dnld_remote_fname, target_location, len);
+      dnld_params.dnld_remote_fname[len] = '\0';
+    }
+    {
+      size_t len = strlen(target_location);
+      if (len >= sizeof(dnld_params.dnld_full_local_fname))
+        len = sizeof(dnld_params.dnld_full_local_fname) - 1;
+      memcpy(dnld_params.dnld_full_local_fname, target_location, len);
+      dnld_params.dnld_full_local_fname[len] = '\0';
+    }
   } else if (!is_directory(target_location)) {
     fprintf(stderr,
             "Create \"%s\" and ensure it's accessible, then try again\n",
@@ -218,8 +235,13 @@ int download(const char *url, enum Checksum checksum, const char *hash,
     return CURLINFO_OS_ERRNO + 2;
   }
 
-  strncpy(dnld_params.dnld_url, url, sizeof(dnld_params.dnld_url) - 1);
-  dnld_params.dnld_url[sizeof(dnld_params.dnld_url) - 1] = '\0';
+  {
+    size_t len = strlen(url);
+    if (len >= sizeof(dnld_params.dnld_url))
+      len = sizeof(dnld_params.dnld_url) - 1;
+    memcpy(dnld_params.dnld_url, url, len);
+    dnld_params.dnld_url[len] = '\0';
+  }
 
   curl_global_init(CURL_GLOBAL_ALL);
 
@@ -265,11 +287,13 @@ int download(const char *url, enum Checksum checksum, const char *hash,
     path = get_path_from_url(url);
     if (strlen(path) >= sizeof(dnld_params.dnld_remote_fname))
       path = ""; /* fail silently, will error below */
-
-    strncpy(dnld_params.dnld_remote_fname, path,
-            sizeof(dnld_params.dnld_remote_fname) - 1);
-    dnld_params.dnld_remote_fname[sizeof(dnld_params.dnld_remote_fname) - 1] =
-        '\0';
+    {
+      size_t len = strlen(path);
+      if (len >= sizeof(dnld_params.dnld_remote_fname))
+        len = sizeof(dnld_params.dnld_remote_fname) - 1;
+      memcpy(dnld_params.dnld_remote_fname, path, len);
+      dnld_params.dnld_remote_fname[len] = '\0';
+    }
   }
 
   if (dnld_params.dnld_full_local_fname[0] == '\0') {

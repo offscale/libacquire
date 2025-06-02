@@ -25,7 +25,7 @@ extern "C" {
 
 #include "libacquire_export.h"
 
-enum LIBACQUIRE_EXPORT Archive {
+enum Archive {
   LIBACQUIRE_ZIP,
   LIBACQUIRE_INFER,
   LIBACQUIRE_UNSUPPORTED_ARCHIVE

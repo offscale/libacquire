@@ -66,7 +66,7 @@ BOOL sha256_file(LPCSTR filename,
     return dwStatus;
   }
 
-  // Get handle to the crypto provider
+  /* Get handle to the crypto provider */
   if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES,
                            CRYPT_VERIFYCONTEXT)) {
     fprintf(stderr, "CryptAcquireContext failed: %s\n", get_error_message(0));

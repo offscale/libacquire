@@ -206,8 +206,8 @@ int strncasecmp(const char *_l, const char *_r, size_t n) {
 
 #endif /* !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL) */
 
-#if !defined(HAVE_STRNSTR) && !defined(STRNSTR_IMPL)
-#define STRNSTR_IMPL
+#if !defined(HAVE_STRNSTR) && defined(STRNSTR_IMPL)
+
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   /*
      Find the first occurrence of find in s, where the search is limited to the

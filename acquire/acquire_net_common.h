@@ -68,7 +68,7 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
   case LIBACQUIRE_SHA256:
     return sha256(full_local_fname, hash);
   case LIBACQUIRE_SHA512:
-    // TODO: can add sha512 once implemented and enabled
+    /* TODO: can add sha512 once implemented and enabled */
     return false;
   case LIBACQUIRE_UNSUPPORTED_CHECKSUM:
   default:

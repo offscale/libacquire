@@ -114,6 +114,9 @@ foreach (EXEC_NAME ${_targets})
     set(Source_Files "test.c")
     source_group("Source Files" FILES "${Source_Files}")
 
+    set_source_files_properties("test_string_extras.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
+
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
     set_backend_definitions(${EXEC_NAME})

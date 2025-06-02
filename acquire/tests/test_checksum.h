@@ -21,24 +21,25 @@
 #include <acquire_wincrypt.h>
 #endif
 
-#ifndef NUM_FORMAT
 #ifdef _MSC_VER
+#ifndef NUM_FORMAT
 #define NUM_FORMAT "zu"
-#define BOOL_FORMAT NUM_FORMAT
 typedef size_t num_type;
-#include <fcntl.h>
-#include <io.h>
+#endif /* !NUM_FORMAT */
+#define BOOL_FORMAT NUM_FORMAT
 #elif defined(__linux__) || defined(linux) || defined(__linux)
+#ifndef NUM_FORMAT
 #define NUM_FORMAT "d"
 typedef int num_type;
-#include <unistd.h>
-#else
-#define NUM_FORMAT "d"
-#define BOOL_FORMAT "lu"
-typedef unsigned long num_type;
-#include <unistd.h>
-#endif /* _MSC_VER */
 #endif /* !NUM_FORMAT */
+#define BOOL_FORMAT "d"
+#else
+#ifndef NUM_FORMAT
+#define NUM_FORMAT "d"
+typedef unsigned long num_type;
+#endif /* !NUM_FORMAT */
+#define BOOL_FORMAT "lu"
+#endif /* _MSC_VER */
 
 TEST x_test_crc32c_should_be_true(void) {
   printf("crc32c(GREATEST_FILE, \"%s\"): %" BOOL_FORMAT "\n", GREATEST_CRC32C,
@@ -81,7 +82,7 @@ static char *create_temp_file_with_content(const char *const content) {
     return NULL;
   }
 
-  // Generate template for _mktemp_s
+  /* Generate template for _mktemp_s */
   snprintf(tmp_file, MAX_PATH, "%s%sXXXXXX", tmp_path, "tmp");
 
   if (_mktemp_s(tmp_file, MAX_PATH) != 0) {
@@ -111,9 +112,9 @@ static char *create_temp_file_with_content(const char *const content) {
   return _strdup(tmp_file);
 
 #else
-  // Unix-like systems
+  /* Unix-like systems */
 
-  // Template for mkstemp, needs to be modifiable string
+  /* Template for mkstemp, needs to be modifiable string */
   char template[] = "/tmp/libacquireXXXXXX";
   int fd;
   size_t len;
@@ -142,7 +143,7 @@ static char *create_temp_file_with_content(const char *const content) {
     return NULL;
   }
 
-  // Return dynamically allocated string to filename
+  /* Return dynamically allocated string to filename */
   return strdup(template);
 #endif
 }

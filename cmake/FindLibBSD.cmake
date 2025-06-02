@@ -21,6 +21,7 @@ unset(LibBSD_IMPORTED_TARGET_CREATED CACHE)
 set(_LIBBSD_HINTS
         "$ENV{LIBBSD_ROOT}"
         "/usr/local"
+        "/usr/lib"
         "/opt/local"
         "/opt"
         "/usr"
@@ -73,11 +74,17 @@ function(_libbsd_resolve_libraries input_libs output_var)
         # If still not found, try to sanitize common library extensions manually
         if (NOT _found_path)
             # try known install path hardcoded — add your known lib path:
-            if (EXISTS "/usr/local/lib/lib${_libname}.dylib")
-                set(_found_path "/usr/local/lib/lib${_libname}.dylib")
-            elseif (EXISTS "/usr/local/lib/lib${_libname}.a")
-                set(_found_path "/usr/local/lib/lib${_libname}.a")
-            endif ()
+            foreach (p
+                    "/usr/local/lib/lib${_libname}.dylib"
+                    "/usr/local/lib/lib${_libname}.a"
+                    "/usr/lib/libbsd.so")
+                if (EXISTS "${p}" AND NOT IS_DIRECTORY "${p}")
+                    set(_found_path "${p}")
+                endif (EXISTS "${p}" AND NOT IS_DIRECTORY "${p}")
+            endforeach (p
+                    "/usr/local/lib/lib${_libname}.dylib"
+                    "/usr/local/lib/lib${_libname}.a"
+                    "/usr/lib/libbsd.so")
         endif ()
 
         if (_found_path)
@@ -109,7 +116,7 @@ if (PkgConfig_FOUND)
     if (WIN32)
         set(_path_sep ";")
     else ()
-        set(_path_sep ":")
+        set(_path_sep " :")
     endif ()
 
     if (_pkgconfig_paths)
@@ -143,8 +150,8 @@ if (PkgConfig_FOUND)
         _libbsd_create_imported_target()
 
         message(STATUS "FindLibBSD: Found via pkg-config")
-        message(STATUS "  Include dirs: ${LibBSD_INCLUDE_DIRS}")
-        message(STATUS "  Libraries: ${LibBSD_LIBRARIES}")
+        message(STATUS " Include dirs: ${LibBSD_INCLUDE_DIRS}")
+        message(STATUS " Libraries: ${LibBSD_LIBRARIES}")
     endif ()
 endif ()
 
@@ -187,8 +194,8 @@ if (NOT LibBSD_FOUND)
         _libbsd_create_imported_target()
 
         message(STATUS "FindLibBSD: Found via manual fallback")
-        message(STATUS "  Include dirs: ${LibBSD_INCLUDE_DIRS}")
-        message(STATUS "  Libraries: ${LibBSD_LIBRARIES}")
+        message(STATUS " Include dirs: ${LibBSD_INCLUDE_DIRS}")
+        message(STATUS " Libraries: ${LibBSD_LIBRARIES}")
     else ()
         set(LibBSD_FOUND FALSE CACHE BOOL "LibBSD found")
         message(STATUS "FindLibBSD: LibBSD not found")

@@ -35,7 +35,7 @@ TEST test_get_path_null(void) {
   PASS();
 }
 
-// Test is_url behavior
+/* Test is_url behavior */
 TEST test_is_url_http(void) {
   const char *url = "http://example.com";
   ASSERT(is_url(url));

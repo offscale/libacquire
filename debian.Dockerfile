@@ -1,12 +1,10 @@
 FROM debian
 
-ADD 'https://github.com/Kitware/CMake/releases/download/v3.21.4/cmake-3.21.4-linux-x86_64.sh' '/tmp/cmake.sh'
-
-RUN sh /tmp/cmake.sh --prefix='/usr/local' --skip-license
-
 RUN apt-get update -qq && \
     apt-get install -y \
+      cmake \
       gcc \
+      libarchive-dev \
       libc-dev \
       libcurl4-openssl-dev \
       librhash-dev \

@@ -40,8 +40,7 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *, enum Checksum,
                                             const char *, const char *);
 
 extern LIBACQUIRE_EXPORT int download(const char *, enum Checksum, const char *,
-                                      const char[NAME_MAX], bool, size_t,
-                                      size_t);
+                                      const char *, bool, size_t, size_t);
 
 extern LIBACQUIRE_EXPORT int download_many(const char *[], const char *[],
                                            enum Checksum[], const char *, bool,

@@ -7,20 +7,32 @@
 
 #include <config_for_tests.h>
 
-#ifndef NUM_FORMAT
+#ifdef __cplusplus
+#elif defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif /* __cplusplus */
+
 #ifdef _MSC_VER
+#ifndef NUM_FORMAT
 #define NUM_FORMAT "zu"
-#define BOOL_FORMAT NUM_FORMAT
 typedef size_t num_type;
+#endif /* !NUM_FORMAT */
+#define BOOL_FORMAT NUM_FORMAT
 #elif defined(__linux__) || defined(linux) || defined(__linux)
+#ifndef NUM_FORMAT
 #define NUM_FORMAT "d"
 typedef int num_type;
-#else
-#define NUM_FORMAT "d"
-#define BOOL_FORMAT "lu"
-typedef unsigned long num_type;
-#endif /* _MSC_VER */
 #endif /* !NUM_FORMAT */
+#define BOOL_FORMAT "d"
+#else
+#ifndef NUM_FORMAT
+#define NUM_FORMAT "d"
+typedef unsigned long num_type;
+#endif /* !NUM_FORMAT */
+#define BOOL_FORMAT "lu"
+#endif /* _MSC_VER */
 
 TEST x_is_directory_should_be_true(void) {
   const bool x = is_directory(CMAKE_CURRENT_SOURCE_DIR);

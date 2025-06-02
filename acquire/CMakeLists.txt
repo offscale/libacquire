@@ -279,7 +279,7 @@ else ()
         if (LibBSD_FOUND)
             target_link_libraries("${LIBRARY_NAME}_impl" PUBLIC LibBSD::LibBSD)
             target_compile_definitions(
-                    "${LIBRARY_NAME}_impl" PUBLIC HAVE_STRNSTR=1 HAVE_LIBBSD=1
+                    "${LIBRARY_NAME}_impl" PUBLIC HAVE_LIBBSD=1 HAVE_STRNSTR=1
             )
         endif (LibBSD_FOUND)
     endif (NOT BSD)
