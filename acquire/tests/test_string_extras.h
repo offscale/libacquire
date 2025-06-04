@@ -5,13 +5,6 @@
 
 #include "config_for_tests.h"
 
-#ifdef HAVE_STRNSTR
-#undef HAVE_STRNSTR
-#endif /* HAVE_STRNSTR */
-#ifndef STRNSTR_IMPL
-#define STRNSTR_IMPL
-#endif /* !STRNSTR_IMPL */
-
 #include <acquire_string_extras.h>
 
 static const char *buffer = "hello world";

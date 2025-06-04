@@ -24,8 +24,8 @@
 #include <acquire_libarchive.h>
 #else
 #error                                                                         \
-    "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)
-or USE_MINIZ or USE_LIBARCHIVE must be defined"
+    "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)" \
+    "or USE_MINIZ or USE_LIBARCHIVE must be defined";
 #endif /* ARCHIVE_LIB */
 
 #include <acquire_common_defs.h>

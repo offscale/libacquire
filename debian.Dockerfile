@@ -5,6 +5,7 @@ RUN apt-get update -qq && \
       cmake \
       gcc \
       libarchive-dev \
+      libbsd-dev \
       libc-dev \
       libcurl4-openssl-dev \
       librhash-dev \

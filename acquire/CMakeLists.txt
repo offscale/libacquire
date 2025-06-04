@@ -281,6 +281,9 @@ else ()
             target_compile_definitions(
                     "${LIBRARY_NAME}_impl" PUBLIC HAVE_LIBBSD=1 HAVE_STRNSTR=1
             )
+            message(STATUS "libbsd found")
+        else ()
+            message(STATUS "No libbsd found")
         endif (LibBSD_FOUND)
     endif (NOT BSD)
 
@@ -307,6 +310,7 @@ else ()
     target_link_libraries("${LIBRARY_NAME}" PUBLIC "${LIBRARY_NAME}_impl")
     set(lib_vis "PUBLIC")
 
+    list(REMOVE_ITEM LIBACQUIRE_LIBRARIES "${CHECKSUM_LIBRARIES}" "${EXTRACT_LIB}" "lib${EXTRACT_LIB}")
     foreach (_lib ${LIBACQUIRE_LIBRARIES})
         target_link_libraries_once("${LIBRARY_NAME}" "${lib_vis}" "${_lib}")
     endforeach (_lib ${LIBACQUIRE_LIBRARIES})

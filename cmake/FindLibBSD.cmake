@@ -26,6 +26,7 @@ set(_LIBBSD_HINTS
         "/opt"
         "/usr"
         "/usr/local/include"  # Homebrew macOS common prefix
+        "/usr/include"
 )
 
 # Remove empty and duplicate entries
@@ -73,10 +74,22 @@ function(_libbsd_resolve_libraries input_libs output_var)
 
         # If still not found, try to sanitize common library extensions manually
         if (NOT _found_path)
+            if (NOT DEFINED TARGET_ARCH)
+                include("${CMAKE_SOURCE_DIR}/cmake/get_arch.cmake")
+                get_arch()
+            endif (NOT DEFINED TARGET_ARCH)
+            string(TOLOWER TARGET_ARCH arch)
+
             # try known install path hardcoded — add your known lib path:
             foreach (p
                     "/usr/local/lib/lib${_libname}.dylib"
                     "/usr/local/lib/lib${_libname}.a"
+                    "/usr/lib/${arch}-linux-gnu/libbsd.so"
+                    "/usr/lib/${CMAKE_HOST_SYSTEM_PROCESSOR}-linux-gnu/libbsd.so"
+                    "/usr/lib/x86_64-linux-gnu/libbsd.so"
+                    "/usr/lib/aarch64-linux-gnu/libbsd.so"
+                    "/usr/lib/arm-linux-gnueabihf/libbsd.so"
+                    "/usr/lib/i386-linux-gnu/libbsd.so"
                     "/usr/lib/libbsd.so")
                 if (EXISTS "${p}" AND NOT IS_DIRECTORY "${p}")
                     set(_found_path "${p}")
@@ -84,6 +97,12 @@ function(_libbsd_resolve_libraries input_libs output_var)
             endforeach (p
                     "/usr/local/lib/lib${_libname}.dylib"
                     "/usr/local/lib/lib${_libname}.a"
+                    "/usr/lib/${arch}-linux-gnu/libbsd.so"
+                    "/usr/lib/${CMAKE_HOST_SYSTEM_PROCESSOR}-linux-gnu/libbsd.so"
+                    "/usr/lib/x86_64-linux-gnu/libbsd.so"
+                    "/usr/lib/aarch64-linux-gnu/libbsd.so"
+                    "/usr/lib/arm-linux-gnueabihf/libbsd.so"
+                    "/usr/lib/i386-linux-gnu/libbsd.so"
                     "/usr/lib/libbsd.so")
         endif ()
 
