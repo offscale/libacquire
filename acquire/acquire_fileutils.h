@@ -26,6 +26,7 @@ extern "C" {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
+#include <acquire_common_defs.h>
 #include <Fileapi.h>
 #include <io.h>
 #include <wchar.h>

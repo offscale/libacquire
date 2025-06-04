@@ -5,6 +5,8 @@
 #ifndef LIBACQUIRE_ACQUIRE_URL_UTILS_H
 #define LIBACQUIRE_ACQUIRE_URL_UTILS_H
 
+#include "libacquire_export.h"
+#include "acquire_common_defs.h"
 #ifdef __cplusplus
 extern "C" {
 #elif defined(HAS_STDBOOL) && !defined(bool)
@@ -20,6 +22,10 @@ extern "C" {
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
           defined(__NT__) */
 #include <string.h>
+#include <acquire_common_defs.h>
+#ifndef NAME_MAX
+#define NAME_MAX 4096
+#endif /* ! NAME_MAX */
 
 /**
  * @brief Extract the path component (filename) from a URL string.

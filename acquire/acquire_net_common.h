@@ -12,6 +12,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include "acquire_config.h"
 #include "acquire_common_defs.h"
 
 /**
@@ -32,6 +33,9 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
     !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON)
+#include "acquire_config.h"
+#include "acquire_common_defs.h"
+
 #define LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON 1
 
 #ifdef DOWNLOAD_DIR_IMPL
