@@ -26,8 +26,8 @@ extern "C" {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
-#include <acquire_common_defs.h>
 #include <Fileapi.h>
+#include <acquire_common_defs.h>
 #include <io.h>
 #include <wchar.h>
 
@@ -80,8 +80,8 @@ extern LIBACQUIRE_EXPORT bool is_relative(const char *path);
  */
 extern LIBACQUIRE_EXPORT const char *get_extension(const char *path);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
-#ifdef LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS
+#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
+    defined(LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL)
 
 bool is_directory(const char *const path) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -160,8 +160,8 @@ const char *get_extension(const char *const filename) {
   return strncmp(ext0, ".tar", 4) == 0 ? ext0 : ext1;
 }
 
-#endif /* LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS */
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL) */
 
 #ifdef __cplusplus
 }

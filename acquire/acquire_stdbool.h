@@ -1,4 +1,4 @@
-#if !defined(_STDBOOL_H) && !defined(HAS_STDBOOL)
+#if !defined(_STDBOOL_H) && !defined(HAS_STDBOOL) && !defined(__cplusplus)
 #define _STDBOOL_H
 
 /**
@@ -27,4 +27,5 @@ typedef size_t bool;
 #define true 1
 #define false (!true)
 
-#endif /* !defined(_STDBOOL_H) && !defined(HAS_STDBOOL) */
+#endif /* !defined(_STDBOOL_H) && !defined(HAS_STDBOOL) &&                     \
+          !defined(__cplusplus) */

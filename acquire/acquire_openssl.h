@@ -228,25 +228,25 @@ cleanup:
   return exit_code;
 }
 
-#ifndef LIBACQUIRE_IMPL_SHA256
-#define LIBACQUIRE_IMPL_SHA256
+#ifndef LIBACQUIRE_SHA256_IMPL
+#define LIBACQUIRE_SHA256_IMPL
 bool sha256(const char *filename, const char *hash) {
   unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1];
   sha256_file(filename, sha_output);
 
   return strcmp((const char *)sha_output, hash) == 0;
 }
-#endif /* !LIBACQUIRE_IMPL_SHA256 */
+#endif /* !LIBACQUIRE_SHA256_IMPL */
 
-#ifndef LIBACQUIRE_IMPL_SHA512
-#define LIBACQUIRE_IMPL_SHA512
+#ifndef LIBACQUIRE_SHA512_IMPL
+#define LIBACQUIRE_SHA512_IMPL
 bool sha512(const char *filename, const char *hash) {
   unsigned char sha_output[SHA512_DIGEST_LENGTH * 2 + 1];
   sha512_file(filename, sha_output);
 
   return strcmp((const char *)sha_output, hash) == 0;
 }
-#endif /* !LIBACQUIRE_IMPL_SHA512 */
+#endif /* !LIBACQUIRE_SHA512_IMPL */
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */

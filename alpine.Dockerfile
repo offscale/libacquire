@@ -1,7 +1,6 @@
 FROM alpine
 
 RUN apk add --no-cache \
-    bsd-compat-headers \
     cmake \
     curl-dev \
     gcc \

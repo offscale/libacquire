@@ -1,7 +1,13 @@
 #ifndef TEST_CHECKSUM_H
 #define TEST_CHECKSUM_H
 
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif /* __cplusplus */
 
 #include <greatest.h>
 

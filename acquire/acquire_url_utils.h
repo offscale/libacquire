@@ -5,8 +5,8 @@
 #ifndef LIBACQUIRE_ACQUIRE_URL_UTILS_H
 #define LIBACQUIRE_ACQUIRE_URL_UTILS_H
 
-#include "libacquire_export.h"
 #include "acquire_common_defs.h"
+#include "libacquire_export.h"
 #ifdef __cplusplus
 extern "C" {
 #elif defined(HAS_STDBOOL) && !defined(bool)
@@ -21,8 +21,8 @@ extern "C" {
 #include "acquire_string_extras.h"
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
           defined(__NT__) */
-#include <string.h>
 #include <acquire_common_defs.h>
+#include <string.h>
 #ifndef NAME_MAX
 #define NAME_MAX 4096
 #endif /* ! NAME_MAX */
@@ -56,7 +56,7 @@ extern LIBACQUIRE_EXPORT const char *get_path_from_url(const char *url);
 extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS)
+    defined(LIBACQUIRE_ACQUIRE_URL_UTILS_IMPL)
 
 const char *get_path_from_url(const char *url) {
   static char buf[NAME_MAX + 1];
@@ -100,7 +100,7 @@ bool is_url(const char *maybe_url) {
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          defined(LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS) */
+          defined(LIBACQUIRE_ACQUIRE_URL_UTILS_IMPL) */
 
 #ifdef __cplusplus
 }

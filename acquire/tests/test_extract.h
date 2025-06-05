@@ -2,7 +2,13 @@
 #define LIBACQUIRE_TEST_EXTRACT_H
 
 #include <greatest.h>
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif /* __cplusplus */
 
 #define TO_STRING(x) #x
 #define STR(x) TO_STRING(x)

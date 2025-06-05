@@ -2,7 +2,13 @@
 #define TEST_AMALGAMATION_H
 
 #include <greatest.h>
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif /* __cplusplus */
 
 #include <acquire.h>
 #include <acquire_config.h>

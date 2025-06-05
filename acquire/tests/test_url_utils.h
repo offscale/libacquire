@@ -2,7 +2,14 @@
 #define TEST_ACQUIRE_URL_UTILS_H
 
 #include <greatest.h>
+#ifdef __cplusplus
+extern "C" {
+#elif defined(HAS_STDBOOL) && !defined(bool)
 #include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#include "libacquire_export.h"
+#endif /* __cplusplus */
 
 #include <acquire.h>
 #include <acquire_config.h>

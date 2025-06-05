@@ -12,8 +12,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "acquire_config.h"
 #include "acquire_common_defs.h"
+#include "acquire_config.h"
 
 /**
  * Check if a file represented by URL is already downloaded locally and matches
@@ -32,11 +32,11 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
                                             const char *target_location);
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON)
-#include "acquire_config.h"
+    !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL)
 #include "acquire_common_defs.h"
+#include "acquire_config.h"
 
-#define LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON 1
+#define LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL 1
 
 #ifdef DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
@@ -81,7 +81,7 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          !defined(LIBACQUIRE_IMPL_ACQUIRE_NET_COMMON) */
+          !defined(LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL) */
 
 #ifdef __cplusplus
 }

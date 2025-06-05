@@ -134,12 +134,13 @@ extern LIBACQUIRE_EXPORT size_t strerrorlen_s(errno_t);
 
 #if !defined(HAVE_SNPRINTF) && !defined(HAVE_SNPRINTF_H)
 extern LIBACQUIRE_EXPORT int snprintf(char *buffer, size_t count,
-                                              const char *format, ...);
+                                      const char *format, ...);
 #endif /* !defined(HAVE_SNPRINTF) && !defined(HAVE_SNPRINTF_H) */
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
-#if !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) && !defined(HAVE_SNPRINTF_H)
+#if !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) &&                      \
+    !defined(HAVE_SNPRINTF_H)
 #define SNPRINTF_IMPL
 
 /*
@@ -182,7 +183,8 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #define vsnprintf(buffer, count, format, args)                                 \
   wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) && !defined(HAVE_SNPRINTF_H) */
+#endif /* !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) &&                \
+          !defined(HAVE_SNPRINTF_H) */
 
 #if !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL)
 #define STRNCASECMP_IMPL

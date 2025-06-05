@@ -59,9 +59,7 @@ extern LIBACQUIRE_EXPORT int extract_archive(enum Archive archive,
  */
 extern LIBACQUIRE_EXPORT enum Archive extension2archive(const char *extension);
 
-#ifdef LIBACQUIRE_IMPLEMENTATION
-#ifndef LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H
-#define LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_EXTRACT_IMPL)
 #include <acquire_string_extras.h>
 
 enum Archive extension2archive(const char *const extension) {
@@ -73,8 +71,8 @@ enum Archive extension2archive(const char *const extension) {
     return LIBACQUIRE_INFER;
 }
 
-#endif /* !LIBACQUIRE_IMPL_ACQUIRE_EXTRACT_H */
-#endif /* LIBACQUIRE_IMPLEMENTATION */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_EXTRACT_IMPL) */
 
 #ifdef __cplusplus
 }

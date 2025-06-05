@@ -44,25 +44,25 @@ int hash_file(const char *filepath, const enum rhash_ids hash_id,
   }
 }
 
-#if !defined(LIBACQUIRE_IMPL_SHA256) && !defined(CRYPTO_LIB)
-#define LIBACQUIRE_IMPL_SHA256
+#if !defined(LIBACQUIRE_SHA256_IMPL) && !defined(CRYPTO_LIB)
+#define LIBACQUIRE_SHA256_IMPL
 bool sha256(const char *filename, const char *gold_hash) {
   char gen_hash[130], digest[64];
   return hash_file(filename, RHASH_SHA256, RHPR_HEX, digest, gen_hash) < 0
              ? false
              : strcmp(gen_hash, gold_hash) == 0;
 }
-#endif /* !defined(LIBACQUIRE_IMPL_SHA256) && !defined(CRYPTO_LIB) */
+#endif /* !defined(LIBACQUIRE_SHA256_IMPL) && !defined(CRYPTO_LIB) */
 
-#if !defined(LIBACQUIRE_IMPL_SHA512) && !defined(CRYPTO_LIB)
-#define LIBACQUIRE_IMPL_SHA512
+#if !defined(LIBACQUIRE_SHA512_IMPL) && !defined(CRYPTO_LIB)
+#define LIBACQUIRE_SHA512_IMPL
 bool sha512(const char *filename, const char *gold_hash) {
   char gen_hash[130], digest[64];
   return hash_file(filename, RHASH_SHA512, RHPR_HEX, digest, gen_hash) < 0
              ? false
              : strcmp(gen_hash, gold_hash) == 0;
 }
-#endif /* !defined(LIBACQUIRE_IMPL_SHA512) && !defined(CRYPTO_LIB) */
+#endif /* !defined(LIBACQUIRE_SHA512_IMPL) && !defined(CRYPTO_LIB) */
 
 /* X(sha256, RHASH_SHA256, comma) \ */
 /* X(sha512, RHASH_SHA512, comma) \ */

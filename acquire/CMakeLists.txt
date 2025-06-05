@@ -178,7 +178,7 @@ else ()
         elseif (src MATCHES "/gen_acquire_fileutils.c$")
             set_source_files_properties(
                     ${src} PROPERTIES
-                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS=1"
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL=1"
             )
         elseif (src MATCHES "/gen_acquire_libcurl.c$")
             set_source_files_properties(
@@ -223,7 +223,7 @@ else ()
         elseif (src MATCHES "/gen_acquire_url_utils.c$")
             set_source_files_properties(
                     ${src} PROPERTIES
-                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;LIBACQUIRE_IMPL_ACQUIRE_FILEUTILS=1"
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION"
             )
         elseif (src MATCHES "/gen_acquire_extract.c$")
             # For extract, could detect MINIZ or LIBARCHIVE
