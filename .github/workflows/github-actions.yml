@@ -35,7 +35,6 @@ jobs:
         with:
           path: vcpkg
           key: ${{ runner.os }}-${{ hashFiles('**/vcpkg.json') }}-43a81834cc9d6d953bd5ca8153437ef65fed86ab
-        if: matrix.os == 'windows-latest'
 
       - name: checkout vcpkg
         uses: actions/checkout@v4
@@ -43,15 +42,19 @@ jobs:
           repository: "offscale/vcpkg"
           ref: project0
           path: vcpkg
-        if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
+        if: steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: Setup vcpkg (Windows)
         run: ./vcpkg/bootstrap-vcpkg.bat
         if: matrix.os == 'windows-latest'
 
+      - name: Setup vcpkg (non-Windows)
+        run: ./vcpkg/bootstrap-vcpkg
+        if: matrix.os != 'windows-latest'
+
       - name: Install vcpkg ports (Windows)
-        run: ./vcpkg/vcpkg install --triplet "${{ runner.arch }}-${{ runner.os }}" "$(jq '.dependencies[]' vcpkg.json)"
-        if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
+        run: ./vcpkg/vcpkg install --triplet "${{ runner.arch }}-${{ runner.os }}" "$(jq '.dependencies[] | select(type == "string")')"
+        if: steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: configure (with vcpkg on Windows)
         working-directory: ./build
@@ -60,9 +63,10 @@ jobs:
         shell: cmd
         if: matrix.os == 'windows-latest'
 
-      - name: configure (Ubuntu, macOS)
+      - name: configure (with vcpkg on non-Windows)
         working-directory: ./build
-        run: cmake -DCMAKE_BUILD_TYPE="Debug" ..
+        run: |
+          cmake -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" ..
         if: matrix.os != 'windows-latest'
 
       - name: build
