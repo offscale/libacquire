@@ -54,11 +54,13 @@ jobs:
         if: matrix.os != 'windows-latest'
 
       - name: Install vcpkg ports (Windows)
-        run: ./vcpkg/vcpkg install --triplet "${{ runner.arch }}-${{ runner.os }}" "$(jq '.dependencies[] | select(type == "string")')"
+        working-directory: ./vcpkg
+        run: ./vcpkg install --classic --triplet "${{ runner.arch }}-${{ runner.os }}" "$(jq '.dependencies[] | select(type == "string")')"
         if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: Install vcpkg ports (macOS, Linux)
-        run: ./vcpkg/vcpkg install "$(jq '.dependencies[] | select(type == "string")')"
+        working-directory: ./build
+        run: ./vcpkg install --classic "$(jq '.dependencies[] | select(type == "string")')"
         if: matrix.os != 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: configure (with vcpkg on Windows)
