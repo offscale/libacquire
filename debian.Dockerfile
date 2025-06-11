@@ -24,4 +24,4 @@ RUN cmake -DCMAKE_BUILD_TYPE="Debug" .. && \
 
 CMD ctest .
 
-ENTRYPOINT ["/libacquire/build/acquire", "--help"]
+# ENTRYPOINT ["/libacquire/build/acquire_cli", "--help"]

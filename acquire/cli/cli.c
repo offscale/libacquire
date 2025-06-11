@@ -327,7 +327,7 @@ int docopt(struct DocoptArgs *args, int argc, char *argv[], const bool help,
   args->hash = NULL;
   args->output = NULL;
   args->usage_pattern = usage_pattern;
-  memcpy((char*)args->help_message, (char*)help_message, sizeof help_message);
+  memcpy((char *)args->help_message, (char *)help_message, sizeof help_message);
 
   elements.n_commands = 0;
   elements.n_arguments = 1;

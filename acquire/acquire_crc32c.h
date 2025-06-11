@@ -18,6 +18,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <stdio.h>
+#include <string.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #else
@@ -133,10 +134,12 @@ unsigned int crc32_file(FILE *file) {
  * Reads the file and computes its CRC32C checksum, then compares with
  * the hash string ignoring character cases.
  */
-bool crc32c(const char *filename, const char *hash) {
+bool crc32c(const char *const filename, const char *const hash) {
   unsigned int crc32_res;
   FILE *fh;
   char computed[9];
+
+  fprintf(stderr, "fopen %s\n", filename);
 
 #if defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__)
   fopen_s(&fh, filename, "rb");
@@ -151,23 +154,8 @@ bool crc32c(const char *filename, const char *hash) {
   fclose(fh);
 
   snprintf(computed, sizeof(computed), "%08x", crc32_res);
-
-  {
-    int i;
-    for (i = 0; computed[i] && hash[i]; i++) {
-      char c1 = computed[i];
-      char c2 = hash[i];
-      if (c1 >= 'A' && c1 <= 'F')
-        c1 += 'a' - 'A';
-      if (c2 >= 'A' && c2 <= 'F')
-        c2 += 'a' - 'A';
-      if (c1 != c2)
-        return false;
-    }
-    if (computed[i] != '\0' || hash[i] != '\0')
-      return false;
-  }
-  return true;
+  fprintf(stderr, "computed: \"%s\"\n", computed);
+  return strcmp(computed, hash) == 0;
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \

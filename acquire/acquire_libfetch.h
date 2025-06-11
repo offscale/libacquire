@@ -74,11 +74,11 @@ __FBSDID("$FreeBSD$");
 #include <termios.h>
 #include <unistd.h>
 
-#if defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH==1
+#if defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH
 #include "freebsd_libfetch/fetch.h"
 #else
 #include <fetch.h>
-#endif /* defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH==1 */
+#endif /* defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH */
 
 #define TIMEOUT 120
 

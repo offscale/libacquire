@@ -1,7 +1,7 @@
 #ifndef LIBACQUIRE_LIBCURL_H
 #define LIBACQUIRE_LIBCURL_H
 
-#if defined(USE_LIBCURL) && USE_LIBCURL==1 && defined(LIBACQUIRE_IMPLEMENTATION)
+#if defined(USE_LIBCURL) && USE_LIBCURL && defined(LIBACQUIRE_IMPLEMENTATION)
 
 /*
  * libcurl implementation of libacquire's download API

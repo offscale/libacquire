@@ -12,11 +12,10 @@
     defined(__CYGWIN__)
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
-# define LIBACQUIRE_EXPORT __declspec(dllexport)
+#define LIBACQUIRE_EXPORT __declspec(dllexport)
 #else
-# define LIBACQUIRE_EXPORT __declspec(dllimport)
+#define LIBACQUIRE_EXPORT __declspec(dllimport)
 #endif
-
 
 #elif defined(__SUNPRO_C)
 #define LIBACQUIRE_EXPORT __global
@@ -30,9 +29,9 @@
     defined(__CYGWIN__)
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
-# define LIBACQUIRE_EXPORT __declspec(dllexport)
+#define LIBACQUIRE_EXPORT __declspec(dllexport)
 #else
-# define LIBACQUIRE_EXPORT __declspec(dllimport)
+#define LIBACQUIRE_EXPORT __declspec(dllimport)
 #endif
 
 #elif defined(__SUNPRO_C)
@@ -72,7 +71,8 @@
 #endif /* ! LIBACQUIRE_DEPRECATED_EXPORT */
 
 #ifndef LIBACQUIRE_DEPRECATED_NO_EXPORT
-#define LIBACQUIRE_DEPRECATED_NO_EXPORT LIBACQUIRE_NO_EXPORT LIBACQUIRE_DEPRECATED
+#define LIBACQUIRE_DEPRECATED_NO_EXPORT                                        \
+  LIBACQUIRE_NO_EXPORT LIBACQUIRE_DEPRECATED
 #endif /* ! LIBACQUIRE_DEPRECATED_NO_EXPORT */
 
 #if 0 /* DEFINE_NO_DEPRECATED */

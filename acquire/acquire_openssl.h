@@ -17,7 +17,8 @@ extern "C" {
 
 #include "acquire_config.h"
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) || (defined(USE_OPENSSL) && USE_OPENSSL==1)
+#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
+    (defined(USE_OPENSSL) && USE_OPENSSL)
 
 #include "acquire_checksums.h"
 
@@ -37,7 +38,7 @@ extern "C" {
 #define SHA512_Final CC_SHA512_Final
 #define SHA512_BLOCK_BYTES CC_SHA512_BLOCK_BYTES
 
-#elif defined(USE_OPENSSL) && USE_OPENSSL==1
+#elif defined(USE_OPENSSL) && USE_OPENSSL
 
 #include <openssl/macros.h>
 #include <openssl/sha.h>
@@ -50,7 +51,8 @@ extern "C" {
 #define SHA256_BLOCK_BYTES 64 /* block size in bytes */
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
 
-#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) || (defined(USE_OPENSSL) && USE_OPENSSL==1) */
+#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                 \
+          (defined(USE_OPENSSL) && USE_OPENSSL) */
 
 #include <errno.h>
 #include <stdio.h>

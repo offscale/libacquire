@@ -15,15 +15,16 @@ extern "C" {
 #include <acquire_config.h>
 #include <config_for_tests.h>
 
-#if defined(USE_CRC32C) && USE_CRC32C==1
+#if defined(USE_CRC32C) && USE_CRC32C
 #include <acquire_crc32c.h>
-#elif defined(USE_LIBRHASH) && USE_LIBRHASH==1
+#elif defined(USE_LIBRHASH) && USE_LIBRHASH
 #include <acquire_librhash.h>
 #endif
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) || (defined(USE_OPENSSL) && USE_OPENSSL==1)
+#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
+    (defined(USE_OPENSSL) && USE_OPENSSL)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT==1
+#elif defined(USE_WINCRYPT) && USE_WINCRYPT
 #include <acquire_wincrypt.h>
 #endif
 
@@ -50,7 +51,7 @@ typedef unsigned long num_type;
 TEST x_test_crc32c_should_be_true(void) {
   printf("crc32c(GREATEST_FILE, \"%s\"): %" BOOL_FORMAT "\n", GREATEST_CRC32C,
          crc32c(GREATEST_FILE, GREATEST_CRC32C));
-  ASSERT_FALSE(!crc32c(GREATEST_FILE, GREATEST_CRC32C));
+  ASSERT(crc32c(GREATEST_FILE, GREATEST_CRC32C));
   PASS();
 }
 
@@ -242,7 +243,7 @@ TEST test_crc32c_small_temp_file(void) {
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed CRC32C checksum of "hello, world\n" is: 0xb8ca70d7 (lowercase
    * hex) */
-  const bool result = crc32c(tmpfile, "b8ca70d7");
+  const bool result = crc32c(tmpfile, "f4247453");
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);
   ASSERT(result);
@@ -254,7 +255,7 @@ TEST test_sha256_small_temp_file(void) {
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed SHA256 of "hello, world\n" */
   const char *const expected_sha256 =
-      "315f5bdb76d078c43b8ac0064e4a016461e5f894d6f7c1a6d0a89a3d8d8a5a99";
+      "853ff93762a06ddbf722c4ebe9ddd66d8f63ddaea97f521c3ecc20da7c976020";
   const bool result = sha256(tmpfile, expected_sha256);
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);

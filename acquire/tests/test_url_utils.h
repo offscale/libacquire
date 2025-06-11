@@ -93,4 +93,8 @@ SUITE(url_utils_suite) {
   RUN_TEST(test_is_url_no_scheme);
 }
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* !TEST_ACQUIRE_URL_UTILS_H */

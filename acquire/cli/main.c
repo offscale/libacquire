@@ -12,43 +12,47 @@
 
 #include "cli.h"
 
-#if defined(USE_CRC32C) && USE_CRC32C==1
+#if defined(USE_CRC32C) && USE_CRC32C
 #include <acquire_crc32c.h>
-#elif defined(USE_LIBRHASH) && USE_LIBRHASH==1
+#elif defined(USE_LIBRHASH) && USE_LIBRHASH
 #include <acquire_librhash.h>
-#endif /* defined(USE_CRC32C) && USE_CRC32C==1 */
+#endif /* defined(USE_CRC32C) && USE_CRC32C */
 
-#if defined(USE_LIBCURL) && USE_LIBCURL==1
+#if defined(USE_LIBCURL) && USE_LIBCURL
 
 #include <acquire_libcurl.h>
 
-#elif defined(USE_WININET) && USE_WININET==1
+#elif defined(USE_WININET) && USE_WININET
 
 #include <acquire_wininet.h>
 
-#elif defined(USE_LIBFETCH) && USE_LIBFETCH==1
+#elif defined(USE_LIBFETCH) && USE_LIBFETCH
 
 #include <acquire_libfetch.h>
 
-#elif defined(USE_OPENBSD_FTP) && USE_OPENBSD_FTP==1
+#elif defined(USE_OPENBSD_FTP) && USE_OPENBSD_FTP
 
 #include <acquire_openbsd_ftp.h>
 
-#endif /* defined(USE_LIBCURL) && USE_LIBCURL==1 */
+#endif /* defined(USE_LIBCURL) && USE_LIBCURL */
 
-#if (defined(USE_OPENSSL) && USE_OPENSSL==1) || (defined(USE_LIBRESSL) && USE_LIBRESSL==1) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1)
+#if (defined(USE_OPENSSL) && USE_OPENSSL) ||                                   \
+    (defined(USE_LIBRESSL) && USE_LIBRESSL) ||                                 \
+    (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT==1
+#elif defined(USE_WINCRYPT) && USE_WINCRYPT
 #include <acquire_wincrypt.h>
-#endif /* (defined(USE_OPENSSL) && USE_OPENSSL==1) || (defined(USE_LIBRESSL) && USE_LIBRESSL==1) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) */
+#endif /* (defined(USE_OPENSSL) && USE_OPENSSL) || (defined(USE_LIBRESSL) &&   \
+          USE_LIBRESSL) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO)   \
+        */
 
-#if defined(USE_MINIZ) && USE_MINIZ == 1
+#if defined(USE_MINIZ) && USE_MINIZ
 #include <acquire_miniz.h>
-#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE == 1
+#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE
 #include <acquire_libarchive.h>
 #elif
 #error "Extract library must be specified"
-#endif /* defined(USE_MINIZ) && USE_MINIZ == 1 */
+#endif /* defined(USE_MINIZ) && USE_MINIZ */
 
 int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;

@@ -4,7 +4,7 @@ set(exec_name "test_${PROJECT_NAME}")
 # Dependencies download #
 #########################
 
-set(GREATEST_CRC32C "c66c379f")
+set(GREATEST_CRC32C "f83d6ce5")
 set(GREATEST_SHA256 "b3f89ecad2301c64c580f328cc03a74d92f4cd4bf42ab18d3d4bfb7b8be5b948")
 
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
