@@ -5,7 +5,7 @@
  * */
 
 #if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) &&                  \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+    USE_WININET==1 && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WININET_H
 
 #ifdef __cplusplus
@@ -134,5 +134,5 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) &&            \
-          defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) &&                  \
+          USE_WININET==1 && defined(LIBACQUIRE_IMPLEMENTATION) */

@@ -7,19 +7,19 @@
 #include <acquire_config.h>
 #include <config_for_tests.h>
 
-#if defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL)
+#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) || (defined(USE_OPENSSL) && USE_OPENSSL==1)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT)
+#elif defined(USE_WINCRYPT) && USE_WINCRYPT==1
 #include <acquire_wincrypt.h>
-#endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
+#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) || (defined(USE_OPENSSL) && USE_OPENSSL==1) */
 
 #include <acquire_download.h>
 
-#ifdef USE_LIBCURL
+#if defined(USE_LIBCURL) && USE_LIBCURL==1
 #include <acquire_libcurl.h>
-#elif defined(USE_WININET)
+#elif defined(USE_WININET) && USE_WININET==1
 #include <acquire_wininet.h>
-#elif defined(USE_LIBFETCH)
+#elif defined(USE_LIBFETCH) && USE_LIBFETCH==1
 #include <acquire_libfetch.h>
 #else
 #error "No networking library named"

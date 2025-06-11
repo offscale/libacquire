@@ -6,7 +6,7 @@
  * Very much a WiP
  * */
 
-#ifndef !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) &&          \
+#if !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) && USE_WINSECCNG==1         \
     defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL)
 #define LIBACQUIRE_WINSECCNG_H
 
@@ -118,6 +118,5 @@ Cleanup:
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) &&        \
-          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          defined(LIBACQUIRE_CRYPTO_IMPL) */
+#endif /* !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) && USE_WINSECCNG==1 \
+          defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL) */

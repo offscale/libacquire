@@ -1,5 +1,5 @@
-#if !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) &&    \
-    defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_EXTRACT_IMPL)
+#if !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) && \
+    USE_LIBARCHIVE==1 && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_EXTRACT_IMPL)
 #define LIBACQUIRE_ACQUIRE_LIBARCHIVE_H
 #define LIBACQUIRE_EXTRACT_IMPL
 
@@ -111,6 +111,5 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) \
-          && defined(LIBACQUIRE_IMPLEMENTATION) &&                             \
-          !defined(LIBACQUIRE_EXTRACT_IMPL) */
+#endif /* !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) &&    \
+          USE_LIBARCHIVE==1 && defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_EXTRACT_IMPL) */

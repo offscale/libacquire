@@ -350,7 +350,9 @@ target_compile_definitions("${LIBRARY_NAME}" "${lib_vis}" "_${TARGET_ARCH}_")
 include(GenerateExportHeader)
 set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/lib${LIBRARY_NAME}_export.h")
 
-if (LIBACQUIRE_HEADER_ONLY)
+if (1)
+   # pass
+elseif (LIBACQUIRE_HEADER_ONLY)
     file(WRITE "${_export_file}"
             "#ifndef LIBACQUIRE_EXPORT_H\n"
             "#define LIBACQUIRE_EXPORT_H\n\n"
@@ -404,5 +406,5 @@ install(TARGETS ${installable_libs}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(FILES "${PROJECT_BINARY_DIR}/src/acquire_config.h"
-        ${Header_Files} ${_Header_Files} ${_export_file}
+        ${Header_Files} ${_Header_Files} # ${_export_file}
         TYPE "INCLUDE")

@@ -12,44 +12,43 @@
 
 #include "cli.h"
 
-#ifdef USE_CRC32C
+#if defined(USE_CRC32C) && USE_CRC32C==1
 #include <acquire_crc32c.h>
-#elif defined(USE_LIBRHASH)
+#elif defined(USE_LIBRHASH) && USE_LIBRHASH==1
 #include <acquire_librhash.h>
-#endif /* USE_CRC32C */
+#endif /* defined(USE_CRC32C) && USE_CRC32C==1 */
 
-#ifdef USE_LIBCURL
+#if defined(USE_LIBCURL) && USE_LIBCURL==1
 
 #include <acquire_libcurl.h>
 
-#elif defined(USE_WININET)
+#elif defined(USE_WININET) && USE_WININET==1
 
 #include <acquire_wininet.h>
 
-#elif defined(USE_LIBFETCH)
+#elif defined(USE_LIBFETCH) && USE_LIBFETCH==1
 
 #include <acquire_libfetch.h>
 
-#elif defined(USE_OPENBSD_FTP)
+#elif defined(USE_OPENBSD_FTP) && USE_OPENBSD_FTP==1
 
 #include <acquire_openbsd_ftp.h>
 
-#endif /* USE_LIBCURL */
+#endif /* defined(USE_LIBCURL) && USE_LIBCURL==1 */
 
-#if defined(USE_OPENSSL) || defined(USE_LIBRESSL) || defined(USE_COMMON_CRYPTO)
+#if (defined(USE_OPENSSL) && USE_OPENSSL==1) || (defined(USE_LIBRESSL) && USE_LIBRESSL==1) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT)
+#elif defined(USE_WINCRYPT) && USE_WINCRYPT==1
 #include <acquire_wincrypt.h>
-#endif /* defined(USE_OPENSSL) || defined(USE_LIBRESSL) ||                     \
-          defined(USE_COMMON_CRYPTO) */
+#endif /* (defined(USE_OPENSSL) && USE_OPENSSL==1) || (defined(USE_LIBRESSL) && USE_LIBRESSL==1) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO==1) */
 
-#ifdef USE_MINIZ
+#if defined(USE_MINIZ) && USE_MINIZ == 1
 #include <acquire_miniz.h>
-#elif defined(USE_LIBARCHIVE)
+#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE == 1
 #include <acquire_libarchive.h>
 #elif
 #error "Extract library must be specified"
-#endif /* USE_MINIZ */
+#endif /* defined(USE_MINIZ) && USE_MINIZ == 1 */
 
 int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;

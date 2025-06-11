@@ -24,9 +24,9 @@ extern "C" {
 
 #ifdef ARCHIVE_LIB
 #include STR(ARCHIVE_HEADER_NAME)
-#elif defined(USE_MINIZ)
+#elif defined(USE_MINIZ) && USE_MINIZ==1
 #include <acquire_miniz.h>
-#elif defined(USE_LIBARCHIVE)
+#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE==1
 #include <acquire_libarchive.h>
 #else
 #error                                                                         \

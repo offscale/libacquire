@@ -5,7 +5,7 @@
 #ifndef LIBACQUIRE_ACQUIRE_LIBRHASH_H
 #define LIBACQUIRE_ACQUIRE_LIBRHASH_H
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH)
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(USE_LIBRHASH) && USE_LIBRHASH==1
 
 #ifdef __cplusplus
 extern "C" {
