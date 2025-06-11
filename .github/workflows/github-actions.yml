@@ -34,14 +34,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vcpkg
-          key: ${{ runner.os }}-${{ hashFiles('**/vcpkg.json') }}-857bccdad005957391854448a15ba30e8c118503
+          key: ${{ runner.os }}-${{ hashFiles('**/vcpkg.json') }}-43a81834cc9d6d953bd5ca8153437ef65fed86ab
         if: matrix.os == 'windows-latest'
 
       - name: checkout vcpkg
         uses: actions/checkout@v4
         with:
-          repository: "microsoft/vcpkg"
-          ref: 857bccdad005957391854448a15ba30e8c118503
+          repository: "offscale/vcpkg"
+          ref: project0
           path: vcpkg
         if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
 
