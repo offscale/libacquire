@@ -45,11 +45,12 @@ jobs:
         if: steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: Setup vcpkg (Windows)
-        run: ./vcpkg/bootstrap-vcpkg.bat
+        run: vcpkg\bootstrap-vcpkg.bat
+        shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Setup vcpkg (non-Windows)
-        run: ./vcpkg/bootstrap-vcpkg
+        run: ./vcpkg/bootstrap-vcpkg.sh
         if: matrix.os != 'windows-latest'
 
       - name: Install vcpkg ports (Windows)

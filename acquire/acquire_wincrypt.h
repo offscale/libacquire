@@ -147,5 +147,5 @@ bool sha512(const char *filename, const char *hash) {
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&          \
-          USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&                                         \
+          USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */

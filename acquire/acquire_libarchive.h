@@ -113,5 +113,5 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_LIBARCHIVE_H) && defined(USE_LIBARCHIVE) \
-          && USE_LIBARCHIVE && defined(LIBACQUIRE_IMPLEMENTATION) &&                       \
+          && USE_LIBARCHIVE && defined(LIBACQUIRE_IMPLEMENTATION) &&           \
           !defined(LIBACQUIRE_EXTRACT_IMPL) */

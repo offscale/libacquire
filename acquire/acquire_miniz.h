@@ -42,5 +42,5 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(USE_MINIZ) &&        \
-          USE_MINIZ && defined(LIBACQUIRE_IMPLEMENTATION) &&                                         \
+          USE_MINIZ && defined(LIBACQUIRE_IMPLEMENTATION) &&                   \
           !defined(LIBACQUIRE_EXTRACT_IMPL) */
