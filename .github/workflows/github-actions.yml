@@ -26,7 +26,7 @@ jobs:
         if: matrix.os == 'macos-latest'
 
       - name: Install dependencies for Ubuntu
-        run: sudo apt-get install -y libcurl4-openssl-dev libarchive-dev make gcc ninja-build cmake
+        run: sudo apt-get install -y cmake gcc libarchive-dev libcurl4-openssl-dev linux-libc-dev make ninja-build
         if: matrix.os == 'ubuntu-latest'
 
       - name: Cache vcpkg
@@ -71,7 +71,11 @@ jobs:
       - name: configure (with vcpkg on non-Windows)
         working-directory: ./build
         run: |
-          cmake -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" ..
+          cmake -DCMAKE_BUILD_TYPE="Debug" \
+                -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+                -DCMAKE_C_COMPILER="$(which gcc)" \
+                -DCMAKE_MAKE_PROGRAM="$(which make)" \
+                ..
         if: matrix.os != 'windows-latest'
 
       - name: build
