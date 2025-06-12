@@ -26,7 +26,7 @@ jobs:
         if: matrix.os == 'macos-latest'
 
       - name: Install dependencies for Ubuntu
-        run: sudo apt-get install -y libcurl4-openssl-dev libarchive-dev
+        run: sudo apt-get install -y libcurl4-openssl-dev libarchive-dev make gcc ninja-build cmake
         if: matrix.os == 'ubuntu-latest'
 
       - name: Cache vcpkg
