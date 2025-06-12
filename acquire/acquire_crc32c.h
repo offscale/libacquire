@@ -26,21 +26,6 @@ extern "C" {
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
 defined(__NT__) */
 
-/**
- * @brief Verify the CRC32C checksum of a given file against an expected hash
- * string.
- *
- * Opens the file, computes its CRC32C checksum, then compares it with the input
- * hash string case-insensitively.
- *
- * @param filename Path to the file to be validated.
- * @param hash Expected CRC32C checksum string in hexadecimal (8 characters).
- *
- * @return true if computed checksum matches input hash, false otherwise or on
- * error.
- */
-extern bool crc32c(const char *filename, const char *hash);
-
 /*
  * Taken from FreeBSD implementation of CRC32C, specifically:
  * - usr.bin\cksum\crc32_algo.c @ d91d2b513eb30a226e87f0e52e2f9f232a2e1ca3

@@ -16,24 +16,20 @@
 #include <acquire_crc32c.h>
 #elif defined(USE_LIBRHASH) && USE_LIBRHASH
 #include <acquire_librhash.h>
+#else
+#warning "Checksum lib could be specified"
 #endif /* defined(USE_CRC32C) && USE_CRC32C */
 
 #if defined(USE_LIBCURL) && USE_LIBCURL
-
 #include <acquire_libcurl.h>
-
 #elif defined(USE_WININET) && USE_WININET
-
 #include <acquire_wininet.h>
-
 #elif defined(USE_LIBFETCH) && USE_LIBFETCH
-
 #include <acquire_libfetch.h>
-
 #elif defined(USE_OPENBSD_FTP) && USE_OPENBSD_FTP
-
 #include <acquire_openbsd_ftp.h>
-
+#else
+#error "Network lib must be specified"
 #endif /* defined(USE_LIBCURL) && USE_LIBCURL */
 
 #if (defined(USE_OPENSSL) && USE_OPENSSL) ||                                   \
@@ -50,7 +46,7 @@
 #include <acquire_miniz.h>
 #elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE
 #include <acquire_libarchive.h>
-#elif
+#else
 #error "Extract library must be specified"
 #endif /* defined(USE_MINIZ) && USE_MINIZ */
 

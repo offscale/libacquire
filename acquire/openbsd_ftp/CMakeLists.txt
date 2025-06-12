@@ -33,6 +33,7 @@ endif (HAVE_VA_COPY)
 ###############################
 
 add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
 target_link_libraries("${EXEC_NAME}" INTERFACE "${PROJECT_NAME}_compiler_flags")
 

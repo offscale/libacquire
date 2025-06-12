@@ -73,6 +73,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/generate_header_and_source_from_header_only.c
 if (LIBACQUIRE_HEADER_ONLY)
     message(STATUS "LIBACQUIRE_HEADER_ONLY")
     add_library("${LIBRARY_NAME}" INTERFACE "${_Header_Files}" "${Header_Files}")
+    target_compile_definitions("${LIBRARY_NAME}" PUBLIC "_${TARGET_ARCH}_")
     set(lib_vis "INTERFACE")
 else ()
     set(gen_header_files "")
@@ -245,6 +246,7 @@ else ()
 
     # Implement the internal implementation library as STATIC
     add_library("${LIBRARY_NAME}_impl" STATIC ${gen_header_files} ${gen_source_files})
+    target_compile_definitions("${LIBRARY_NAME}_impl" PUBLIC "_${TARGET_ARCH}_")
 
     if (DEFINED CHECKSUM_LIBRARIES)
         message(STATUS "[libacquire] Using var ${CHECKSUM_LIBRARIES} for checksums")

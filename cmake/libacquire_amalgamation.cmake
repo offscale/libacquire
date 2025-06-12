@@ -98,6 +98,7 @@ function(create_amalgamation_target amalgamation_header)
         get_filename_component(dir_of_amalgamation_header "${amalgamation_header}" DIRECTORY)
 
         add_library("${LIBRARY_NAME}" INTERFACE)
+        target_compile_definitions("${LIBRARY_NAME}" PUBLIC "_${TARGET_ARCH}_")
         include(GNUInstallDirs)
         target_include_directories(
                 "${LIBRARY_NAME}"

@@ -1,5 +1,7 @@
 #include <greatest.h>
 
+#include "acquire_common_defs.h"
+
 #include "test_checksum.h"
 #include "test_download.h"
 #include "test_fileutils.h"

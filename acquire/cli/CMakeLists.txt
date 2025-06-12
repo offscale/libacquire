@@ -49,6 +49,7 @@ set(Source_Exec_Files "main.c")
 source_group("${EXEC_NAME} Source Files" FILES "${Source_Exec_Files}")
 
 add_executable("${EXEC_NAME}" "${Source_Exec_Files}")
+target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 target_link_libraries(
         "${EXEC_NAME}"
         PRIVATE

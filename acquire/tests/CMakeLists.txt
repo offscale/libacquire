@@ -118,6 +118,7 @@ foreach (EXEC_NAME ${_targets})
             PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
     set_backend_definitions(${EXEC_NAME})
 
@@ -163,6 +164,7 @@ foreach (ARCHIVE_LIB ${_archives})
     source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
     if (ARCHIVE_LIB STREQUAL "miniz")
         target_compile_definitions("${EXEC_NAME}" PRIVATE USE_MINIZ=1)
