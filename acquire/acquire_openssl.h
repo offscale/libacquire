@@ -17,12 +17,12 @@ extern "C" {
 
 #include "acquire_config.h"
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
-    (defined(USE_OPENSSL) && USE_OPENSSL)
+#if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL)
 
 #include "acquire_checksums.h"
 
-#ifdef USE_COMMON_CRYPTO
+#ifdef LIBACQUIRE_USE_COMMON_CRYPTO
 #include <CommonCrypto/CommonDigest.h>
 #define SHA256_DIGEST_LENGTH CC_SHA256_DIGEST_LENGTH
 #define SHA256_CTX CC_SHA256_CTX
@@ -38,7 +38,7 @@ extern "C" {
 #define SHA512_Final CC_SHA512_Final
 #define SHA512_BLOCK_BYTES CC_SHA512_BLOCK_BYTES
 
-#elif defined(USE_OPENSSL) && USE_OPENSSL
+#elif defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL
 
 #include <openssl/macros.h>
 #include <openssl/sha.h>
@@ -51,8 +51,9 @@ extern "C" {
 #define SHA256_BLOCK_BYTES 64 /* block size in bytes */
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
 
-#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                 \
-          (defined(USE_OPENSSL) && USE_OPENSSL) */
+#endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
+          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) &&                                           \
+          LIBACQUIRE_USE_OPENSSL) */
 
 #include <errno.h>
 #include <stdio.h>
@@ -253,7 +254,8 @@ bool sha512(const char *filename, const char *hash) {
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */
 
-#endif /* defined(USE_COMMON_CRYPTO) || defined(USE_OPENSSL) */
+#endif /* defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                             \
+          defined(LIBACQUIRE_USE_OPENSSL) */
 
 #ifdef __cplusplus
 }

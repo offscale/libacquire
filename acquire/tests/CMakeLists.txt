@@ -68,20 +68,20 @@ set(_targets "${exec_name}" "test_amalgamation")
 set(_archives "libarchive" "miniz")
 
 macro(set_backend_definitions TARGET)
-    if (USE_LIBCURL)
-        target_compile_definitions(${TARGET} PRIVATE USE_LIBCURL=1)
-    elseif (USE_LIBFETCH)
-        target_compile_definitions(${TARGET} PRIVATE USE_LIBFETCH=1)
-    elseif (USE_WININET)
-        target_compile_definitions(${TARGET} PRIVATE USE_WININET=1)
-    elseif (USE_OPENBSD_FTP)
-        target_compile_definitions(${TARGET} PRIVATE USE_OPENBSD_FTP=1)
+    if (LIBACQUIRE_USE_LIBCURL)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_LIBCURL=1)
+    elseif (LIBACQUIRE_USE_LIBFETCH)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_LIBFETCH=1)
+    elseif (LIBACQUIRE_USE_WININET)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_WININET=1)
+    elseif (LIBACQUIRE_USE_OPENBSD_FTP)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_OPENBSD_FTP=1)
     endif ()
 
-    if (USE_MINIZ)
-        target_compile_definitions(${TARGET} PRIVATE USE_MINIZ=1)
-    elseif (USE_LIBARCHIVE)
-        target_compile_definitions(${TARGET} PRIVATE USE_LIBARCHIVE=1)
+    if (LIBACQUIRE_USE_MINIZ)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_MINIZ=1)
+    elseif (LIBACQUIRE_USE_LIBARCHIVE)
+        target_compile_definitions(${TARGET} PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
     endif ()
 endmacro()
 
@@ -115,7 +115,7 @@ foreach (EXEC_NAME ${_targets})
     source_group("Source Files" FILES "${Source_Files}")
 
     set_source_files_properties("test_string_extras.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
 
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
     target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
@@ -125,7 +125,6 @@ foreach (EXEC_NAME ${_targets})
     target_link_libraries(
             "${EXEC_NAME}"
             PRIVATE
-#            "${PROJECT_NAME}_impl"
             "${PROJECT_NAME}"
             "${PROJECT_NAME}_compiler_flags"
             #"${CHECKSUM_LIBRARIES}"
@@ -140,7 +139,7 @@ foreach (EXEC_NAME ${_targets})
     test_wrapper()
 endforeach (EXEC_NAME ${_targets})
 
-if (USE_MINIZ)
+if (LIBACQUIRE_USE_MINIZ)
     set(Header_Files_Zip
             "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/miniz.h"
             "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}/zip.h")
@@ -151,7 +150,7 @@ if (USE_MINIZ)
     source_group("Source Files zip_miniz" FILES "${Source_Files_Zip}")
 
     add_library("${PROJECT_NAME}_zip_miniz" "${Header_Files_Zip}" "${Source_Files_Zip}")
-endif (USE_MINIZ)
+endif (LIBACQUIRE_USE_MINIZ)
 
 # Extraction archive tests
 foreach (ARCHIVE_LIB ${_archives})
@@ -167,27 +166,27 @@ foreach (ARCHIVE_LIB ${_archives})
     target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
     if (ARCHIVE_LIB STREQUAL "miniz")
-        target_compile_definitions("${EXEC_NAME}" PRIVATE USE_MINIZ=1)
+        target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_MINIZ=1)
     elseif (ARCHIVE_LIB STREQUAL "libarchive")
-        target_compile_definitions("${EXEC_NAME}" PRIVATE USE_LIBARCHIVE=1)
+        target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
         include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
         target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
     else ()
         message(FATAL_ERROR "Unknown ARCHIVE_LIB: ${ARCHIVE_LIB}")
     endif ()
 
-    if (USE_MINIZ)
+    if (LIBACQUIRE_USE_MINIZ)
         set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_MINIZ=1")
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_MINIZ=1")
         target_include_directories("${PROJECT_NAME}_zip_miniz" PUBLIC
                 "${PROJECT_BINARY_DIR}/third_party/${EXTRACT_LIB}")
         target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}_zip_miniz")
-    elseif (USE_LIBARCHIVE)
+    elseif (LIBACQUIRE_USE_LIBARCHIVE)
         set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION;USE_LIBARCHIVE=1")
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_LIBARCHIVE=1")
     else ()
         set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION")
+                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
     endif ()
 
     target_compile_definitions(

@@ -7,44 +7,44 @@
 #ifndef LIBACQUIRE_VERSION_H
 #define LIBACQUIRE_VERSION_H
 
-#define VERSION "@acquire_VERSION@"
+#define LIBACQUIRE_VERSION "@acquire_VERSION@"
 #define TMPDIR "@TMPDIR@"
 
 /* Crypto library */
 
 #cmakedefine CRYPTO_LIB "@CRYPTO_LIB@"
 
-#cmakedefine USE_COMMON_CRYPTO 1
+#cmakedefine LIBACQUIRE_USE_COMMON_CRYPTO 1
 
-#cmakedefine USE_OPENSSL 1
+#cmakedefine LIBACQUIRE_USE_OPENSSL 1
 
-#cmakedefine USE_WINCRYPT 1
+#cmakedefine LIBACQUIRE_USE_WINCRYPT 1
 
 /* Networking library */
 
-#cmakedefine USE_WININET 1
+#cmakedefine LIBACQUIRE_USE_WININET 1
 
-#cmakedefine USE_LIBCURL 1
+#cmakedefine LIBACQUIRE_USE_LIBCURL 1
 
-#cmakedefine USE_LIBFETCH 1
+#cmakedefine LIBACQUIRE_USE_LIBFETCH 1
 
 /* Extraction API */
 
-#cmakedefine USE_WINCOMPRESSAPI 1
+#cmakedefine LIBACQUIRE_USE_WINCOMPRESSAPI 1
 
 #cmakedefine USE_LIBEXTRACT 1
 
-#cmakedefine USE_ZLIB 1
+#cmakedefine LIBACQUIRE_USE_ZLIB 1
 
-#cmakedefine USE_MINIZ 1
+#cmakedefine LIBACQUIRE_USE_MINIZ 1
 
 #define EXTRACT_LIB "@EXTRACT_LIB@"
 
 /* Checksum API */
 
-#cmakedefine USE_CRC32C 1
+#cmakedefine LIBACQUIRE_USE_CRC32C 1
 
-#cmakedefine USE_LIBRHASH 1
+#cmakedefine LIBACQUIRE_USE_LIBRHASH 1
 
 #define CHECKSUM_LIB "@CHECKSUM_LIB@"
 

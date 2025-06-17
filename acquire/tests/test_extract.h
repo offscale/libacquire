@@ -24,14 +24,14 @@ extern "C" {
 
 #ifdef ARCHIVE_LIB
 #include STR(ARCHIVE_HEADER_NAME)
-#elif defined(USE_MINIZ) && USE_MINIZ
+#elif defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ
 #include <acquire_miniz.h>
-#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE
+#elif defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
 #include <acquire_libarchive.h>
 #else
 #error                                                                         \
     "ARCHIVE_LIB must be defined to the backend name (e.g. miniz or libarchive)" \
-    "or USE_MINIZ or USE_LIBARCHIVE must be defined";
+    "or LIBACQUIRE_USE_MINIZ or LIBACQUIRE_USE_LIBARCHIVE must be defined";
 #endif /* ARCHIVE_LIB */
 
 #include <acquire_common_defs.h>

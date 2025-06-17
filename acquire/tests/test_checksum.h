@@ -15,16 +15,16 @@ extern "C" {
 #include <acquire_config.h>
 #include <config_for_tests.h>
 
-#if defined(USE_CRC32C) && USE_CRC32C
+#if defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
 #include <acquire_crc32c.h>
-#elif defined(USE_LIBRHASH) && USE_LIBRHASH
+#elif defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
 #include <acquire_librhash.h>
 #endif
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
-    (defined(USE_OPENSSL) && USE_OPENSSL)
+#if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT
+#elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include <acquire_wincrypt.h>
 #endif
 

@@ -28,13 +28,14 @@ extern "C" {
 #include "acquire_checksums.h"
 #include "libacquire_export.h"
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
-    (defined(USE_OPENSSL) && USE_OPENSSL)
+#if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL)
 #include "acquire_openssl.h"
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT
+#elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include "acquire_wincrypt.h"
-#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                 \
-          (defined(USE_OPENSSL) && USE_OPENSSL) */
+#endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
+          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) &&                                           \
+          LIBACQUIRE_USE_OPENSSL) */
 
 extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 

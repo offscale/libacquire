@@ -4,9 +4,12 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) && USE_WININET &&   \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+#if !defined(LIBACQUIRE_WININET_H) && defined(LIBACQUIRE_USE_WININET) &&       \
+    LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_WININET_H
+
+#include <minwindef.h>
+#include <windef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,6 +19,7 @@ extern "C" {
 #include "acquire_stdbool.h"
 #endif /* __cplusplus */
 
+#include "acquire_config.h"
 #include "acquire_checksums.h"
 
 #ifndef NAME_MAX
@@ -33,12 +37,12 @@ extern "C" {
 
 #define BUFFER_SIZE 4096
 
-#ifndef DOWNLOAD_DIR_IMPL
-#define DOWNLOAD_DIR_IMPL
+#ifndef LIBACQUIRE_DOWNLOAD_DIR_IMPL
+#define LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return TMPDIR "//.downloads"; }
-#endif /* !DOWNLOAD_DIR_IMPL */
+#endif /* !LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
-#ifdef DOWNLOAD_IMPL
+#ifdef LIBACQUIRE_DOWNLOAD_IMPL
 int download(const char *url, enum Checksum checksum, const char *hash,
              const char *target_location /*[NAME_MAX]*/, bool follow,
              size_t retry, size_t verbosity) {
@@ -128,11 +132,11 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 
   return 0;
 }
-#endif /* DOWNLOAD_IMPL */
+#endif /* LIBACQUIRE_DOWNLOAD_IMPL */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WININET_H) && defined(USE_WININET) &&            \
-          USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !defined(LIBACQUIRE_WININET_H) && defined(LIBACQUIRE_USE_WININET) && \
+          LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION) */

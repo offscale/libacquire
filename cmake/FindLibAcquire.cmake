@@ -30,16 +30,16 @@ function(set_networking_lib HTTPS_LIBRARY)
         message(FATAL_ERROR "At least one HTTPS library must be specified for linkage")
     endif ()
 
-    if (DEFINED USE_LIBCURL AND DEFINED CURL_LINK_LIBRARIES)
+    if (DEFINED LIBACQUIRE_USE_LIBCURL AND DEFINED CURL_LINK_LIBRARIES)
         set(HTTPS_LIBRARY "${CURL_LINK_LIBRARIES}" PARENT_SCOPE)
-    elseif (DEFINED USE_WININET)
+    elseif (DEFINED LIBACQUIRE_USE_WININET)
         set(HTTPS_LIBRARY "wininet" PARENT_SCOPE)
-        if (NOT DEFINED USE_OPENSSL)
-            set(USE_WINCRYPT 1 PARENT_SCOPE)
-        endif (NOT DEFINED USE_OPENSSL)
-    elseif (DEFINED USE_MY_LIBFETCH)
+        if (NOT DEFINED LIBACQUIRE_USE_OPENSSL)
+            set(LIBACQUIRE_USE_WINCRYPT 1 PARENT_SCOPE)
+        endif (NOT DEFINED LIBACQUIRE_USE_OPENSSL)
+    elseif (DEFINED LIBACQUIRE_USE_MY_LIBFETCH)
         set(HTTPS_LIBRARY "freebsd_libfetch" PARENT_SCOPE)
-    elseif (DEFINED USE_LIBFETCH)
+    elseif (DEFINED LIBACQUIRE_USE_LIBFETCH)
         set(HTTPS_LIBRARY "fetch" PARENT_SCOPE)
     endif ()
 endfunction(set_networking_lib HTTPS_LIBRARY)
@@ -61,14 +61,14 @@ message(STATUS "net LIBACQUIRE_LIBRARIES      = ${LIBACQUIRE_LIBRARIES}")
 
 function(set_checksum_libraries CHECKSUM_LIBRARIES)
     # Note that most checksum libraries are crypto libraries so this function doesn't HAVE to be called
-    if (USE_LIBRHASH)
+    if (LIBACQUIRE_USE_LIBRHASH)
         # list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
         if (NOT TARGET LibRHash)
             find_package(LibRHash REQUIRED)
         endif (NOT TARGET LibRHash)
         set(CHECKSUM_LIBRARIES_USE "USE_LIBRASH" PARENT_SCOPE)
         set(CHECKSUM_LIBRARIES "LibRHash::LibRHash" PARENT_SCOPE)
-    endif (USE_LIBRHASH)
+    endif (LIBACQUIRE_USE_LIBRHASH)
 endfunction(set_checksum_libraries CHECKSUM_LIBRARIES)
 
 set_checksum_libraries(CHECKSUM_LIBRARIES)
@@ -100,10 +100,10 @@ function(set_cryptography_lib CRYPTO_LIBRARIES)
         set(LIBACQUIRE_INCLUDE_DIR "${OPENSSL_INCLUDE_DIR}")
     endif (DEFINED OPENSSL_LIBRARIES)
 
-    if (DEFINED USE_WINCRYPT)
+    if (DEFINED LIBACQUIRE_USE_WINCRYPT)
         list(APPEND CRYPTO_LIBRARIES "advapi32")
         list(APPEND CRYPTO_LIBRARIES "crypt32")
-    endif (DEFINED USE_WINCRYPT)
+    endif (DEFINED LIBACQUIRE_USE_WINCRYPT)
     set(CRYPTO_LIBRARIES "${CRYPTO_LIBRARIES}" PARENT_SCOPE)
 endfunction(set_cryptography_lib)
 
@@ -111,7 +111,7 @@ set_cryptography_lib(CRYPTO_LIBRARIES)
 
 if (DEFINED CRYPTO_LIBRARIES AND NOT CRYPTO_LIBRARIES STREQUAL "")
     list(APPEND LIBACQUIRE_LIBRARIES "${CRYPTO_LIBRARIES}")
-elseif (NOT DEFINED USE_COMMON_CRYPTO AND  # Link not needed
+elseif (NOT DEFINED LIBACQUIRE_USE_COMMON_CRYPTO AND  # Link not needed
         NOT DEFINED CHECKSUM_LIBRARIES OR
         CHECKSUM_LIBRARIES STREQUAL "" OR
         CHECKSUM_LIBRARIES STREQUAL "crc32c" # Needs actual crypto not just crc32c impl
@@ -149,9 +149,9 @@ macro(download_extract_miniz download_dir)
                 EXPECTED_HASH "SHA256=3dda9a244fe05a8f003477a6e1dfb6844071d003773ab18a7708b860d8896506")
 
         file(DOWNLOAD
-                "https://raw.githubusercontent.com/kuba--/zip/${KUBA_ZIP_VER}/src/zip.c"
+                "https://raw.githubusercontent.com/SamuelMarks/zip/refs/heads/msvc-type-coercion/src/zip.c"
                 "${download_dir}/zip.c"
-                EXPECTED_HASH "SHA256=cec3b7ef189510255b3b2b80dcfa7fe767c26e01dd14ec0cf0fbf1940e7e86c7")
+                EXPECTED_HASH "SHA256=729701ab2f0ae291a920cee448afa06e2932f08468f27c3cfbcc45f283013688")
 
         file(DOWNLOAD
                 "https://raw.githubusercontent.com/kuba--/zip/${KUBA_ZIP_VER}/src/miniz.h"
@@ -233,12 +233,12 @@ function(set_download_unarchiver EXTRACT_LIB)
         message(FATAL_ERROR "EXTRACT_LIB is not defined")
     endif (NOT DEFINED EXTRACT_LIB)
     set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
-    unset(USE_ZLIB)
-    unset(USE_ZLIB PARENT_SCOPE)
-    remove_definitions(-DUSE_ZLIB)
-    add_compile_definitions(USE_MINIZ=1)
-    set(USE_MINIZ 1)
-    set(USE_MINIZ "${USE_MINIZ}" PARENT_SCOPE)
+    unset(LIBACQUIRE_USE_ZLIB)
+    unset(LIBACQUIRE_USE_ZLIB PARENT_SCOPE)
+    remove_definitions(-DLIBACQUIRE_USE_ZLIB)
+    add_compile_definitions(LIBACQUIRE_USE_MINIZ=1)
+    set(LIBACQUIRE_USE_MINIZ 1)
+    set(LIBACQUIRE_USE_MINIZ "${LIBACQUIRE_USE_MINIZ}" PARENT_SCOPE)
 endfunction(set_download_unarchiver EXTRACT_LIB)
 
 if (DEFINED EXTRACT_LIB)
@@ -248,7 +248,7 @@ else ()
 endif ()
 
 function(set_extraction_api)
-    if (DEFINED USE_ZLIB)
+    if (DEFINED LIBACQUIRE_USE_ZLIB)
         include(FindZLIB)
         find_package(ZLIB QUIET)
         if (ZLIB_FOUND)
@@ -271,7 +271,7 @@ function(set_extraction_api)
     else ()
         set_download_unarchiver(EXTRACT_LIB)
         set(EXTRACT_LIB "${EXTRACT_LIB}" PARENT_SCOPE)
-    endif (DEFINED USE_ZLIB)
+    endif (DEFINED LIBACQUIRE_USE_ZLIB)
     set(EXTRACT_LIBRARIES "${EXTRACT_LIB}" PARENT_SCOPE)
 endfunction(set_extraction_api)
 

@@ -7,25 +7,26 @@
 #include <acquire_config.h>
 #include <config_for_tests.h>
 
-#if (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                       \
-    (defined(USE_OPENSSL) && USE_OPENSSL)
+#if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT
+#elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include <acquire_wincrypt.h>
-#endif /* (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO) ||                 \
-          (defined(USE_OPENSSL) && USE_OPENSSL) */
+#endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
+          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) &&                                           \
+          LIBACQUIRE_USE_OPENSSL) */
 
 #include <acquire_download.h>
 
-#if defined(USE_LIBCURL) && USE_LIBCURL
+#if defined(LIBACQUIRE_USE_LIBCURL) && LIBACQUIRE_USE_LIBCURL
 #include <acquire_libcurl.h>
-#elif defined(USE_WININET) && USE_WININET
+#elif defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET
 #include <acquire_wininet.h>
-#elif defined(USE_LIBFETCH) && USE_LIBFETCH
+#elif defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH
 #include <acquire_libfetch.h>
 #else
 #error "No networking library named"
-#endif /* USE_LIBCURL */
+#endif /* LIBACQUIRE_USE_LIBCURL */
 
 TEST x_test_file_downloads(void) {
   const int download_resp =

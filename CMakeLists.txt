@@ -3,7 +3,7 @@ project(acquire
         VERSION "0.0.1"
         LANGUAGES C)
 
-set(HOMEPAGE_URL "https://github.com/offscale/${PROJECT_NAME}")
+set(HOMEPAGE_URL "https://github.com/offscale/lib${PROJECT_NAME}")
 set(DESCRIPTION "The core for your package manager. Features: download, verify, and extract.")
 
 set(CMAKE_C_STANDARD 90)
@@ -11,8 +11,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-if (DEFINED USE_MY_LIBFETCH) # Experiments
-    add_compile_definitions(USE_MY_LIBFETCH=1)
+if (DEFINED LIBACQUIRE_USE_MY_LIBFETCH) # Experiments
+    add_compile_definitions(LIBACQUIRE_USE_MY_LIBFETCH=1)
 
     if (NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" AND NOT CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
         add_compile_definitions(WITH_SSL=1)
@@ -20,7 +20,7 @@ if (DEFINED USE_MY_LIBFETCH) # Experiments
     else ()
         add_compile_definitions(HAVE_REALLOCARRAY=1)
     endif ()
-endif (DEFINED USE_MY_LIBFETCH)
+endif (DEFINED LIBACQUIRE_USE_MY_LIBFETCH)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -119,7 +119,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+option(BUILD_SHARED_LIB "Build shared library" ON)
 
 if (APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/../lib")

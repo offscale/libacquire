@@ -6,8 +6,8 @@
  * Very much a WiP
  * */
 
-#if !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) &&              \
-    USE_WINSECCNG defined(LIBACQUIRE_IMPLEMENTATION) &&                        \
+#if !defined(LIBACQUIRE_WINSECCNG_H) && defined(LIBACQUIRE_USE_WINSECCNG) &&   \
+    LIBACQUIRE_USE_WINSECCNG && defined(LIBACQUIRE_IMPLEMENTATION) &&          \
     defined(LIBACQUIRE_CRYPTO_IMPL)
 #define LIBACQUIRE_WINSECCNG_H
 
@@ -15,8 +15,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include <bcrypt.h>
 #include <stdio.h>
+
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#include <minwindef.h>
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
+
+#include <bcrypt.h>
 
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 
@@ -119,6 +124,7 @@ Cleanup:
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WINSECCNG_H) && defined(USE_WINSECCNG) &&        \
-          USE_WINSECCNG defined(LIBACQUIRE_IMPLEMENTATION) &&                  \
+#endif /* !defined(LIBACQUIRE_WINSECCNG_H) &&                                  \
+          defined(LIBACQUIRE_USE_WINSECCNG) && LIBACQUIRE_USE_WINSECCNG                                                      \
+          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */

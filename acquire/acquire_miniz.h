@@ -1,5 +1,6 @@
-#if !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(USE_MINIZ) && USE_MINIZ && \
-    defined(LIBACQUIRE_IMPLEMENTATION) && !defined(LIBACQUIRE_EXTRACT_IMPL)
+#if !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(LIBACQUIRE_USE_MINIZ) &&   \
+    LIBACQUIRE_USE_MINIZ && defined(LIBACQUIRE_IMPLEMENTATION) &&              \
+    !defined(LIBACQUIRE_EXTRACT_IMPL)
 #define LIBACQUIRE_ACQUIRE_MINIZ_H
 #define LIBACQUIRE_EXTRACT_IMPL
 
@@ -41,6 +42,7 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(USE_MINIZ) &&        \
-          USE_MINIZ && defined(LIBACQUIRE_IMPLEMENTATION) &&                   \
+#endif /* !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) &&                              \
+          defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ &&                                                       \
+          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           !defined(LIBACQUIRE_EXTRACT_IMPL) */

@@ -4,8 +4,8 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&                \
-    USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&                      \
+#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(LIBACQUIRE_USE_WINCRYPT) &&     \
+    LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&           \
     defined(LIBACQUIRE_CRYPTO_IMPL)
 #define LIBACQUIRE_WINCRYPT_H
 
@@ -146,6 +146,6 @@ bool sha512(const char *filename, const char *hash) {
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(USE_WINCRYPT) &&          \
-          USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&                \
+#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(LIBACQUIRE_USE_WINCRYPT)  \
+          && LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&              \
           defined(LIBACQUIRE_CRYPTO_IMPL) */

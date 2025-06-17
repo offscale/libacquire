@@ -11,8 +11,8 @@
  * with some unused symbols and the CLI usage and `main` function removed
  */
 
-#if !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) &&                \
-    defined(LIBACQUIRE_IMPLEMENTATION)
+#if !defined(LIBACQUIRE_LIBFETCH_H) && defined(LIBACQUIRE_USE_LIBFETCH) &&     \
+    LIBACQUIRE_USE_LIBFETCH && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_LIBFETCH_H
 
 #ifdef __cplusplus
@@ -74,11 +74,11 @@ __FBSDID("$FreeBSD$");
 #include <termios.h>
 #include <unistd.h>
 
-#if defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH
+#if defined(LIBACQUIRE_USE_MY_LIBFETCH) && LIBACQUIRE_USE_MY_LIBFETCH
 #include "freebsd_libfetch/fetch.h"
 #else
 #include <fetch.h>
-#endif /* defined(USE_MY_LIBFETCH) && USE_MY_LIBFETCH */
+#endif /* defined(LIBACQUIRE_USE_MY_LIBFETCH) && LIBACQUIRE_USE_MY_LIBFETCH */
 
 #define TIMEOUT 120
 
@@ -789,11 +789,11 @@ done:
 }
 
 /* CUSTOM libacquire stuff */
-#ifdef DOWNLOAD_DIR_IMPL
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
-#endif /* DOWNLOAD_DIR_IMPL */
+#endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
-#ifdef DOWNLOAD_IMPL
+#ifdef LIBACQUIRE_DOWNLOAD_IMPL
 int download(const char *url, enum Checksum checksum, const char *hash,
              const char *target_location /*[NAME_MAX]*/, bool follow,
              size_t retry, size_t verbosity) {
@@ -823,11 +823,11 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 
   return result;
 }
-#endif /* DOWNLOAD_IMPL */
+#endif /* LIBACQUIRE_DOWNLOAD_IMPL */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(USE_LIBFETCH) &&          \
-          defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* !defined(LIBACQUIRE_LIBFETCH_H) && defined(LIBACQUIRE_USE_LIBFETCH)  \
+          && defined(LIBACQUIRE_IMPLEMENTATION) */

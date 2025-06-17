@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#include <minwindef.h>
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
+
 #include <errno.h>
 
 #include <acquire_common_defs.h>
@@ -12,43 +16,45 @@
 
 #include "cli.h"
 
-#if defined(USE_CRC32C) && USE_CRC32C
+#if defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
 #include <acquire_crc32c.h>
-#elif defined(USE_LIBRHASH) && USE_LIBRHASH
+#elif defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
 #include <acquire_librhash.h>
 #else
 #warning "Checksum lib could be specified"
-#endif /* defined(USE_CRC32C) && USE_CRC32C */
+#endif /* defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
 
-#if defined(USE_LIBCURL) && USE_LIBCURL
+#if defined(LIBACQUIRE_USE_LIBCURL) && LIBACQUIRE_USE_LIBCURL
 #include <acquire_libcurl.h>
-#elif defined(USE_WININET) && USE_WININET
+#elif defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET
 #include <acquire_wininet.h>
-#elif defined(USE_LIBFETCH) && USE_LIBFETCH
+#elif defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH
 #include <acquire_libfetch.h>
-#elif defined(USE_OPENBSD_FTP) && USE_OPENBSD_FTP
+#elif defined(LIBACQUIRE_USE_OPENBSD_FTP) && LIBACQUIRE_USE_OPENBSD_FTP
 #include <acquire_openbsd_ftp.h>
 #else
 #error "Network lib must be specified"
-#endif /* defined(USE_LIBCURL) && USE_LIBCURL */
+#endif /* defined(LIBACQUIRE_USE_LIBCURL) && LIBACQUIRE_USE_LIBCURL */
 
-#if (defined(USE_OPENSSL) && USE_OPENSSL) ||                                   \
-    (defined(USE_LIBRESSL) && USE_LIBRESSL) ||                                 \
-    (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO)
+#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
+    (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL) ||           \
+    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO)
 #include <acquire_openssl.h>
-#elif defined(USE_WINCRYPT) && USE_WINCRYPT
+#elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include <acquire_wincrypt.h>
-#endif /* (defined(USE_OPENSSL) && USE_OPENSSL) || (defined(USE_LIBRESSL) &&   \
-          USE_LIBRESSL) || (defined(USE_COMMON_CRYPTO) && USE_COMMON_CRYPTO)   \
+#endif /* (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||   \
+          (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL) || \
+          (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                        \
+          LIBACQUIRE_USE_COMMON_CRYPTO)
         */
 
-#if defined(USE_MINIZ) && USE_MINIZ
+#if defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ
 #include <acquire_miniz.h>
-#elif defined(USE_LIBARCHIVE) && USE_LIBARCHIVE
+#elif defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
 #include <acquire_libarchive.h>
 #else
 #error "Extract library must be specified"
-#endif /* defined(USE_MINIZ) && USE_MINIZ */
+#endif /* defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ */
 
 int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;
@@ -62,7 +68,7 @@ int main(int argc, char *argv[]) {
     return ENOMEM;
   } else {
     rc = docopt(args, argc, argv, /* help */ true,
-                /* version */ VERSION);
+                /* version */ LIBACQUIRE_VERSION);
     if (rc != EXIT_SUCCESS) {
       free(args);
       return rc;
@@ -74,7 +80,7 @@ int main(int argc, char *argv[]) {
   {
     char *check_buf = NULL;
     size_t check_len = 0;
-    errno_t err = _dupenv_s(&check_buf, &check_len, "CHECK");
+    const errno_t err = _dupenv_s(&check_buf, &check_len, "CHECK");
     if (err == 0 && check_buf != NULL && check_len > 0) {
       check_env = check_buf;
     }
@@ -91,8 +97,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (args->output != NULL && args->directory != NULL) {
-    size_t dir_len = strlen(args->directory);
-    size_t out_len = strlen(args->output);
+    const size_t dir_len = strlen(args->directory);
+    const size_t out_len = strlen(args->output);
 
     if (dir_len + 1 + out_len >= sizeof(output_full_path)) {
       fprintf(stderr, "Output path too long.\n");

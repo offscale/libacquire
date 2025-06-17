@@ -58,20 +58,50 @@ target_link_libraries(
         "${PROJECT_NAME}"
 )
 
-if (USE_LIBCURL)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBCURL=1)
-elseif (USE_LIBFETCH)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBFETCH=1)
-elseif (USE_WININET)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_WININET=1)
-elseif (USE_OPENBSD_FTP)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_OPENBSD_FTP=1)
+set_extract_lib()
+if (WIN32 AND (NOT DEFINED EXTRACT_LIB OR EXTRACT_LIB STREQUAL "" OR EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
+    set(LIBACQUIRE_USE_MINIZ 1)
+    set(EXTRACT_LIB "miniz")
+endif (WIN32 AND (NOT DEFINED EXTRACT_LIB OR EXTRACT_LIB STREQUAL "" OR EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
+
+if (LIBACQUIRE_USE_LIBCURL)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_LIBCURL=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_LIBCURL=1"
+    )
+elseif (LIBACQUIRE_USE_LIBFETCH)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_LIBFETCH=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_LIBFETCH=1"
+    )
+elseif (LIBACQUIRE_USE_WININET)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_WININET=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_WININET=1"
+    )
+elseif (LIBACQUIRE_USE_OPENBSD_FTP)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_OPENBSD_FTP=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_OPENBSD_FTP=1"
+    )
 endif ()
 
-if (USE_MINIZ)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_MINIZ=1)
-elseif (USE_LIBARCHIVE)
-    target_compile_definitions(${EXEC_NAME} PRIVATE USE_LIBARCHIVE=1)
+if (LIBACQUIRE_USE_MINIZ)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_MINIZ=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_MINIZ=1"
+    )
+elseif (LIBACQUIRE_USE_LIBARCHIVE)
+    target_compile_definitions(${EXEC_NAME} PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
+    set_source_files_properties(
+            ${Source_Exec_Files} PROPERTIES
+            COMPILE_DEFINITIONS "LIBACQUIRE_USE_LIBARCHIVE=1"
+    )
 endif ()
 
 target_include_directories(

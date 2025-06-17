@@ -7,9 +7,9 @@ libacquire
 
 The core for your package manager, minus the dependency graph components. Features: **download**, **verify**, and **extract**.
 
-By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DUSE_LIBCURL` or `-DUSE_LIBFETCH`.
+By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DLIBACQUIRE_USE_LIBCURL` or `-DLIBACQUIRE_USE_LIBFETCH`.
 
-By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DUSE_OPENSSL`.
+By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DLIBACQUIRE_USE_OPENSSL`.
 
 By default—for crc32c—this uses `rhash` if available (also giving access to: CRC32, MD4, MD5, SHA1, SHA256, SHA512, SHA3, AICH, ED2K, DC++ TTH, BitTorrent BTIH, Tiger, GOST R 34.11-94, GOST R 34.11-2012, RIPEMD-160, HAS-160, EDON-R, and Whirlpool); otherwise uses included crc32c implementation. Override with `-DUSE_CRC32C`.
 
@@ -46,10 +46,10 @@ If your OS doesn't have the dependency, an optimised dependency-free version wil
 
   | API     | Package enable flag | OS support |
   | ------- | ------------------- | ---------- |
-  | [`wincrypt.h`](https://docs.microsoft.com/en-us/windows/win32/api/wincrypt) | `USE_WINCRYPT`  | Windows †
-  | [OpenSSL](https://openssl.org) | `USE_COMMON_CRYPTO` | macOS † |
-  | [OpenSSL](https://openssl.org) | `USE_LIBRESSL`      | All that [LibreSSL](https://libressl.org) supports  |
-  | [OpenSSL](https://openssl.org) | `USE_OPENSSL`       | All that [OpenSSL](https://openssl.org) supports; default † on non macOS and Windows |
+  | [`wincrypt.h`](https://docs.microsoft.com/en-us/windows/win32/api/wincrypt) | `LIBACQUIRE_USE_WINCRYPT`  | Windows †
+  | [OpenSSL](https://openssl.org) | `LIBACQUIRE_USE_COMMON_CRYPTO` | macOS † |
+  | [OpenSSL](https://openssl.org) | `LIBACQUIRE_USE_LIBRESSL`      | All that [LibreSSL](https://libressl.org) supports  |
+  | [OpenSSL](https://openssl.org) | `LIBACQUIRE_USE_OPENSSL`       | All that [OpenSSL](https://openssl.org) supports; default † on non macOS and Windows |
 
 (will fallback to checksum library if undefined and only hashing is required and checksum library defined isn't CRC32C)
 
@@ -57,19 +57,19 @@ If your OS doesn't have the dependency, an optimised dependency-free version wil
 
   | API     | Package enable flag | OS support |
   | ------- | ------------------- | ---------- |
-  | [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet) | `USE_WININET` | Windows † | 
-  | [libfetch](https://www.freebsd.org/cgi/man.cgi?fetch(3)) | `USE_LIBFETCH`  | FreeBSD † & derivatives; other OS support WiP (try `BUILD_FREEBSD_LIBFETCH`)
-  | \* [OpenBSD's `ftp`](https://man.openbsd.org/ftp.1) | `USE_OPENBSD_FTP`  | OpenBSD † (try `BUILD_OPENBSD_FTP`)
-  | [libcurl](https://curl.se/libcurl)  | `USE_LIBCURL`  | All that [`curl`](https://curl.se) supports; default † on non macOS and Windows
+  | [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet) | `LIBACQUIRE_USE_WININET` | Windows † | 
+  | [libfetch](https://www.freebsd.org/cgi/man.cgi?fetch(3)) | `LIBACQUIRE_USE_LIBFETCH`  | FreeBSD † & derivatives; other OS support WiP (try `BUILD_FREEBSD_LIBFETCH`)
+  | \* [OpenBSD's `ftp`](https://man.openbsd.org/ftp.1) | `LIBACQUIRE_USE_OPENBSD_FTP`  | OpenBSD † (try `BUILD_OPENBSD_FTP`)
+  | [libcurl](https://curl.se/libcurl)  | `LIBACQUIRE_USE_LIBCURL`  | All that [`curl`](https://curl.se) supports; default † on non macOS and Windows
 
 ### Extraction
 
   | API     | Package enable flag | OS support |
   | ------- | ------------------- | ---------- |
-  | \* [`compressapi.h`](https://docs.microsoft.com/en-us/windows/win32/api/_cmpapi) | `USE_WINCOMPRESSAPI` | Windows †
-  | \* [zlib](https://zlib.net) | `USE_ZLIB` | All that zlib supports; default † (if installed) on macOS, Linux, BSD, and SunOS
-  | \* [libarchive](https://libarchive.org) | `USE_LIBARCHIVE` | All that libarchive supports
-  | [miniz](https://github.com/richgel999/miniz) with [zip](https://github.com/kuba--/zip) API | `USE_MINIZ` | All that miniz + zip supports; default † fallback
+  | \* [`compressapi.h`](https://docs.microsoft.com/en-us/windows/win32/api/_cmpapi) | `LIBACQUIRE_USE_WINCOMPRESSAPI` | Windows †
+  | \* [zlib](https://zlib.net) | `LIBACQUIRE_USE_ZLIB` | All that zlib supports; default † (if installed) on macOS, Linux, BSD, and SunOS
+  | \* [libarchive](https://libarchive.org) | `LIBACQUIRE_USE_LIBARCHIVE` | All that libarchive supports
+  | [miniz](https://github.com/richgel999/miniz) with [zip](https://github.com/kuba--/zip) API | `LIBACQUIRE_USE_MINIZ` | All that miniz + zip supports; default † fallback
 
 ### Checksum
 
@@ -77,8 +77,8 @@ Note that most checksum libraries are crypto libraries, so working with these AP
 
   | API                                                           | Package enable flag | OS support                      |
   ----------------------------------------------------------------| ------------------- |---------------------------------|
-  | \* `acquire_crc32c.h`                                         | `USE_CRC32C`        | All                             |
-  | \* [RHash (Recursive Hasher)](https://github.com/rhash/RHash) | `USE_LIBRHASH`      | All; † fallback to `USE_CRC32C` 
+  | \* `acquire_crc32c.h`                                         | `LIBACQUIRE_USE_CRC32C`        | All                             |
+  | \* [RHash (Recursive Hasher)](https://github.com/rhash/RHash) | `LIBACQUIRE_USE_LIBRHASH`      | All; † fallback to `LIBACQUIRE_USE_CRC32C` 
 
 ## Docker
 
