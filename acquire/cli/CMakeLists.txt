@@ -58,6 +58,7 @@ target_link_libraries(
         "${PROJECT_NAME}"
 )
 
+include("${CMAKE_SOURCE_DIR}/cmake/FindExtractLib.cmake")
 set_extract_lib()
 if (WIN32 AND (NOT DEFINED EXTRACT_LIB OR EXTRACT_LIB STREQUAL "" OR EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
     set(LIBACQUIRE_USE_MINIZ 1)

@@ -147,27 +147,7 @@ endmacro(set_http_https_lib)
 # Extraction libraries #
 ########################
 
-function(set_extract_lib)
-    if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED LIBACQUIRE_USE_ZLIB AND NOT DEFINED LIBACQUIRE_USE_LIBARCHIVE)
-        set(LIBACQUIRE_USE_WINCOMPRESSAPI 1 PARENT_SCOPE)
-        set(EXTRACT_LIB "WINCOMPRESSAPI" PARENT_SCOPE)
-        list(APPEND _Header_Files "acquire_compressapi.h")
-    elseif (DEFINED LIBACQUIRE_USE_LIBARCHIVE)
-        set(EXTRACT_LIB "LIBARCHIVE" PARENT_SCOPE)
-        list(APPEND _Header_Files "acquire_libarchive.h")
-        include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
-        set(EXTRACT_INCLUDE_DIRECTORIES "${LibArchive_INCLUDE_DIRS}" PARENT_SCOPE)
-        list(APPEND LIBACQUIRE_LIBRARIES "${LibArchive_LIBRARIES}")
-    elseif (DEFINED LIBACQUIRE_USE_ZLIB)
-        set(LIBACQUIRE_USE_ZLIB 1 PARENT_SCOPE)
-        set(EXTRACT_LIB "ZLIB" PARENT_SCOPE)
-        list(APPEND _Header_Files "acquire_zlib.h")
-    else ()
-        set(LIBACQUIRE_USE_MINIZ 1 PARENT_SCOPE)
-        set(EXTRACT_LIB "MINIZ" PARENT_SCOPE)
-        list(APPEND _Header_Files "acquire_miniz.h")
-    endif ()
-endfunction(set_extract_lib)
+include("${CMAKE_SOURCE_DIR}/cmake/FindExtractLib.cmake")
 
 ######################
 # Checksum libraries #

@@ -93,8 +93,7 @@ static const unsigned int crctable[256] = {
 };
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    !defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL)
-#define LIBACQUIRE_ACQUIRE_CRC32C_IMPL
+    defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL)
 
 unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len) {
   unsigned int crc = iv ^ ~0;
@@ -144,7 +143,7 @@ bool crc32c(const char *const filename, const char *const hash) {
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          !defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL) */
+          defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL) */
 
 #ifdef __cplusplus
 }
