@@ -140,7 +140,6 @@ bool crc32c(const char *const filename, const char *const hash) {
   fclose(fh);
 
   snprintf(computed, sizeof(computed), "%08x", crc32_res);
-  fprintf(stderr, "computed: \"%s\"\n", computed);
   return strcmp(computed, hash) == 0;
 }
 
