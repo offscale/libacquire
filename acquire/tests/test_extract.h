@@ -43,12 +43,13 @@ TEST x_test_extract_archive(void) {
   puts("\"test_extract.h\" for ARCHIVE_LIB: \"" STR(
       ARCHIVE_LIB) "\" into EXTRACT_DIR: \"" EXTRACT_DIR "\"");
 
-  ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, MINIZ_ZIP_FILE, EXTRACT_DIR) !=
+  ASSERT_FALSE(extract_archive(LIBACQUIRE_ZIP, GREATEST_ARCHIVE, EXTRACT_DIR) !=
                EXIT_SUCCESS);
 
   /* Could add a comprehensive file check here */
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "greatest.h"));
-  ASSERT_FALSE(!is_directory(EXTRACT_DIR));
+  ASSERT_FALSE(!is_directory(EXTRACT_DIR PATH_SEP "greatest-cmake-and-msvc"));
+  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "greatest-cmake-and-msvc" PATH_SEP
+                                             "greatest.h"));
 
 #undef EXTRACT_DIR
   PASS();

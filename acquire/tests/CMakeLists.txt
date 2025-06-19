@@ -6,6 +6,7 @@ set(exec_name "test_${PROJECT_NAME}")
 
 set(GREATEST_CRC32C "f83d6ce5")
 set(GREATEST_SHA256 "b3f89ecad2301c64c580f328cc03a74d92f4cd4bf42ab18d3d4bfb7b8be5b948")
+set(GREATEST_ARCHIVE_SHA256 "67bad60cd59fffc6b5bc65934deb338b61e8399703807458539c82afbba87d31")
 
 set(DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/test_downloads")
 
@@ -17,16 +18,19 @@ endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 file(MAKE_DIRECTORY "${DOWNLOAD_DIR}")
 
 set(GREATEST_BASEFILENAME "greatest.h")
-set(GREATEST_FILE "${DOWNLOAD_DIR}/${GREATEST_BASEFILENAME}")
-file(TO_NATIVE_PATH "${GREATEST_FILE}" GREATEST_FILE)
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
-    string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
-endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
+set(GREATEST_ARCHIVE "${DOWNLOAD_DIR}/greatest.zip")
+set(GREATEST_ARCHIVE_URL "https://github.com/SamuelMarks/greatest/archive/refs/heads/cmake-and-msvc.zip")
 set(GREATEST_URL "https://raw.githubusercontent.com/SamuelMarks/greatest/cmake-and-msvc/greatest.h")
 
-file(DOWNLOAD "${GREATEST_URL}" "${GREATEST_FILE}"
-        EXPECTED_HASH "SHA256=${GREATEST_SHA256}")
+if (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
+    file(DOWNLOAD "${GREATEST_ARCHIVE_URL}" "${GREATEST_ARCHIVE}"
+            EXPECTED_HASH "SHA256=${GREATEST_ARCHIVE_SHA256}")
+
+    file(ARCHIVE_EXTRACT INPUT "${GREATEST_ARCHIVE}" DESTINATION "${DOWNLOAD_DIR}")
+    file(RENAME "${DOWNLOAD_DIR}/greatest-cmake-and-msvc" "${DOWNLOAD_DIR}/greatest")
+endif (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
+set(GREATEST_FILE "${DOWNLOAD_DIR}/greatest/greatest.h")
 
 ################################
 # Configure file (interpolate) #
@@ -38,7 +42,6 @@ file(TO_NATIVE_PATH "${GREATEST_FILE}" GREATEST_FILE)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_SOURCE_DIR "${_CMAKE_CURRENT_SOURCE_DIR}")
     string(REPLACE "\\" "\\\\" _CMAKE_CURRENT_LIST_FILE "${_CMAKE_CURRENT_LIST_FILE}")
-    string(REPLACE "\\" "\\\\" GREATEST_FILE "${GREATEST_FILE}")
 endif (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
 
 ###############################
@@ -93,7 +96,7 @@ macro(test_wrapper)
             "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>"
             "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire>"
             "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire>"
-            "$<BUILD_INTERFACE:${DOWNLOAD_DIR}>"
+            "$<BUILD_INTERFACE:${DOWNLOAD_DIR}/greatest>"
     )
 
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
