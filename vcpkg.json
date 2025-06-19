@@ -2,8 +2,8 @@
   "name": "libacquire",
   "version-string": "0.0.1",
   "dependencies": [
+    "kubazip",
     "libarchive",
-    "rhash",
-    "zip"
+    "rhash"
   ]
 }

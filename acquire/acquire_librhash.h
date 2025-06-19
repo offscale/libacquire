@@ -114,7 +114,8 @@ HASHES
 }
 #endif /* __cplusplus */
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_LIBRHASH) &&  \
-          LIBACQUIRE_USE_LIBRHASH && defined(LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH &&       \
+          defined(LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL) */
 
 #endif /* !LIBACQUIRE_ACQUIRE_LIBRHASH_H */

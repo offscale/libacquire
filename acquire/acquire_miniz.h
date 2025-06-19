@@ -1,8 +1,8 @@
-#if !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) && defined(LIBACQUIRE_USE_MINIZ) &&   \
-    LIBACQUIRE_USE_MINIZ && defined(LIBACQUIRE_IMPLEMENTATION) &&              \
-    !defined(LIBACQUIRE_EXTRACT_IMPL)
+#ifndef LIBACQUIRE_ACQUIRE_MINIZ_H
 #define LIBACQUIRE_ACQUIRE_MINIZ_H
-#define LIBACQUIRE_EXTRACT_IMPL
+
+#if defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ &&                   \
+    defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_EXTRACT_IMPL)
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <zip.h>
+#include <kubazip/zip/zip.h>
 
 #include "acquire_errors.h"
 #include "acquire_extract.h"
@@ -42,7 +42,8 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_ACQUIRE_MINIZ_H) &&                              \
-          defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ &&                                                       \
+#endif /* defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ &&             \
           defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          !defined(LIBACQUIRE_EXTRACT_IMPL) */
+          defined(LIBACQUIRE_EXTRACT_IMPL) */
+
+#endif /* !LIBACQUIRE_ACQUIRE_MINIZ_H */

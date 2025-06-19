@@ -42,10 +42,10 @@
 #include <acquire_openssl.h>
 #elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include <acquire_wincrypt.h>
-#endif /* (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||   \
-          (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL) || \
-          (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                        \
-          LIBACQUIRE_USE_COMMON_CRYPTO)
+#endif /* (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||       \
+          (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL) ||     \
+          (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
+          LIBACQUIRE_USE_COMMON_CRYPTO)                                        \
         */
 
 #if defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ

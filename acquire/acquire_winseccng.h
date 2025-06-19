@@ -125,6 +125,6 @@ Cleanup:
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_WINSECCNG_H) &&                                  \
-          defined(LIBACQUIRE_USE_WINSECCNG) && LIBACQUIRE_USE_WINSECCNG                                                      \
+          defined(LIBACQUIRE_USE_WINSECCNG) && LIBACQUIRE_USE_WINSECCNG        \
           defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */

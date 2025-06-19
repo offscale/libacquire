@@ -19,8 +19,8 @@ extern "C" {
 #include "acquire_stdbool.h"
 #endif /* __cplusplus */
 
-#include "acquire_config.h"
 #include "acquire_checksums.h"
+#include "acquire_config.h"
 
 #ifndef NAME_MAX
 #ifdef PATH_MAX

@@ -52,7 +52,7 @@ extern "C" {
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
 
 #endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
-          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) &&                                           \
+          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) && \
           LIBACQUIRE_USE_OPENSSL) */
 
 #include <errno.h>

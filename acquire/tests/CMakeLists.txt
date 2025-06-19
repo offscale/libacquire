@@ -131,8 +131,8 @@ foreach (EXEC_NAME ${_targets})
     )
 
     if (LIBACQUIRE_USE_MINIZ)
-        find_package(zip CONFIG REQUIRED)
-        target_link_libraries("${EXEC_NAME}" PRIVATE "zip")
+        find_package(kubazip CONFIG REQUIRED)
+        target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
         message(STATUS "LINKING zip here")
     endif (LIBACQUIRE_USE_MINIZ)
 
@@ -172,8 +172,8 @@ foreach (ARCHIVE_LIB ${_archives})
         set_source_files_properties("test_extract.c"
                 PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_MINIZ=1")
 
-        find_package(zip CONFIG REQUIRED)
-        target_link_libraries("${EXEC_NAME}" PRIVATE "zip")
+        find_package(kubazip CONFIG REQUIRED)
+        target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
         message(STATUS "LINKING zip")
     elseif (LIBACQUIRE_USE_LIBARCHIVE)
         set_source_files_properties("test_extract.c"
@@ -197,7 +197,7 @@ foreach (ARCHIVE_LIB ${_archives})
             PRIVATE
             "${PROJECT_NAME}"
             "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
-            "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
+            # "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
     )
 
     test_wrapper()

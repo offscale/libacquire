@@ -13,7 +13,7 @@
 #elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 #include <acquire_wincrypt.h>
 #endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
-          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) &&                                           \
+          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) && \
           LIBACQUIRE_USE_OPENSSL) */
 
 #include <acquire_download.h>
