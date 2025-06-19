@@ -26,6 +26,8 @@ extern "C" {
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
 defined(__NT__) */
 
+#include "acquire_checksums.h"
+
 /*
  * Taken from FreeBSD implementation of CRC32C, specifically:
  * - usr.bin\cksum\crc32_algo.c @ d91d2b513eb30a226e87f0e52e2f9f232a2e1ca3

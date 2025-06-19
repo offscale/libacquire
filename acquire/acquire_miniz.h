@@ -11,7 +11,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <kubazip/zip/zip.h>
+#include <kubazip/zip.h>
 
 #include "acquire_errors.h"
 #include "acquire_extract.h"
