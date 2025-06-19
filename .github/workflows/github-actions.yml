@@ -55,7 +55,7 @@ jobs:
         if: matrix.os != 'windows-latest'
 
       - name: Install vcpkg ports (Windows) --triplet "${{ runner.arch }}-${{ runner.os }}"
-        run: ./vcpkg/vcpkg install --classic $(jq '.dependencies[] | select(type == "string")' vcpkg.json)
+        run: ./vcpkg/vcpkg install --classic $(jq -r '.dependencies[] | select(type == "string")' vcpkg.json)
         if: matrix.os == 'windows-latest' && steps.cache-vcpkg.outputs.cache-hit != 'true'
 
       - name: Install vcpkg ports (macOS, Linux)

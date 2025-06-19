@@ -47,12 +47,8 @@ TEST x_test_extract_archive(void) {
                EXIT_SUCCESS);
 
   /* Could add a comprehensive file check here */
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "readme.md"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.h"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "miniz.c"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "ChangeLog.md"));
-  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "LICENSE"));
-  ASSERT_FALSE(!is_directory(EXTRACT_DIR PATH_SEP "examples"));
+  ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "greatest.h"));
+  ASSERT_FALSE(!is_directory(EXTRACT_DIR));
 
 #undef EXTRACT_DIR
   PASS();

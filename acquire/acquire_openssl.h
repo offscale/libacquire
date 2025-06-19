@@ -235,7 +235,8 @@ cleanup:
 #define LIBACQUIRE_SHA256_IMPL
 bool sha256(const char *filename, const char *hash) {
   unsigned char sha_output[SHA256_DIGEST_LENGTH * 2 + 1];
-  sha256_file(filename, sha_output);
+  if (sha256_file(filename, sha_output) != 0)
+    return false;
 
   return strcmp((const char *)sha_output, hash) == 0;
 }
@@ -245,7 +246,8 @@ bool sha256(const char *filename, const char *hash) {
 #define LIBACQUIRE_SHA512_IMPL
 bool sha512(const char *filename, const char *hash) {
   unsigned char sha_output[SHA512_DIGEST_LENGTH * 2 + 1];
-  sha512_file(filename, sha_output);
+  if (sha512_file(filename, sha_output) != 0)
+    return false;
 
   return strcmp((const char *)sha_output, hash) == 0;
 }
