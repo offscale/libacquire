@@ -7,9 +7,8 @@
 #ifndef LIBACQUIRE_WINCRYPT_H
 #define LIBACQUIRE_WINCRYPT_H
 
-#if defined(LIBACQUIRE_USE_WINCRYPT) &&     \
-    LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&           \
-    defined(LIBACQUIRE_CRYPTO_IMPL)
+#if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT &&             \
+    defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL)
 
 #include "acquire_checksums.h"
 #ifdef __cplusplus
@@ -24,14 +23,20 @@ extern "C" {
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
 
 #include <stdio.h>
+#include <string.h>
 
 #include "acquire_config.h"
 
-#include <minwindef.h>
-#include <windef.h>
-#include <winbase.h>
 #include <intsafe.h>
+#include <minwindef.h>
+#include <winbase.h>
 #include <wincrypt.h>
+#include <windef.h>
+
+/* SHA256 hash output length in bytes */
+#define SHA256_HASH_BYTES 32
+/* size for hex string + null */
+#define SHA256_HASH_HEX_STR_LEN (SHA256_HASH_BYTES * 2 + 1)
 
 LPTSTR get_error_message(DWORD dw) {
   LPVOID lpMsgBuf;
@@ -44,71 +49,72 @@ LPTSTR get_error_message(DWORD dw) {
   return (LPTSTR)lpMsgBuf;
 }
 
-BOOL sha256_file(LPCSTR filename,
-                 CHAR hash[SHA256_BLOCK_BYTES + 1] /* plus nul char */) {
-#define BUFSIZE 1024
-  DWORD dwStatus = 0;
+BOOL sha256_file(LPCSTR filename, CHAR hash[SHA256_HASH_HEX_STR_LEN]) {
+  enum { BUFSIZE = 1024 };
   BOOL bResult = FALSE;
   HCRYPTPROV hProv = 0;
   HCRYPTHASH hHash = 0;
   HANDLE hFile = NULL;
   BYTE rgbFile[BUFSIZE];
   DWORD cbRead = 0;
-  BYTE rgbHash[SHA256_BLOCK_BYTES];
+  BYTE rgbHash[SHA256_HASH_BYTES];
 
-  DWORD cbHash = 0;
+  DWORD cbHash = SHA256_HASH_BYTES;
   static const CHAR rgbDigits[] = "0123456789abcdef";
 
-  hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-                     OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+  hFile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
+                      OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
   if (INVALID_HANDLE_VALUE == hFile) {
-    fprintf(stderr,
-            "Error opening file %s\n"
-            "Error: %s\n",
-            filename, get_error_message(0));
-    return dwStatus;
+    LPTSTR errStr = get_error_message(0);
+    fprintf(stderr, "Error opening file %s\nError: %hs\n", filename, errStr);
+    LocalFree(errStr);
+    return FALSE;
   }
 
-  /* Get handle to the crypto provider */
   if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES,
                            CRYPT_VERIFYCONTEXT)) {
-    fprintf(stderr, "CryptAcquireContext failed: %s\n", get_error_message(0));
+    LPTSTR errStr = get_error_message(0);
+    fprintf(stderr, "CryptAcquireContext failed: %hs\n", errStr);
+    LocalFree(errStr);
     CloseHandle(hFile);
-    return dwStatus;
+    return FALSE;
   }
 
   if (!CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash)) {
-    dwStatus = GetLastError();
-    fprintf(stderr, "CryptCreateHash failed: %s\n", get_error_message(0));
+    LPTSTR errStr = get_error_message(0);
+    fprintf(stderr, "CryptCreateHash failed: %hs\n", errStr);
+    LocalFree(errStr);
     CloseHandle(hFile);
     CryptReleaseContext(hProv, 0);
-    return dwStatus;
+    return FALSE;
   }
 
-  while ((bResult = ReadFile(hFile, rgbFile, BUFSIZE, &cbRead, NULL))) {
-    if (0 == cbRead) {
-      break;
-    }
-
+  while ((bResult = ReadFile(hFile, rgbFile, BUFSIZE, &cbRead, NULL)) &&
+         cbRead > 0) {
     if (!CryptHashData(hHash, rgbFile, cbRead, 0)) {
-      fprintf(stderr, "CryptHashData failed: %s\n", get_error_message(0));
-      CryptReleaseContext(hProv, 0);
+      LPTSTR errStr = get_error_message(0);
+      fprintf(stderr, "CryptHashData failed: %hs\n", errStr);
+      LocalFree(errStr);
+
       CryptDestroyHash(hHash);
+      CryptReleaseContext(hProv, 0);
       CloseHandle(hFile);
-      return dwStatus;
+      return FALSE;
     }
   }
 
   if (!bResult) {
-    fprintf(stderr, "ReadFile failed: %s\n", get_error_message(0));
-    CryptReleaseContext(hProv, 0);
+    LPTSTR errStr = get_error_message(0);
+    fprintf(stderr, "ReadFile failed: %hs\n", errStr);
+    LocalFree(errStr);
+
     CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
     CloseHandle(hFile);
-    return dwStatus;
+    return FALSE;
   }
 
-  cbHash = SHA256_BLOCK_BYTES;
   if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
     DWORD k = 0;
     for (DWORD i = 0; i < cbHash; i++) {
@@ -116,37 +122,49 @@ BOOL sha256_file(LPCSTR filename,
       hash[k++] = rgbDigits[rgbHash[i] & 0xf];
     }
     hash[k] = '\0';
-  } else
-    fprintf(stderr, "CryptGetHashParam failed: %s\n", get_error_message(0));
+  } else {
+    LPTSTR errStr = get_error_message(0);
+    fprintf(stderr, "CryptGetHashParam failed: %hs\n", errStr);
+    LocalFree(errStr);
+    CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
+    CloseHandle(hFile);
+    return FALSE;
+  }
 
   CryptDestroyHash(hHash);
   CryptReleaseContext(hProv, 0);
   CloseHandle(hFile);
 
-  return bResult;
-#undef BUFSIZE
-#undef MD5LEN
+  return TRUE;
 }
 
+/* returns true if the SHA256 hex string matches */
 #ifndef LIBACQUIRE_SHA256_IMPL
 #define LIBACQUIRE_SHA256_IMPL
 bool sha256(const char *filename, const char *hash) {
-  CHAR result[SHA256_BLOCK_BYTES + 1];
-  sha256_file(filename, result);
-  {
-    size_t i;
-    for (i=0; i<strlen(hash); i++)
-      if (hash[i] != result[i]) return false;
-    return true;
-  }
-  /* return strcmp(hash, result) == 0; */
+  CHAR result[SHA256_HASH_HEX_STR_LEN];
+  if (!sha256_file(filename, result))
+    return false;
+
+  if (!hash)
+    return false;
+
+  /* compare full length */
+  if (strlen(hash) != (SHA256_HASH_HEX_STR_LEN - 1))
+    return false;
+
+  return (strncmp(hash, result, SHA256_HASH_HEX_STR_LEN - 1) == 0);
 }
 #endif /* !LIBACQUIRE_SHA256_IMPL */
 
 #ifndef LIBACQUIRE_SHA512_IMPL
 #define LIBACQUIRE_SHA512_IMPL
 bool sha512(const char *filename, const char *hash) {
-  fputs("SHA512 for wincrypt not implemented: always returns `false`", stderr);
+  fputs("SHA512 for wincrypt not implemented: always returns `false`\n",
+        stderr);
+  (void)filename;
+  (void)hash;
   return false;
 }
 #endif /* !LIBACQUIRE_SHA512_IMPL */
@@ -155,7 +173,8 @@ bool sha512(const char *filename, const char *hash) {
 }
 #endif /* __cplusplus */
 
-#endif /* defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&  \
+#endif /* defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT &&       \
+          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_CRYPTO_IMPL) */
 
 #endif /* !LIBACQUIRE_WINCRYPT_H */

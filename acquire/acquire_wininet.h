@@ -7,7 +7,8 @@
 #ifndef LIBACQUIRE_WININET_H
 #define LIBACQUIRE_WININET_H
 
-#if defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION)
+#if defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET &&               \
+    defined(LIBACQUIRE_IMPLEMENTATION)
 
 #include <minwindef.h>
 #include <windef.h>
@@ -31,8 +32,8 @@ extern "C" {
 #endif
 #endif
 
-#include "acquire_url_utils.h"
 #include "acquire_download.h"
+#include "acquire_url_utils.h"
 
 #include <stdio.h>
 #include <tchar.h>
@@ -140,6 +141,7 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 }
 #endif /* __cplusplus */
 
-#endif /* defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET &&         \
+          defined(LIBACQUIRE_IMPLEMENTATION) */
 
 #endif /* !LIBACQUIRE_WININET_H */

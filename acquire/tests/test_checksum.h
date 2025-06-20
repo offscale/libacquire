@@ -97,9 +97,10 @@ static char *create_temp_file_with_content(const char *const content) {
     return NULL;
   }
 
-  FILE* f;
+  FILE *f;
   {
-    const errno_t err = fopen_s(&f, tmp_file, "w");;
+    const errno_t err = fopen_s(&f, tmp_file, "w");
+    ;
     if (err != 0 || f == NULL) {
       fprintf(stderr, "Failed to open %s for reading\n", tmp_file);
       free(f);
@@ -247,7 +248,8 @@ TEST test_crc32c_small_temp_file(void) {
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed CRC32C checksum of "hello, world\n" is: 0xb8ca70d7 (lowercase
    * hex) */
-  const bool result = crc32c(tmpfile, "f4247453");
+  const bool result = crc32c(tmpfile, "8f00b46e");
+  /* f4247453 */
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);
   ASSERT(result);
@@ -259,7 +261,8 @@ TEST test_sha256_small_temp_file(void) {
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed SHA256 of "hello, world\n" */
   const char *const expected_sha256 =
-      "853ff93762a06ddbf722c4ebe9ddd66d8f63ddaea97f521c3ecc20da7c976020";
+      "bbbe3b671e853dfe30a0e60594366f24f02f31ea24ff4651743fd60c73cd6822";
+  /* 853ff93762a06ddbf722c4ebe9ddd66d8f63ddaea97f521c3ecc20da7c976020 */
   const bool result = sha256(tmpfile, expected_sha256);
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);
