@@ -1,8 +1,11 @@
 function(set_extract_lib)
-    if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED LIBACQUIRE_USE_ZLIB AND NOT DEFINED LIBACQUIRE_USE_LIBARCHIVE)
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows"
+            AND NOT DEFINED LIBACQUIRE_USE_ZLIB
+            AND NOT DEFINED LIBACQUIRE_USE_LIBARCHIVE
+            AND NOT DEFINED LIBACQUIRE_USE_MINIZ)
         set(LIBACQUIRE_USE_WINCOMPRESSAPI 1 PARENT_SCOPE)
         set(EXTRACT_LIB "WINCOMPRESSAPI" PARENT_SCOPE)
-        list(APPEND _Header_Files "acquire_compressapi.h")
+        list(APPEND _Header_Files "acquire_wincompressapi.h")
     elseif (DEFINED LIBACQUIRE_USE_LIBARCHIVE)
         set(EXTRACT_LIB "LIBARCHIVE" PARENT_SCOPE)
         list(APPEND _Header_Files "acquire_libarchive.h")

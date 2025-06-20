@@ -4,19 +4,12 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WINCRYPT_H) && defined(LIBACQUIRE_USE_WINCRYPT) &&     \
-    LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&           \
-    defined(LIBACQUIRE_CRYPTO_IMPL)
+#ifndef LIBACQUIRE_WINCRYPT_H
 #define LIBACQUIRE_WINCRYPT_H
 
-#include <stdio.h>
-
-#include "acquire_config.h"
-
-#include <WinBase.h>
-#include <windef.h>
-
-#include <wincrypt.h>
+#if defined(LIBACQUIRE_USE_WINCRYPT) &&     \
+    LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&           \
+    defined(LIBACQUIRE_CRYPTO_IMPL)
 
 #include "acquire_checksums.h"
 #ifdef __cplusplus
@@ -29,6 +22,16 @@ extern "C" {
 
 #define SHA256_BLOCK_BYTES 64 /* block size in bytes */
 #define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
+
+#include <stdio.h>
+
+#include "acquire_config.h"
+
+#include <minwindef.h>
+#include <windef.h>
+#include <winbase.h>
+#include <intsafe.h>
+#include <wincrypt.h>
 
 LPTSTR get_error_message(DWORD dw) {
   LPVOID lpMsgBuf;
@@ -130,7 +133,13 @@ BOOL sha256_file(LPCSTR filename,
 bool sha256(const char *filename, const char *hash) {
   CHAR result[SHA256_BLOCK_BYTES + 1];
   sha256_file(filename, result);
-  return strcmp(hash, result) == 0;
+  {
+    size_t i;
+    for (i=0; i<strlen(hash); i++)
+      if (hash[i] != result[i]) return false;
+    return true;
+  }
+  /* return strcmp(hash, result) == 0; */
 }
 #endif /* !LIBACQUIRE_SHA256_IMPL */
 
@@ -146,6 +155,7 @@ bool sha512(const char *filename, const char *hash) {
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WINCRYPT_H) && defined(LIBACQUIRE_USE_WINCRYPT)  \
-          && LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&  \
+#endif /* defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT && defined(LIBACQUIRE_IMPLEMENTATION) &&  \
           defined(LIBACQUIRE_CRYPTO_IMPL) */
+
+#endif /* !LIBACQUIRE_WINCRYPT_H */

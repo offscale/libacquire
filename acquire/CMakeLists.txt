@@ -90,32 +90,40 @@ else ()
             "acquire_url_utils.h"
     )
 
-    if (LIBACQUIRE_USE_LIBCURL)
-        set(NETWORK_LIB "acquire_libcurl.h")
-    elseif (LIBACQUIRE_USE_LIBFETCH)
-        set(NETWORK_LIB "acquire_libfetch.h")
-    elseif (LIBACQUIRE_USE_WININET)
-        set(NETWORK_LIB "acquire_wininet.h")
-    elseif (LIBACQUIRE_USE_OPENBSD_FTP)
-        set(NETWORK_LIB "acquire_openbsd_ftp.h")
-    endif ()
-    list(APPEND header_impls "${NETWORK_LIB}")
-
     message(STATUS "CRYPTO_LIB was ${CRYPTO_LIB}")
+
+    if (BSD)
+        set(HAS_LIBBSD 1)
+    else ()
+        find_package(LibBSD)
+        if (LibBSD_FOUND)
+            set(HAS_LIBBSD 1)
+        endif (LibBSD_FOUND)
+    endif (BSD)
+
     set(CHECKSUM_SRC_CRC32c "")
     # TODO: Decide more granularly which implementation to take for SHA256, &etc.
     # E.g., on Windows you might want librhash if `LIBACQUIRE_USE_LIBRHASH` but on non-Windows OpenSSL.
+
+
+
+    ################
+    # Cryptography #
+    ################
     if (CRYPTO_LIB STREQUAL "CommonCrypto" OR
             CRYPTO_LIB STREQUAL "OpenSSL" OR
-            CRYPTO_LIB STREQUAL "LibreSSL"
-    )
+            CRYPTO_LIB STREQUAL "LibreSSL")
         set(CHECKSUM_SRC "acquire_openssl.h")
         set(CHECKSUM_SRC_CRC32c "acquire_crc32c.h")
         list(APPEND header_impls "${CHECKSUM_SRC_CRC32c}")
     elseif (LIBACQUIRE_USE_LIBRHASH)
         set(CHECKSUM_SRC "acquire_librhash.h")
     elseif (CRYPTO_LIB STREQUAL "WinCrypt")
+        set(LIBACQUIRE_USE_WINCRYPT 1)
         set(CHECKSUM_SRC "acquire_wincrypt.h")
+        set(LIBACQUIRE_USE_CRC32C 1)
+        set(CHECKSUM_SRC_EXTRA "acquire_crc32c.h")
+        list(APPEND header_impls "${CHECKSUM_SRC_EXTRA}")
     elseif (LIBACQUIRE_USE_CRC32C)
         set(CHECKSUM_SRC "acquire_crc32c.h")
     else ()
@@ -124,16 +132,43 @@ else ()
     endif ()
     list(APPEND header_impls "${CHECKSUM_SRC}")
 
+    ##############
+    # Extraction #
+    ##############
     if (LIBACQUIRE_USE_LIBARCHIVE)
         set(ARCHIVE_LIB "acquire_libarchive.h")
         set(ARCHIVE_LIB_LINK "${LibArchive_LIBRARIES}")
     elseif (LIBACQUIRE_USE_MINIZ)
         set(ARCHIVE_LIB "acquire_miniz.h")
         set(ARCHIVE_LIB_LINK kubazip::kubazip)
-    elseif (NOT DEFINED ARCHIVE_LIB)
+    elseif (LIBACQUIRE_USE_WINCOMPRESSAPI)
+        set(ARCHIVE_LIB "acquire_wincompressapi.h")
+        # https://learn.microsoft.com/en-us/windows/win32/api/compressapi/nf-compressapi-createcompressor
+        set(ARCHIVE_LIB_LINK Cabinet)
+    elseif (NOT DEFINED ARCHIVE_LIB OR ARCHIVE_LIB STREQUAL "")
         message(FATAL_ERROR "ARCHIVE_LIB must be set")
     endif ()
     list(APPEND header_impls "${ARCHIVE_LIB}")
+
+    ##############
+    # Networking #
+    ##############
+    if (LIBACQUIRE_USE_LIBFETCH)
+        set(NETWORK_LIB "acquire_libfetch.h")
+        set(NETWORK_LIB_LINK "freebsd_libfetch")
+    elseif (LIBACQUIRE_USE_WININET)
+        set(NETWORK_LIB "acquire_wininet.h")
+        set(NETWORK_LIB_LINK "wininet")
+    elseif (LIBACQUIRE_USE_LIBCURL)
+        set(ARCHIVE_LIB "acquire_libcurl.h")
+        set(NETWORK_LIB_LINK CURL::libcurl)
+    elseif (LIBACQUIRE_USE_OPENBSD_FTP)
+        set(NETWORK_LIB "acquire_openbsd_ftp.h")
+        set(NETWORK_LIB_LINK "openbsd_ftp")
+    elseif (NOT DEFINED NETWORK_LIB OR NETWORK_LIB STREQUAL "")
+        message(FATAL_ERROR "NETWORK_LIB must be set")
+    endif ()
+    list(APPEND header_impls "${NETWORK_LIB}")
 
     message(STATUS "header_impls = ${header_impls}")
 
@@ -224,10 +259,17 @@ else ()
             # String extras #
             #################
         elseif (src MATCHES "/gen_acquire_string_extras.c$")
-            set_source_files_properties(
-                    ${src} PROPERTIES
-                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_STRCASESTR_IMPL=1;LIBACQUIRE_STRERRORLEN_IMPL=1"
-            )
+            if (HAS_LIBBSD)
+                set_source_files_properties(
+                        ${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_STRCASESTR_IMPL=1;LIBACQUIRE_STRERRORLEN_IMPL=1"
+                )
+            else ()
+                set_source_files_properties(
+                        ${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_STRCASESTR_IMPL=1;LIBACQUIRE_STRERRORLEN_IMPL=1;STRNSTR_IMPL=1"
+                )
+            endif ()
         elseif (src MATCHES "/gen_acquire_url_utils.c$")
             set_source_files_properties(
                     ${src} PROPERTIES
@@ -260,7 +302,7 @@ else ()
                 )
                 list(APPEND impls "LIBACQUIRE_DOWNLOAD_DIR_IMPL" "LIBACQUIRE_DOWNLOAD_IMPL" "LIBACQUIRE_USE_LIBFETCH")
             endif (NOT ("LIBACQUIRE_DOWNLOAD_DIR_IMPL" IN_LIST impls))
-        elseif (src MATCHES "/gen_acquire_libwininet.c$")
+        elseif (src MATCHES "/gen_acquire_wininet.c$")
             if (NOT ("LIBACQUIRE_DOWNLOAD_DIR_IMPL" IN_LIST impls))
                 set_source_files_properties(
                         ${src} PROPERTIES
@@ -288,10 +330,19 @@ else ()
             elseif (LIBACQUIRE_USE_LIBARCHIVE)
                 set_source_files_properties(${src} PROPERTIES
                         COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_EXTRACT_IMPL=1;LIBACQUIRE_USE_LIBARCHIVE=1")
+            elseif (LIBACQUIRE_USE_WINCOMPRESSAPI)
+                set_source_files_properties(${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_EXTRACT_IMPL=1;LIBACQUIRE_USE_WINCOMPRESSAPI=1")
             else ()
                 set_source_files_properties(${src} PROPERTIES
                         COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_EXTRACT_IMPL=1")
             endif ()
+        elseif (src MATCHES "/gen_acquire_crc32c.c$")
+            if (LIBACQUIRE_USE_WINCOMPRESSAPI)
+                set_source_files_properties(${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_EXTRACT_IMPL=1;LIBACQUIRE_USE_CRC32C=1;LIBACQUIRE_ACQUIRE_CRC32C_IMPL=1")
+            endif (LIBACQUIRE_USE_WINCOMPRESSAPI)
+
             ############
             # Fallback #
             ############
@@ -346,6 +397,9 @@ else ()
         #)
     endif (WIN32)
 
+    ######################
+    # Checksum libraries #
+    ######################
     if (DEFINED CHECKSUM_LIBRARIES)
         message(STATUS "[libacquire] Using var ${CHECKSUM_LIBRARIES} for checksums")
         target_link_libraries("${LIBRARY_NAME}" PUBLIC "${CHECKSUM_LIBRARIES}")
@@ -372,6 +426,9 @@ else ()
         message(FATAL_ERROR "No checksum implementation selected: define `LIBACQUIRE_USE_LIBRHASH` or `LIBACQUIRE_USE_CRC32C`")
     endif ()
 
+    ##############
+    # Extraction #
+    ##############
     if (LIBACQUIRE_USE_MINIZ)
         find_package(kubazip CONFIG REQUIRED)
         target_compile_definitions("${LIBRARY_NAME}" PRIVATE LIBACQUIRE_USE_MINIZ=1)
@@ -379,12 +436,21 @@ else ()
     elseif (LIBACQUIRE_USE_LIBARCHIVE)
         target_compile_definitions("${LIBRARY_NAME}" PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
         target_link_libraries("${LIBRARY_NAME}" PRIVATE "${LibArchive_LIBRARIES}")
+    elseif (LIBACQUIRE_USE_WINCOMPRESSAPI)
+        target_compile_definitions("${LIBRARY_NAME}" PRIVATE LIBACQUIRE_USE_WINCOMPRESSAPI=1)
+        # "Compress.lib"
+        target_link_libraries("${LIBRARY_NAME}" PRIVATE "Kernel32.lib" "Cabinet")
     else ()
         message(FATAL_ERROR "No unarchive implementation selected: define `LIBACQUIRE_USE_LIBARCHIVE` or `LIBACQUIRE_USE_MINIZ`")
     endif ()
 
+    ##############
+    # Networking #
+    ##############
+    target_link_libraries("${LIBRARY_NAME}" PRIVATE "${NETWORK_LIB_LINK}")
+    # NETWORK_LIB "acquire_libfetch.h"
+
     if (NOT BSD)
-        find_package(LibBSD)
         if (LibBSD_FOUND)
             target_link_libraries("${LIBRARY_NAME}" PUBLIC LibBSD::LibBSD)
             target_compile_definitions(

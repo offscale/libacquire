@@ -4,9 +4,10 @@
  * This should also work on Windows, ReactOS, and derivatives.
  * */
 
-#if !defined(LIBACQUIRE_WININET_H) && defined(LIBACQUIRE_USE_WININET) &&       \
-    LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION)
+#ifndef LIBACQUIRE_WININET_H
 #define LIBACQUIRE_WININET_H
+
+#if defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION)
 
 #include <minwindef.h>
 #include <windef.h>
@@ -31,14 +32,15 @@ extern "C" {
 #endif
 
 #include "acquire_url_utils.h"
+#include "acquire_download.h"
+
 #include <stdio.h>
 #include <tchar.h>
 #include <wininet.h>
 
 #define BUFFER_SIZE 4096
 
-#ifndef LIBACQUIRE_DOWNLOAD_DIR_IMPL
-#define LIBACQUIRE_DOWNLOAD_DIR_IMPL
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return TMPDIR "//.downloads"; }
 #endif /* !LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
@@ -138,5 +140,6 @@ int download(const char *url, enum Checksum checksum, const char *hash,
 }
 #endif /* __cplusplus */
 
-#endif /* !defined(LIBACQUIRE_WININET_H) && defined(LIBACQUIRE_USE_WININET) && \
-          LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET && defined(LIBACQUIRE_IMPLEMENTATION) */
+
+#endif /* !LIBACQUIRE_WININET_H */

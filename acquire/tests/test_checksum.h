@@ -97,10 +97,14 @@ static char *create_temp_file_with_content(const char *const content) {
     return NULL;
   }
 
-  FILE *f = fopen(tmp_file, "w");
-  if (!f) {
-    perror("fopen");
-    return NULL;
+  FILE* f;
+  {
+    const errno_t err = fopen_s(&f, tmp_file, "w");;
+    if (err != 0 || f == NULL) {
+      fprintf(stderr, "Failed to open %s for reading\n", tmp_file);
+      free(f);
+      return NULL;
+    }
   }
 
   if (fputs(content, f) < 0) {

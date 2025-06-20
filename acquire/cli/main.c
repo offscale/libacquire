@@ -16,7 +16,11 @@
 
 #include "cli.h"
 
-#if defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
+#if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
+#include <acquire_wincrypt.h>
+
+#include <acquire_crc32c.h>
+#elif defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
 #include <acquire_crc32c.h>
 #elif defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
 #include <acquire_librhash.h>
@@ -52,6 +56,8 @@
 #include <acquire_miniz.h>
 #elif defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
 #include <acquire_libarchive.h>
+#elif defined(LIBACQUIRE_USE_WINCOMPRESSAPI) && LIBACQUIRE_USE_WINCOMPRESSAPI
+#include <acquire_wincompressapi.h>
 #else
 #error "Extract library must be specified"
 #endif /* defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ */
