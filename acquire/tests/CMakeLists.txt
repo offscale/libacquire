@@ -153,63 +153,64 @@ foreach (EXEC_NAME ${_targets})
 endforeach (EXEC_NAME ${_targets})
 
 # Extraction archive tests
-foreach (ARCHIVE_LIB ${_archives})
-    set(EXEC_NAME "test_extract_${ARCHIVE_LIB}")
+if (NOT (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
+    foreach (ARCHIVE_LIB ${_archives})
+        set(EXEC_NAME "test_extract_${ARCHIVE_LIB}")
 
-    set(Header_Files "test_extract.h")
-    source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
+        set(Header_Files "test_extract.h")
+        source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
 
-    set(Source_Files "test_extract.c")
-    source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
+        set(Source_Files "test_extract.c")
+        source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
 
-    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
+        add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+        target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
-    if (ARCHIVE_LIB STREQUAL "miniz")
-        target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_MINIZ=1)
-    elseif (ARCHIVE_LIB STREQUAL "libarchive")
-        target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
-        include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
-        target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
-    elseif (ARCHIVE_LIB STREQUAL "wincompressapi")
-        target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_WINCOMPRESSAPI=1)
-        target_link_libraries("${EXEC_NAME}" PRIVATE Cabinet)
-        message(DEBUG "TODO: Finish this test")
-        return ()
-    else ()
-        message(FATAL_ERROR "Unknown ARCHIVE_LIB: ${ARCHIVE_LIB}")
-    endif ()
+        if (ARCHIVE_LIB STREQUAL "miniz")
+            target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_MINIZ=1)
+        elseif (ARCHIVE_LIB STREQUAL "libarchive")
+            target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_LIBARCHIVE=1)
+            include("${CMAKE_SOURCE_DIR}/cmake/FindLibArchiveCustom.cmake")
+            target_include_directories("${EXEC_NAME}" PRIVATE "${LibArchive_INCLUDE_DIRS}")
+        elseif (ARCHIVE_LIB STREQUAL "wincompressapi")
+            target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_WINCOMPRESSAPI=1)
+            target_link_libraries("${EXEC_NAME}" PRIVATE Cabinet)
+            message(DEBUG "TODO: Finish this test")
+        else ()
+            message(FATAL_ERROR "Unknown ARCHIVE_LIB: ${ARCHIVE_LIB}")
+        endif ()
 
-    if (LIBACQUIRE_USE_MINIZ)
-        set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_MINIZ=1")
+        if (LIBACQUIRE_USE_MINIZ)
+            set_source_files_properties("test_extract.c"
+                    PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_MINIZ=1")
 
-        find_package(kubazip CONFIG REQUIRED)
-        target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
-    elseif (LIBACQUIRE_USE_LIBARCHIVE)
-        set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_LIBARCHIVE=1")
-    else ()
-        set_source_files_properties("test_extract.c"
-                PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
-    endif ()
+            find_package(kubazip CONFIG REQUIRED)
+            target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
+        elseif (LIBACQUIRE_USE_LIBARCHIVE)
+            set_source_files_properties("test_extract.c"
+                    PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_LIBARCHIVE=1")
+        else ()
+            set_source_files_properties("test_extract.c"
+                    PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
+        endif ()
 
-    target_compile_definitions(
-            "${EXEC_NAME}"
-            PRIVATE
-            "ARCHIVE_LIB=${ARCHIVE_LIB}"
-            "ARCHIVE_HEADER_NAME=acquire_${ARCHIVE_LIB}.h"
-    )
+        target_compile_definitions(
+                "${EXEC_NAME}"
+                PRIVATE
+                "ARCHIVE_LIB=${ARCHIVE_LIB}"
+                "ARCHIVE_HEADER_NAME=acquire_${ARCHIVE_LIB}.h"
+        )
 
-    set_backend_definitions(${EXEC_NAME})
+        set_backend_definitions(${EXEC_NAME})
 
-    target_link_libraries(
-            "${EXEC_NAME}"
-            PRIVATE
-            "${PROJECT_NAME}"
-            "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
-            # "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
-    )
+        target_link_libraries(
+                "${EXEC_NAME}"
+                PRIVATE
+                "${PROJECT_NAME}"
+                "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
+                # "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
+        )
 
-    test_wrapper()
-endforeach (ARCHIVE_LIB ${_archives})
+        test_wrapper()
+    endforeach (ARCHIVE_LIB ${_archives})
+endif ()

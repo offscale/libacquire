@@ -24,7 +24,6 @@ RUN apk add --no-cache \
     unzip \
     zip && \
     ln -s /usr/lib/ninja-build/bin/ninja /usr/bin/ninja
-RUN echo -DCMAKE_C_COMPILER="$(which gcc)" -DCMAKE_CXX_COMPILER="$(which gcc)" -DCMAKE_MAKE_PROGRAM="$(which ninja)"
 WORKDIR /
 RUN git clone --depth=1 --single-branch https://github.com/offscale/vcpkg -b project0 && \
     cd vcpkg && \
