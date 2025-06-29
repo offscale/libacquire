@@ -152,6 +152,29 @@ foreach (EXEC_NAME ${_targets})
     test_wrapper()
 endforeach (EXEC_NAME ${_targets})
 
+if (LIBACQUIRE_USE_LIBCURL)
+    set(EXEC_NAME "test_curl_helpers")
+
+    add_executable("${EXEC_NAME}")
+
+    target_sources(
+            "${EXEC_NAME}"
+            PRIVATE
+            "test_curl_helpers.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_libcurl.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
+    )
+
+    target_compile_definitions(${EXEC_NAME} PRIVATE ACQUIRE_TESTING=1)
+
+    target_link_libraries("${EXEC_NAME}" PRIVATE CURL::libcurl)
+    if (HAS_LIBBSD)
+        target_link_libraries("${EXEC_NAME}" PRIVATE LibBSD::LibBSD)
+    endif (HAS_LIBBSD)
+
+    test_wrapper()
+endif (LIBACQUIRE_USE_LIBCURL)
+
 # Extraction archive tests
 if (NOT (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
     foreach (ARCHIVE_LIB ${_archives})

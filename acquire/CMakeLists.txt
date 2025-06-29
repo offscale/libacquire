@@ -352,6 +352,12 @@ else ()
             message(STATUS "Nothing special with ${src}")
             set_source_files_properties(${src} PROPERTIES COMPILE_DEFINITIONS "")
         endif ()
+        if (WIN32)
+            set_source_files_properties(
+                    "${src}"
+                    PROPERTIES COMPILE_DEFINITIONS "_${TARGET_ARCH}_"
+            )
+        endif (WIN32)
     endforeach (src IN LISTS gen_source_files)
 
     if (WIN32)

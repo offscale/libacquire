@@ -18,6 +18,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#ifdef ACQUIRE_TESTING
+#define ACQUIRE_STATIC
+#else
+#define ACQUIRE_STATIC static
+#endif /* ACQUIRE_TESTING */
+
 #include <errno.h>
 #include <memory.h>
 #include <stdint.h>
@@ -61,7 +67,7 @@ struct dnld_params_t {
   uint64_t dnld_file_sz;
 };
 
-static int get_oname_from_cd(char const *const cd, char *oname) {
+ACQUIRE_STATIC int get_oname_from_cd(char const *const cd, char *oname) {
   char const *const cdtag = "Content-disposition:";
   char const *const key = "filename=";
   char *val = NULL;
@@ -89,7 +95,7 @@ static int get_oname_from_cd(char const *const cd, char *oname) {
   return EXIT_SUCCESS;
 }
 
-static int get_oname_from_url(char const *url, char *oname) {
+ACQUIRE_STATIC int get_oname_from_url(char const *url, char *oname) {
   char const *u = url;
 
   /* Remove "http(s)://" */
