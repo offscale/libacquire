@@ -160,7 +160,7 @@ else ()
         set(NETWORK_LIB "acquire_wininet.h")
         set(NETWORK_LIB_LINK "wininet")
     elseif (LIBACQUIRE_USE_LIBCURL)
-        set(ARCHIVE_LIB "acquire_libcurl.h")
+        set(NETWORK_LIB "acquire_libcurl.h")
         set(NETWORK_LIB_LINK CURL::libcurl)
     elseif (LIBACQUIRE_USE_OPENBSD_FTP)
         set(NETWORK_LIB "acquire_openbsd_ftp.h")
@@ -173,6 +173,9 @@ else ()
     message(STATUS "header_impls = ${header_impls}")
 
     foreach (header_file IN LISTS header_impls)
+        if (header_file STREQUAL "")
+            continue()
+        endif (header_file STREQUAL "")
         get_filename_component(name_no_ext "${header_file}" NAME_WE)
         set(gen_header_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.h")
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
@@ -221,13 +224,13 @@ else ()
         # Checksums #
         #############
         if (src MATCHES "/gen_acquire_checksums.c$")
-            # if (NOT ("LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL" IN_LIST impls))
-            set_source_files_properties(
-                    ${src} PROPERTIES
-                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1"
-            )
-            # list(APPEND impls "LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL")
-            # endif (NOT ("LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL" IN_LIST impls))
+            if (NOT ("LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL" IN_LIST impls))
+                set_source_files_properties(
+                        ${src} PROPERTIES
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL=1"
+                )
+                list(APPEND impls "LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL")
+            endif (NOT ("LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL" IN_LIST impls))
         elseif (src MATCHES "/gen_acquire_crc32c.c$")
             if (NOT ("LIBACQUIRE_ACQUIRE_CHECKSUMS_IMPL" IN_LIST impls))
                 set_source_files_properties(

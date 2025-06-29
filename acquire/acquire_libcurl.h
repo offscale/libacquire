@@ -31,7 +31,9 @@ extern "C" {
 
 #include <curl/curl.h>
 
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
+#endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
 int download_to_stdout(const char *url, const char *checksum,
                        const char *target_location, bool follow, size_t retry) {

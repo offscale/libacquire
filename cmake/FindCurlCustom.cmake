@@ -21,7 +21,7 @@ function(get_curl LINK_LIBRARIES)
     if (VCPKG_TOOLCHAIN)  # Overly specific, should be same for conan, Buckaroo, Hunter, &etc.
         find_package(CURL CONFIG QUIET)
         if (CURL_FOUND)
-            set("${LINK_LIBRARIES}" "CURL::libcurl" PARENT_SCOPE)
+            set("${LINK_LIBRARIES}" CURL::libcurl PARENT_SCOPE)
             return()
         endif (CURL_FOUND)
     endif (VCPKG_TOOLCHAIN)
@@ -64,7 +64,7 @@ function(get_curl LINK_LIBRARIES)
                             INTERFACE_LINK_LIBRARIES "${CURL_STATIC_LIBRARIES}"
                             IMPORTED_LINK_INTERFACE_LANGUAGES C
                             IMPORTED_LOCATION "${CURL_LINK_LIBRARIES}")
-                    target_link_libraries(CURL::libcurl INTERFACE "${CURL_STATIC_LIBRARY_DIRS}")
+                    # target_link_libraries(CURL::libcurl INTERFACE "${CURL_STATIC_LIBRARY_DIRS}")
                 else ()
                     add_library(CURL::libcurl SHARED IMPORTED)
                     set_target_properties(CURL::libcurl PROPERTIES

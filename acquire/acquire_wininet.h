@@ -43,7 +43,7 @@ extern "C" {
 
 #ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return TMPDIR "//.downloads"; }
-#endif /* !LIBACQUIRE_DOWNLOAD_DIR_IMPL */
+#endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
 #ifdef LIBACQUIRE_DOWNLOAD_IMPL
 int download(const char *url, enum Checksum checksum, const char *hash,

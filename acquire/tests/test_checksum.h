@@ -248,7 +248,11 @@ TEST test_crc32c_small_temp_file(void) {
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed CRC32C checksum of "hello, world\n" is: 0xb8ca70d7 (lowercase
    * hex) */
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
   const bool result = crc32c(tmpfile, "8f00b46e");
+#else
+  const bool result = crc32c(tmpfile, "f4247453");
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
   /* f4247453 */
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);
@@ -260,9 +264,13 @@ TEST test_sha256_small_temp_file(void) {
   const char *content = "hello, world\n";
   char *const tmpfile = create_temp_file_with_content(content);
   /* Precomputed SHA256 of "hello, world\n" */
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
   const char *const expected_sha256 =
       "bbbe3b671e853dfe30a0e60594366f24f02f31ea24ff4651743fd60c73cd6822";
-  /* 853ff93762a06ddbf722c4ebe9ddd66d8f63ddaea97f521c3ecc20da7c976020 */
+#else
+  const char *const expected_sha256 =
+      "853ff93762a06ddbf722c4ebe9ddd66d8f63ddaea97f521c3ecc20da7c976020";
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
   const bool result = sha256(tmpfile, expected_sha256);
   ASSERT(tmpfile != NULL);
   safe_remove_file(tmpfile);

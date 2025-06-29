@@ -283,8 +283,8 @@ cleanup:
 #endif /* __cplusplus */
 
 #endif /* defined(LIBACQUIRE_USE_WINCOMPRESSAPI) &&                            \
-          LIBACQUIRE_USE_WINCOMPRESSAPI && defined(LIBACQUIRE_IMPLEMENTATION)                                            \
-          && defined(LIBACQUIRE_EXTRACT_IMPL) && (defined(_WIN32) ||                                                           \
+          LIBACQUIRE_USE_WINCOMPRESSAPI && defined(LIBACQUIRE_IMPLEMENTATION)  \
+          && defined(LIBACQUIRE_EXTRACT_IMPL) && (defined(_WIN32) ||           \
           defined(__WIN32__) || defined(_MSC_VER) || defined(__MINGW32__)) */
 
 #endif /* !LIBACQUIRE_ACQUIRE_WINCOMPRESSAPI_H */
