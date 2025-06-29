@@ -106,7 +106,6 @@ else ()
     # E.g., on Windows you might want librhash if `LIBACQUIRE_USE_LIBRHASH` but on non-Windows OpenSSL.
 
 
-
     ################
     # Cryptography #
     ################
