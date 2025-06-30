@@ -281,9 +281,10 @@ else ()
             # Network common #
             ##################
         elseif (src MATCHES "/gen_acquire_net_common.c$")
+            set(gen_acquire_net_common "${src}")
             set_source_files_properties(
                     ${src} PROPERTIES
-                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1"
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL=1"
             )
             ##############
             # Networking #
@@ -359,6 +360,13 @@ else ()
             )
         endif (WIN32)
     endforeach (src IN LISTS gen_source_files)
+
+    if (NOT ("LIBACQUIRE_DOWNLOAD_DIR_IMPL" IN_LIST impls))
+        set_source_files_properties(
+                "${gen_acquire_net_common}" PROPERTIES
+                COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL=1;LIBACQUIRE_DOWNLOAD_DIR_IMPL=1"
+        )
+    endif (NOT ("LIBACQUIRE_DOWNLOAD_DIR_IMPL" IN_LIST impls))
 
     if (WIN32)
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_acquire_main.c")

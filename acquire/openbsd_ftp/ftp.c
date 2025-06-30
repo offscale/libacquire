@@ -669,9 +669,9 @@ void sendrequest(const char *cmd, const char *local, const char *remote,
     closefunc = pclose;
   } else {
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-    fopen_s(&fin, local, "r");
+    fopen_s(&fin, local, "rb");
 #else
-    fin = fopen(local, "r");
+    fin = fopen(local, "rb");
 #endif
     if (fin == NULL) {
       warn("local: %s", local);

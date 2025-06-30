@@ -99,7 +99,7 @@ static char *create_temp_file_with_content(const char *const content) {
 
   FILE *f;
   {
-    const errno_t err = fopen_s(&f, tmp_file, "w");
+    const errno_t err = fopen_s(&f, tmp_file, "wb");
     ;
     if (err != 0 || f == NULL) {
       fprintf(stderr, "Failed to open %s for reading\n", tmp_file);

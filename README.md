@@ -5,15 +5,16 @@ libacquire
 [![CI for FreeBSD](https://api.cirrus-ci.com/github/offscale/libacquire.svg)](https://cirrus-ci.com/github/offscale/libacquire)
 [![C89](https://img.shields.io/badge/C-89-blue)](https://en.wikipedia.org/wiki/C89_(C_version))
 
-The core for your package manager, minus the dependency graph components. Features: **download**, **verify**, and **extract**.
+The core for your package manager, minus the dependency graph components.
+Features both synchronous and asynchronous variants for: **download**; **verify**; and **extract**.
 
-By default—for HTTP, HTTPS, and FTP—this uses `libfetch` on FreeBSD; `wininet` on Windows; and `libcurl` everywhere else. Override with `-DLIBACQUIRE_USE_LIBCURL` or `-DLIBACQUIRE_USE_LIBFETCH`.
+By default—for HTTP, HTTPS, and FTP—this uses [`libfetch`](https://github.com/freebsd/freebsd-src/blob/main/lib/libfetch/fetch.c) on FreeBSD; [`wininet`](https://learn.microsoft.com/en-us/windows/win32/wininet/about-wininet) on Windows; and [`libcurl`](https://curl.se/libcurl/) everywhere else. Override with `-DLIBACQUIRE_USE_LIBCURL` or `-DLIBACQUIRE_USE_LIBFETCH`.
 
-By default—for MD5, SHA256, SHA512—this uses `wincrypt` on Windows; and `OpenSSL` everywhere else. _Note that on macOS this uses the builtin `CommonCrypto/CommonDigest.h` header, and on OpenBSD it uses `LibreSSL`; however in both of these cases it's the OpenSSL API with different headers._ Override with `-DLIBACQUIRE_USE_OPENSSL`.
+By default—for MD5, SHA256, SHA512—this uses [`wincrypt`](https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/) on Windows; and [`OpenSSL`](https://openssl-library.org) everywhere else. _Note that on macOS this uses the builtin [`CommonCrypto/CommonDigest.h`](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/Common%20Crypto.3cc.html) header, and on OpenBSD it uses [`LibreSSL`](https://libressl.org); however in both of these cases it's the OpenSSL API with different headers._ Override with `-DLIBACQUIRE_USE_OPENSSL`.
 
-By default—for crc32c—this uses `rhash` if available (also giving access to: CRC32, MD4, MD5, SHA1, SHA256, SHA512, SHA3, AICH, ED2K, DC++ TTH, BitTorrent BTIH, Tiger, GOST R 34.11-94, GOST R 34.11-2012, RIPEMD-160, HAS-160, EDON-R, and Whirlpool); otherwise uses included crc32c implementation. Override with `-DUSE_CRC32C`.
+By default—for crc32c—this uses [`rhash`](https://github.com/rhash/RHash) if available (also giving access to: CRC32, MD4, MD5, SHA1, SHA256, SHA512, SHA3, AICH, ED2K, DC++ TTH, BitTorrent BTIH, Tiger, GOST R 34.11-94, GOST R 34.11-2012, RIPEMD-160, HAS-160, EDON-R, and Whirlpool); [wincrypt.h](https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/) on Windows; otherwise uses included crc32c implementation. Override with `-DUSE_CRC32C`.
 
-By default—for decompression—this uses `compressapi.h` on Windows; then, in order of precedence tries: libarchive; zlib; or downloads miniz.
+By default—for decompression—this uses [`compressapi.h`](https://learn.microsoft.com/en-us/windows/win32/api/compressapi) on Windows; then, in order of precedence tries: [libarchive](https://libarchive.org); [zlib](https://zlib.net); or downloads [miniz](https://github.com/richgel999/miniz).
 
 Supports:
 

@@ -1,145 +1,146 @@
-/*
- * wininet implementation of libacquire's download API
- *
- * This should also work on Windows, ReactOS, and derivatives.
- * */
-
 #ifndef LIBACQUIRE_WININET_H
 #define LIBACQUIRE_WININET_H
 
 #if defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET &&               \
     defined(LIBACQUIRE_IMPLEMENTATION)
 
-#include <minwindef.h>
-#include <windef.h>
-
-#ifdef __cplusplus
-extern "C" {
-#elif defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include "acquire_stdbool.h"
-#endif /* __cplusplus */
-
-#include "acquire_checksums.h"
-#include "acquire_config.h"
-
-#ifndef NAME_MAX
-#ifdef PATH_MAX
-#define NAME_MAX PATH_MAX
-#else
-#define NAME_MAX 4096
-#endif
-#endif
-
-#include "acquire_download.h"
-#include "acquire_url_utils.h"
-
 #include <stdio.h>
-#include <tchar.h>
+#include <string.h>
+#include <windef.h>
+#include <windows.h>
 #include <wininet.h>
 
-#define BUFFER_SIZE 4096
+#include "acquire_download.h"
 
-#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
-const char *get_download_dir(void) { return TMPDIR "//.downloads"; }
+#if defined(LIBACQUIRE_DOWNLOAD_DIR_IMPL)
+const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
-#ifdef LIBACQUIRE_DOWNLOAD_IMPL
-int download(const char *url, enum Checksum checksum, const char *hash,
-             const char *target_location /*[NAME_MAX]*/, bool follow,
-             size_t retry, size_t verbosity) {
-  HINTERNET hInternet = NULL, hURL = NULL;
-  DWORD bytesAvailable = 0, nbread = 0;
-  FILE *fp = NULL;
-  char *buff = NULL;
-  size_t count = 0;
-  const char *file_name = get_path_from_url(url);
+/* --- Common Handle Management --- */
 
-  hInternet =
-      InternetOpen("QuickGet", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-  if (hInternet == NULL)
+struct acquire_handle *acquire_handle_init(void) {
+  struct acquire_handle *handle =
+      (struct acquire_handle *)calloc(1, sizeof(struct acquire_handle));
+  if (handle) {
+    handle->total_size = -1;
+    handle->status = ACQUIRE_IDLE;
+  }
+  return handle;
+}
+
+void acquire_handle_free(struct acquire_handle *handle) {
+  if (!handle)
+    return;
+  /* No backend-specific handle to free in this simple implementation */
+  if (handle->output_file)
+    fclose(handle->output_file);
+  free(handle);
+}
+
+const char *acquire_handle_get_error(struct acquire_handle *handle) {
+  return handle ? handle->error_message : "Invalid handle.";
+}
+
+/* --- Synchronous API --- */
+
+/**
+ * @brief Downloads a file synchronously (blocking) using WinINet.
+ * This is the main implementation for this backend.
+ */
+int acquire_download_sync(struct acquire_handle *handle, const char *url,
+                          const char *dest_path) {
+  HINTERNET h_internet, h_url;
+  DWORD bytes_read, content_len_size = sizeof(handle->total_size);
+  char buffer[4096];
+  if (handle == NULL)
     return -1;
 
-  hURL = InternetOpenUrl(hInternet, url, NULL, 0,
-                         INTERNET_FLAG_SECURE |
-                             INTERNET_FLAG_IGNORE_CERT_DATE_INVALID |
-                             INTERNET_FLAG_IGNORE_CERT_CN_INVALID,
-                         0);
-  if (hURL == NULL) {
-    InternetCloseHandle(hInternet);
+  h_internet = InternetOpen("acquire_wininet", INTERNET_OPEN_TYPE_PRECONFIG,
+                            NULL, NULL, 0);
+  if (h_internet == NULL) {
+    strcpy(handle->error_message, "InternetOpen failed");
     return -1;
   }
 
-  /* Compose full path for local file */
-  char full_local_fname[NAME_MAX + 1];
-  if (strlen(target_location) + 1 + strlen(file_name) >=
-      sizeof(full_local_fname)) {
-    InternetCloseHandle(hURL);
-    InternetCloseHandle(hInternet);
-    return -1;
-  }
-  snprintf(full_local_fname, sizeof(full_local_fname), "%s%c%s",
-           target_location, '\\', file_name);
-
-#if defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__)
-  if (fopen_s(&fp, full_local_fname, "wb") != 0 || fp == NULL) {
-#else
-  fp = fopen(full_local_fname, "wb");
-  if (!fp) {
-#endif
-    InternetCloseHandle(hURL);
-    InternetCloseHandle(hInternet);
+  h_url = InternetOpenUrl(h_internet, url, NULL, 0,
+                          INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE, 0);
+  if (h_url == NULL) {
+    strcpy(handle->error_message, "InternetOpenUrl failed");
+    InternetCloseHandle(h_internet);
     return -1;
   }
 
-  buff = (char *)malloc(BUFFER_SIZE);
-  if (!buff) {
-    fclose(fp);
-    InternetCloseHandle(hURL);
-    InternetCloseHandle(hInternet);
-    return -1;
+  handle->output_file = fopen(dest_path, "wb");
+  if (!handle->output_file) {
+    strcpy(handle->error_message, "Failed to open destination file");
+    goto fail;
   }
 
-  puts("Starting download...");
+  /* Query file size for progress reporting */
+  HttpQueryInfo(h_url, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER,
+                &handle->total_size, &content_len_size, NULL);
 
-  do {
-    if (!InternetQueryDataAvailable(hURL, &bytesAvailable, 0, 0) ||
-        bytesAvailable == 0) {
-      /* No more data or error */
-      break;
+  while (InternetReadFile(h_url, buffer, sizeof(buffer), &bytes_read) &&
+         bytes_read > 0) {
+    if (handle->cancel_flag) { /* Check for cancellation */
+      strcpy(handle->error_message, "Download cancelled");
+      goto fail;
     }
+    fwrite(buffer, 1, bytes_read, handle->output_file);
+    handle->bytes_downloaded += bytes_read;
+  }
 
-    if (bytesAvailable > BUFFER_SIZE)
-      bytesAvailable = BUFFER_SIZE;
-
-    if (!InternetReadFile(hURL, buff, bytesAvailable, &nbread) || nbread == 0) {
-      /* read error */
-      break;
-    }
-
-    if (fwrite(buff, 1, nbread, fp) != nbread) {
-      /* write error */
-      break;
-    }
-
-    count += nbread;
-    printf("\r%zu bytes downloaded from %s.", count, url);
-
-  } while (nbread > 0);
-
-  free(buff);
-  fclose(fp);
-  InternetCloseHandle(hURL);
-  InternetCloseHandle(hInternet);
-
+  fclose(handle->output_file);
+  handle->output_file = NULL;
+  InternetCloseHandle(h_url);
+  InternetCloseHandle(h_internet);
+  handle->status = ACQUIRE_COMPLETE;
   return 0;
-}
-#endif /* LIBACQUIRE_DOWNLOAD_IMPL */
 
-#ifdef __cplusplus
+fail:
+  if (handle->output_file)
+    fclose(handle->output_file);
+  handle->output_file = NULL;
+  InternetCloseHandle(h_url);
+  InternetCloseHandle(h_internet);
+  handle->status = ACQUIRE_ERROR;
+  return -1;
 }
-#endif /* __cplusplus */
+
+/* --- Asynchronous API (Faked) --- */
+
+/**
+ * @brief Starts an async download by calling the blocking sync function.
+ * TODO: Implement true async WinINet with INTERNET_FLAG_ASYNC and callbacks.
+ */
+int acquire_download_async_start(struct acquire_handle *handle, const char *url,
+                                 const char *dest_path) {
+  if (handle == NULL)
+    return -1;
+  handle->status = ACQUIRE_IN_PROGRESS;
+  /* This implementation is blocking, so all work completes here. */
+  return acquire_download_sync(handle, url, dest_path);
+}
+
+/**
+ * @brief Polls an async download. Since start is blocking, this just returns
+ * the final status.
+ */
+enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
+  if (handle == NULL)
+    return ACQUIRE_ERROR;
+  return handle->status;
+}
+
+/**
+ * @brief Requests cancellation.
+ * TODO: True cancellation is impossible here as the sync function blocks.
+ */
+void acquire_download_async_cancel(struct acquire_handle *handle) {
+  if (handle) {
+    handle->cancel_flag = 1;
+  }
+}
 
 #endif /* defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET &&         \
           defined(LIBACQUIRE_IMPLEMENTATION) */

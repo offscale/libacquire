@@ -73,9 +73,9 @@ int sha256_file(const char *filename,
   memset(sha_output, 0, SHA256_DIGEST_LENGTH * 2 + 1);
 
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-  fopen_s(&fp, filename, "r");
+  fopen_s(&fp, filename, "rb");
 #else
-  fp = fopen(filename, "r");
+  fp = fopen(filename, "rb");
 #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) &&                   \
           __STDC_WANT_LIB_EXT1__ */
 
@@ -159,9 +159,9 @@ int sha512_file(const char *filename,
   memset(sha_output, 0, SHA512_DIGEST_LENGTH * 2 + 1);
 
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-  fopen_s(&fp, filename, "r");
+  fopen_s(&fp, filename, "rb");
 #else
-  fp = fopen(filename, "r");
+  fp = fopen(filename, "rb");
 #endif /* defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) &&                   \
           __STDC_WANT_LIB_EXT1__ */
 

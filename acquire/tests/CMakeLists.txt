@@ -68,7 +68,6 @@ endforeach (_library "HTTPS" "CRYPTO" "EXTRACT" "CHECKSUM")
 
 list(REMOVE_DUPLICATES CHECKSUM_LIBRARIES)
 
-set(_targets "${exec_name}" "test_amalgamation")
 if (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI")
     set(_archives "wincompressapi;")
 else ()
@@ -105,65 +104,67 @@ macro(test_wrapper)
     )
 
     add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
-endmacro()
+endmacro(test_wrapper)
 
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
-foreach (EXEC_NAME ${_targets})
-    set(Header_Files
-            "test_checksum.h"
-            "test_download.h"
-            "test_fileutils.h"
-            "test_string_extras.h"
-            "test_url_utils.h"
-    )
-    source_group("Header Files" FILES "${Header_Files}")
+set(EXEC_NAME ${exec_name})
+set(Header_Files
+        "test_checksum.h"
+        "test_download.h"
+        "test_fileutils.h"
+        "test_string_extras.h"
+        "test_url_utils.h"
+)
+source_group("Header Files" FILES "${Header_Files}")
 
-    set(Source_Files "test.c")
-    source_group("Source Files" FILES "${Source_Files}")
+set(Source_Files "test.c")
+source_group("Source Files" FILES "${Source_Files}")
 
-    set_source_files_properties("test_string_extras.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
+set_source_files_properties("test_string_extras.c"
+        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
 
-    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
+add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
 
-    set_backend_definitions(${EXEC_NAME})
+set_backend_definitions(${EXEC_NAME})
 
-    target_link_libraries(
-            "${EXEC_NAME}"
-            PRIVATE
-            "${PROJECT_NAME}"
-            "${PROJECT_NAME}_compiler_flags"
-            #"${CHECKSUM_LIBRARIES}"
-    )
+target_link_libraries(
+        "${EXEC_NAME}"
+        PRIVATE
+        "${PROJECT_NAME}"
+        "${PROJECT_NAME}_compiler_flags"
+        #"${CHECKSUM_LIBRARIES}"
+)
 
-    if (LIBACQUIRE_USE_MINIZ)
-        find_package(kubazip CONFIG REQUIRED)
-        target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
-    endif (LIBACQUIRE_USE_MINIZ)
+if (LIBACQUIRE_USE_MINIZ)
+    find_package(kubazip CONFIG REQUIRED)
+    target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
+endif (LIBACQUIRE_USE_MINIZ)
 
-    target_include_directories(
-            "${EXEC_NAME}"
-            PRIVATE
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
-    )
-    test_wrapper()
-endforeach (EXEC_NAME ${_targets})
+target_include_directories(
+        "${EXEC_NAME}"
+        PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
+)
+test_wrapper()
 
 if (LIBACQUIRE_USE_LIBCURL)
     set(EXEC_NAME "test_curl_helpers")
+    #add_dependencies("${PROJECT_NAME}" "${EXEC_NAME}")
 
-    add_executable("${EXEC_NAME}")
+    set(Test_Libcurl_Header_Files "test_libcurl_backend.h")
+    source_group("${EXEC_NAME} Header Files" FILES "${Test_Libcurl_Header_Files}")
 
-    target_sources(
-            "${EXEC_NAME}"
-            PRIVATE
-            "test_curl_helpers.c"
+    set(Test_Libcurl_Source_Files
+            "test_libcurl_backend.c"
             "${CMAKE_BINARY_DIR}/gen/gen_acquire_libcurl.c"
             "${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
     )
+    source_group("${EXEC_NAME} Source Files" FILES "${Test_Libcurl_Source_Files}")
+
+    add_executable("${EXEC_NAME}" "${Test_Libcurl_Header_Files}" "${Test_Libcurl_Source_Files}")
 
     target_compile_definitions(${EXEC_NAME} PRIVATE ACQUIRE_TESTING=1)
 
@@ -171,6 +172,8 @@ if (LIBACQUIRE_USE_LIBCURL)
     if (HAS_LIBBSD)
         target_link_libraries("${EXEC_NAME}" PRIVATE LibBSD::LibBSD)
     endif (HAS_LIBBSD)
+
+    target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}")
 
     test_wrapper()
 endif (LIBACQUIRE_USE_LIBCURL)
@@ -236,4 +239,4 @@ if (NOT (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
 
         test_wrapper()
     endforeach (ARCHIVE_LIB ${_archives})
-endif ()
+endif (NOT (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))

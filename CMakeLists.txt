@@ -120,6 +120,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 option(BUILD_SHARED_LIB "Build shared library" ON)
+option(BUILD_CLI "Build CLI" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
 
 if (APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
@@ -135,7 +137,12 @@ get_arch()
 ########################
 
 add_subdirectory("${PROJECT_NAME}")
-add_subdirectory("${PROJECT_NAME}/cli")
+if (BUILD_CLI)
+    add_subdirectory("${PROJECT_NAME}/cli")
+endif (BUILD_CLI)
+if (BUILD_EXAMPLES)
+    add_subdirectory("${PROJECT_NAME}/examples")
+endif (BUILD_EXAMPLES)
 
 ######################
 # Test configuration #

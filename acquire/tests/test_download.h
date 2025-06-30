@@ -1,47 +1,149 @@
+/* acquire/tests/test_download.h */
 #ifndef TEST_DOWNLOAD_H
 #define TEST_DOWNLOAD_H
 
 #include <greatest.h>
+#include <string.h> /* For memset */
 
-#include <acquire_common_defs.h>
-#include <acquire_config.h>
-#include <config_for_tests.h>
+#include "acquire_common_defs.h"
+#include "acquire_config.h"
+#include "config_for_tests.h"
 
-#if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
-    (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL)
-#include <acquire_openssl.h>
-#elif defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
-#include <acquire_wincrypt.h>
-#endif /* (defined(LIBACQUIRE_USE_COMMON_CRYPTO) &&                            \
-          LIBACQUIRE_USE_COMMON_CRYPTO) || (defined(LIBACQUIRE_USE_OPENSSL) && \
-          LIBACQUIRE_USE_OPENSSL) */
+/*
+ * This test suite verifies the public download API.
+ * It is implementation-agnostic and should pass with any backend
+ * (libcurl, wininet, libfetch).
+ */
 
-#include <acquire_download.h>
+/**
+ * @brief Tests the synchronous download API.
+ * This is a blocking call and is the simplest way to use the library.
+ */
+TEST test_sync_download(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  char local_path[NAME_MAX + 1];
+  int result;
 
-#if defined(LIBACQUIRE_USE_LIBCURL) && LIBACQUIRE_USE_LIBCURL
-#include <acquire_libcurl.h>
-#elif defined(LIBACQUIRE_USE_WININET) && LIBACQUIRE_USE_WININET
-#include <acquire_wininet.h>
-#elif defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH
-#include <acquire_libfetch.h>
+  ASSERT(handle != NULL);
+
+  snprintf(local_path, sizeof(local_path), "%s%sgreatest_sync.h", DOWNLOAD_DIR,
+           PATH_SEP);
+
+  /* Perform the synchronous download */
+  result = acquire_download_sync(handle, GREATEST_URL, local_path);
+
+  /* Check for success */
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
+
+  /* Verify the downloaded file */
+  ASSERT(is_file(local_path));
+  ASSERT(sha256(local_path, GREATEST_SHA256));
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
+/**
+ * @brief Tests the asynchronous download API.
+ * This test polls the handle until the operation is complete.
+ */
+TEST test_async_download(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  char local_path[NAME_MAX + 1];
+  int result;
+
+  ASSERT(handle != NULL);
+
+  snprintf(local_path, sizeof(local_path), "%s%sgreatest_async.h", DOWNLOAD_DIR,
+           PATH_SEP);
+
+  /* Start the asynchronous download */
+  result = acquire_download_async_start(handle, GREATEST_URL, local_path);
+  ASSERT_EQ_FMT(0, result, "%d");
+
+  /* Poll until the download is no longer in progress */
+  while (acquire_download_async_poll(handle) == ACQUIRE_IN_PROGRESS) {
+    /* In a real application, we would yield here. For this test, we
+       can just loop. A small sleep avoids a tight loop on true async backends.
+     */
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    Sleep(10);
 #else
-#error "No networking library named"
-#endif /* LIBACQUIRE_USE_LIBCURL */
+    usleep(10000);
+#endif
+  }
 
-TEST x_test_file_downloads(void) {
-  const int download_resp =
-      download(GREATEST_URL, LIBACQUIRE_SHA256, GREATEST_SHA256, DOWNLOAD_DIR,
-               false, 0, 0);
-  if (download_resp != EXIT_SUCCESS)
-    printf("download_resp: %d\n", download_resp);
-  ASSERT_EQ(download_resp, EXIT_SUCCESS);
-  ASSERT_FALSE(
-      !sha256(DOWNLOAD_DIR PATH_SEP GREATEST_BASEFILENAME, GREATEST_SHA256));
-  ASSERT_FALSE(!sha256(GREATEST_FILE, GREATEST_SHA256));
+  /* Check for successful completion */
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
+
+  /* Verify the downloaded file */
+  ASSERT(is_file(local_path));
+  ASSERT(sha256(local_path, GREATEST_SHA256));
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
+/**
+ * @brief Tests the asynchronous cancellation logic.
+ */
+TEST test_async_cancellation(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  char local_path[NAME_MAX + 1];
+  int i;
+  enum acquire_status status;
+
+  ASSERT(handle != NULL);
+
+  snprintf(local_path, sizeof(local_path), "%s%sgreatest_cancelled.h",
+           DOWNLOAD_DIR, PATH_SEP);
+
+  /* Start the async download */
+  ASSERT_EQ(0, acquire_download_async_start(handle, GREATEST_URL, local_path));
+
+  /* Poll a few times to let it start, then cancel */
+  for (i = 0; i < 5; ++i) {
+    status = acquire_download_async_poll(handle);
+    if (status != ACQUIRE_IN_PROGRESS)
+      break;
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    Sleep(10);
+#else
+    usleep(10000);
+#endif
+  }
+
+  /* Request cancellation */
+  acquire_download_async_cancel(handle);
+
+  /* Continue polling until the operation terminates */
+  while ((status = acquire_download_async_poll(handle)) ==
+         ACQUIRE_IN_PROGRESS) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    Sleep(10);
+#else
+    usleep(10000);
+#endif
+  }
+
+  /* Assert that it terminated with the CANCELLED status */
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, status, "%d");
+
+  /* The file may or may not exist, and if it exists, it should be incomplete.
+   */
+  /* We don't assert on its state here, just that the cancellation was
+   * acknowledged. */
+
+  acquire_handle_free(handle);
   PASS();
 }
 
 /* Suites can group multiple tests with common setup. */
-SUITE(downloads_suite) { RUN_TEST(x_test_file_downloads); }
+SUITE(downloads_suite) {
+  RUN_TEST(test_sync_download);
+  RUN_TEST(test_async_download);
+  RUN_TEST(test_async_cancellation);
+}
 
 #endif /* !TEST_DOWNLOAD_H */

@@ -50,6 +50,13 @@ TEST x_test_extract_archive(void) {
   ASSERT_FALSE(!is_directory(EXTRACT_DIR PATH_SEP "greatest-cmake-and-msvc"));
   ASSERT_FALSE(!is_file(EXTRACT_DIR PATH_SEP "greatest-cmake-and-msvc" PATH_SEP
                                              "greatest.h"));
+  {
+    char inner_file_path[NAME_MAX];
+    snprintf(inner_file_path, sizeof(inner_file_path),
+             EXTRACT_DIR PATH_SEP "greatest-cmake-and-msvc" PATH_SEP
+                                  "greatest.h");
+    ASSERT(sha256(inner_file_path, GREATEST_SHA256));
+  }
 
 #undef EXTRACT_DIR
   PASS();
