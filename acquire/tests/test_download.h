@@ -1,17 +1,16 @@
-/* acquire/tests/test_download.h */
 #ifndef TEST_DOWNLOAD_H
 #define TEST_DOWNLOAD_H
 
 #include <string.h>
 
+#include <greatest.h>
+
 #include "acquire_checksums.h" /* For verify API */
 #include "acquire_common_defs.h"
 #include "acquire_config.h"
 #include "config_for_tests.h"
-#include <greatest.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-
 #else
 #include <unistd.h>
 #endif
@@ -47,8 +46,13 @@ TEST test_async_download(void) {
   result = acquire_download_async_start(dl_handle, GREATEST_URL, local_path);
   ASSERT_EQ_FMT(0, result, "%d");
 
-  while (acquire_download_async_poll(dl_handle) == ACQUIRE_IN_PROGRESS)
-    ;
+  while (acquire_download_async_poll(dl_handle) == ACQUIRE_IN_PROGRESS) {
+#if defined(WIN32)
+    Sleep(10);
+#else
+    usleep(10000);
+#endif
+  }
 
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, dl_handle->status, "%d");
   ASSERT(is_file(local_path));
@@ -70,7 +74,7 @@ TEST test_async_cancellation(void) {
   ASSERT(handle != NULL);
   ASSERT_EQ(0, acquire_download_async_start(handle, GREATEST_URL, local_path));
 
-#ifdef _WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   Sleep(20);
 #else
   usleep(20000);

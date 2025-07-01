@@ -1,3 +1,4 @@
+/* acquire/cli/main.c */
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,7 @@
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #include <minwindef.h>
-#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
+#endif
 
 int main(int argc, char *argv[]) {
   struct DocoptArgs args;
@@ -26,8 +27,7 @@ int main(int argc, char *argv[]) {
   char final_output_path[NAME_MAX + 1];
 
   memset(&args, 0, sizeof(args));
-  rc =
-      docopt(&args, argc, argv, /* help */ 1, /* version */ LIBACQUIRE_VERSION);
+  rc = docopt(&args, argc, argv, 1, LIBACQUIRE_VERSION);
   if (rc != EXIT_SUCCESS) {
     return rc;
   }
