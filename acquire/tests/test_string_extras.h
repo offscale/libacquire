@@ -7,16 +7,19 @@
 
 #include <acquire_string_extras.h>
 
-static const char *buffer = "hello world";
-static const char *target = "hello\0\0\0";
+static const char *test_buffer = "hello world";
+static const char *test_target = "hello\0\0\0";
 
 TEST x_strnstr_should_succeed(void) {
-  ASSERT_EQ_FMT(buffer, strnstr(buffer, target, strlen(buffer)), "%s");
+  ASSERT_EQ_FMT(test_buffer,
+                strnstr(test_buffer, test_target, strlen(test_buffer)), "%s");
   PASS();
 }
 
 TEST x_strnstr_should_fail(void) {
-  ASSERT_EQ(strcmp(buffer, strnstr(buffer, target, strlen(buffer))), 0);
+  ASSERT_EQ(strcmp(test_buffer,
+                   strnstr(test_buffer, test_target, strlen(test_buffer))),
+            0);
   PASS();
 }
 

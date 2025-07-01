@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <windef.h>
-#include <windows.h>
 #include <wininet.h>
 
 #include "acquire_download.h"

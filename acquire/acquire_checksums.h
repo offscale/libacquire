@@ -1,65 +1,16 @@
 #ifndef LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 #define LIBACQUIRE_ACQUIRE_CHECKSUMS_H
 
-/**
- * @file acquire_checksums.h
- * @brief Collection of checksum function declarations and interface.
- *
- * This header declares typedefs and functions for computing and verifying
- * various checksum algorithms like crc32c, md5, sha1, etc.
- * Also provides functionality to get checksum function by name.
- *
- * NOTE: Always `#include` this when adding new checksum implementations,
- * to ensure the implementation matches the prototype.
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+#include "acquire_handle.h"
 #include "libacquire_export.h"
-#if defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include "acquire_stdbool.h"
-#endif
-#include "acquire_config.h"
-#include "acquire_string_extras.h"
 
 /**
- * @brief Boolean result type alias for checksum validation functions.
+ * @brief Enumeration of supported checksum algorithms.
  */
-
-/**
- * @brief Verify file using CRC32C checksum.
- *
- * @param filename Path to file.
- * @param hash Expected CRC32C checksum string.
- *
- * @return true if valid.
- */
-extern LIBACQUIRE_EXPORT bool crc32c(const char *filename, const char *hash);
-
-/**
- * @brief Verify file using SHA256 checksum.
- *
- * @param filename Path to file.
- * @param hash Expected checksum string.
- *
- * @return true if valid.
- */
-extern LIBACQUIRE_EXPORT bool sha256(const char *filename, const char *hash);
-
-/**
- * @brief Verify file using SHA256 checksum.
- *
- * @param filename Path to file.
- * @param hash Expected checksum string.
- *
- * @return true if valid.
- */
-extern LIBACQUIRE_EXPORT bool sha512(const char *filename, const char *hash);
-
 enum Checksum {
   LIBACQUIRE_CRC32C,
   LIBACQUIRE_SHA256,
@@ -67,24 +18,53 @@ enum Checksum {
   LIBACQUIRE_UNSUPPORTED_CHECKSUM
 };
 
+/**
+ * @brief Converts a string name (e.g., "sha256") to a Checksum enum.
+ * @return The corresponding enum, or LIBACQUIRE_UNSUPPORTED_CHECKSUM.
+ */
 extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *);
 
+/* --- Asynchronous Verification API --- */
+
 /**
- * @brief Obtain a pointer to a checksum function by name.
- *
- * Returns a pointer to a function matching the
- * signature of checksum_func_t, or NULL if not found.
- *
- * @param checksum Discriminant from `enum Checksum` representing checksum
- * algorithm
- *
- * @return Function pointer on success; NULL on failure.
+ * @brief Begins an asynchronous checksum verification (non-blocking).
+ * @param handle An initialized acquire handle.
+ * @param filepath The path to the file to verify.
+ * @param algorithm The checksum algorithm to use.
+ * @param expected_hash The expected hexadecimal checksum string.
+ * @return 0 on success, non-zero on failure.
  */
-extern LIBACQUIRE_EXPORT bool (*get_checksum_function(enum Checksum checksum))(
-    const char *, const char *);
+extern LIBACQUIRE_EXPORT int
+acquire_verify_async_start(struct acquire_handle *handle, const char *filepath,
+                           enum Checksum algorithm, const char *expected_hash);
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(CHECKSUM_IMPL)
+/**
+ * @brief Polls the status of an asynchronous verification, processing a chunk.
+ * @param handle The handle for the in-progress operation.
+ * @return The current status of the operation.
+ */
+extern LIBACQUIRE_EXPORT enum acquire_status
+acquire_verify_async_poll(struct acquire_handle *handle);
 
+/**
+ * @brief Requests cancellation of an asynchronous verification.
+ * @param handle The handle for the operation to be cancelled.
+ */
+extern LIBACQUIRE_EXPORT void
+acquire_verify_async_cancel(struct acquire_handle *handle);
+
+/* --- Synchronous Verification API --- */
+
+/**
+ * @brief Verifies a file's checksum synchronously (blocking).
+ * @return 0 if the checksum matches, -1 on failure or mismatch.
+ */
+extern LIBACQUIRE_EXPORT int acquire_verify_sync(struct acquire_handle *handle,
+                                                 const char *filepath,
+                                                 enum Checksum algorithm,
+                                                 const char *expected_hash);
+
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CHECKSUMS_IMPL)
 enum Checksum string2checksum(const char *const s) {
   if (s == NULL)
     return LIBACQUIRE_UNSUPPORTED_CHECKSUM;
@@ -97,26 +77,10 @@ enum Checksum string2checksum(const char *const s) {
   else
     return LIBACQUIRE_UNSUPPORTED_CHECKSUM;
 }
-
-bool (*get_checksum_function(enum Checksum checksum))(const char *,
-                                                      const char *) {
-  switch (checksum) {
-  case LIBACQUIRE_CRC32C:
-    return crc32c;
-  case LIBACQUIRE_SHA256:
-    return sha256;
-  case LIBACQUIRE_SHA512:
-    return sha512;
-  case LIBACQUIRE_UNSUPPORTED_CHECKSUM:
-  default:
-    return NULL;
-  }
-}
-
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(CHECKSUM_IMPL) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_CHECKSUMS_IMPL) */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* ! LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
+#endif /* !LIBACQUIRE_ACQUIRE_CHECKSUMS_H */

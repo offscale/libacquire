@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "acquire_checksums.h"
 #include "acquire_common_defs.h"
 #include "acquire_config.h"
 #include "acquire_download.h"

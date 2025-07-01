@@ -1,10 +1,3 @@
-/*
- * Networking helper API
- *
- * Provides minimal networking-related helpers used throughout libacquire.
- * Does NOT implement fileutils functions (moved to acquire_fileutils.h).
- * */
-
 #ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
@@ -12,19 +5,22 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "acquire_common_defs.h"
-#include "acquire_config.h"
+/* Include the public headers that declare the functions we use */
+#include "acquire_checksums.h"
+#include "acquire_download.h"
+#include "acquire_fileutils.h"
+#include "acquire_handle.h"
+#include "acquire_url_utils.h"
+
+#if defined(HAS_STDBOOL) && !defined(bool)
+#include <stdbool.h>
+#else
+#include "acquire_stdbool.h"
+#endif
 
 /**
  * Check if a file represented by URL is already downloaded locally and matches
  * the checksum.
- *
- * @param url URL or filename
- * @param checksum checksum enum type, e.g., LIBACQUIRE_SHA256
- * @param hash expected hash string to verify
- * @param target_location directory to check in (if NULL, defaults to
- * ".downloads")
- * @return true if already downloaded and checksum verifies, else false
  */
 extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
                                             enum Checksum checksum,
@@ -33,24 +29,20 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
 
 extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 
-#include "acquire_common_defs.h"
-#include "acquire_config.h"
-
-#ifdef DOWNLOAD_DIR_IMPL
-const char *get_download_dir(void) { return ".downloads"; }
-#endif /* DOWNLOAD_DIR_IMPL */
-
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
     defined(LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL)
-/**
+
+/*
  * Implementation of is_downloaded.
- * Uses fileutils functions for existence checks and checksum functions for
- * verification.
+ * Uses fileutils for existence checks and the new handle-based verification
+ * API.
  */
 bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
                    const char *target_location) {
   char full_local_fname[NAME_MAX + 1];
   const char *filename = is_url(url) ? get_path_from_url(url) : url;
+  struct acquire_handle *verify_handle;
+  int result;
 
   if (target_location == NULL) {
     target_location = get_download_dir();
@@ -68,16 +60,15 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
     return false;
   }
 
-  switch (checksum) {
-  case LIBACQUIRE_SHA256:
-    return sha256(full_local_fname, hash);
-  case LIBACQUIRE_SHA512:
-    /* TODO: can add sha512 once implemented and enabled */
+  verify_handle = acquire_handle_init();
+  if (!verify_handle)
     return false;
-  case LIBACQUIRE_UNSUPPORTED_CHECKSUM:
-  default:
-    return false;
-  }
+
+  result = acquire_verify_sync(verify_handle, full_local_fname, checksum, hash);
+
+  acquire_handle_free(verify_handle);
+
+  return result == 0;
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \

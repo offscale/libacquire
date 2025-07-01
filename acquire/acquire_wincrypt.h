@@ -1,180 +1,186 @@
-/*
- * wincrypt implementation of libacquire's checksum API
- *
- * This should also work on Windows, ReactOS, and derivatives.
- * */
-
 #ifndef LIBACQUIRE_WINCRYPT_H
 #define LIBACQUIRE_WINCRYPT_H
 
-#if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT &&             \
-    defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CRYPTO_IMPL)
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_WINCRYPT)
 
-#include "acquire_checksums.h"
 #ifdef __cplusplus
 extern "C" {
-#elif defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include "acquire_stdbool.h"
-#endif /* __cplusplus */
+#endif
 
-#define SHA256_BLOCK_BYTES 64 /* block size in bytes */
-#define SHA512_BLOCK_BYTES (SHA256_BLOCK_BYTES * 2)
-
-#include <stdio.h>
-#include <string.h>
-
-#include "acquire_config.h"
-
-#include <intsafe.h>
-#include <minwindef.h>
-#include <winbase.h>
+#include "acquire_checksums.h"
+#include "acquire_handle.h"
 #include <wincrypt.h>
-#include <windef.h>
 
-/* SHA256 hash output length in bytes */
-#define SHA256_HASH_BYTES 32
-/* size for hex string + null */
-#define SHA256_HASH_HEX_STR_LEN (SHA256_HASH_BYTES * 2 + 1)
+#ifndef CHUNK_SIZE
+#define CHUNK_SIZE 4096
+#endif
 
-LPTSTR get_error_message(DWORD dw) {
-  LPVOID lpMsgBuf;
-  if (dw == 0)
-    dw = GetLastError();
-  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPTSTR)&lpMsgBuf, 0, NULL);
-  return (LPTSTR)lpMsgBuf;
+/* Internal state for an async checksum operation. */
+struct checksum_backend {
+  FILE *file;
+  HCRYPTPROV hProv;
+  HCRYPTHASH hHash;
+  char expected_hash[129]; /* Max SHA512 hex length + null */
+};
+
+static void cleanup_checksum_backend(struct acquire_handle *handle) {
+  if (handle && handle->backend_handle) {
+    struct checksum_backend *be =
+        (struct checksum_backend *)handle->backend_handle;
+    if (be->hHash)
+      CryptDestroyHash(be->hHash);
+    if (be->hProv)
+      CryptReleaseContext(be->hProv, 0);
+    if (be->file)
+      fclose(be->file);
+    free(be);
+    handle->backend_handle = NULL;
+  }
 }
 
-BOOL sha256_file(LPCSTR filename, CHAR hash[SHA256_HASH_HEX_STR_LEN]) {
-  enum { BUFSIZE = 1024 };
-  BOOL bResult = FALSE;
-  HCRYPTPROV hProv = 0;
-  HCRYPTHASH hHash = 0;
-  HANDLE hFile = NULL;
-  BYTE rgbFile[BUFSIZE];
-  DWORD cbRead = 0;
-  BYTE rgbHash[SHA256_HASH_BYTES];
+int acquire_verify_async_start(struct acquire_handle *handle,
+                               const char *filepath, enum Checksum algorithm,
+                               const char *expected_hash) {
+  struct checksum_backend *be;
+  ALG_ID alg_id;
 
-  DWORD cbHash = SHA256_HASH_BYTES;
-  static const CHAR rgbDigits[] = "0123456789abcdef";
-
-  hFile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-                      OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-
-  if (INVALID_HANDLE_VALUE == hFile) {
-    LPTSTR errStr = get_error_message(0);
-    fprintf(stderr, "Error opening file %s\nError: %hs\n", filename, errStr);
-    LocalFree(errStr);
-    return FALSE;
+  if (!handle || !filepath || !expected_hash) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                             "Invalid arguments for verification");
+    return -1;
   }
 
-  if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES,
+  switch (algorithm) {
+  case LIBACQUIRE_SHA256:
+    alg_id = CALG_SHA_256;
+    break;
+  case LIBACQUIRE_SHA512:
+    alg_id = CALG_SHA_512;
+    break;
+  default:
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+                             "Unsupported algorithm for WinCrypt backend");
+    return -1;
+  }
+
+  be = (struct checksum_backend *)calloc(1, sizeof(struct checksum_backend));
+  if (!be) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
+                             "Could not allocate checksum backend");
+    return -1;
+  }
+
+  be->file = fopen(filepath, "rb");
+  if (!be->file) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                             "Could not open file '%s'", filepath);
+    free(be);
+    return -1;
+  }
+
+  strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+  if (!CryptAcquireContext(&be->hProv, NULL, NULL, PROV_RSA_AES,
                            CRYPT_VERIFYCONTEXT)) {
-    LPTSTR errStr = get_error_message(0);
-    fprintf(stderr, "CryptAcquireContext failed: %hs\n", errStr);
-    LocalFree(errStr);
-    CloseHandle(hFile);
-    return FALSE;
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "CryptAcquireContext failed");
+    cleanup_checksum_backend(handle);
+    return -1;
   }
 
-  if (!CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash)) {
-    LPTSTR errStr = get_error_message(0);
-    fprintf(stderr, "CryptCreateHash failed: %hs\n", errStr);
-    LocalFree(errStr);
-    CloseHandle(hFile);
-    CryptReleaseContext(hProv, 0);
-    return FALSE;
+  if (!CryptCreateHash(be->hProv, alg_id, 0, 0, &be->hHash)) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "CryptCreateHash failed");
+    cleanup_checksum_backend(handle);
+    return -1;
   }
 
-  while ((bResult = ReadFile(hFile, rgbFile, BUFSIZE, &cbRead, NULL)) &&
-         cbRead > 0) {
-    if (!CryptHashData(hHash, rgbFile, cbRead, 0)) {
-      LPTSTR errStr = get_error_message(0);
-      fprintf(stderr, "CryptHashData failed: %hs\n", errStr);
-      LocalFree(errStr);
+  handle->backend_handle = be;
+  handle->status = ACQUIRE_IN_PROGRESS;
+  return 0;
+}
 
-      CryptDestroyHash(hHash);
-      CryptReleaseContext(hProv, 0);
-      CloseHandle(hFile);
-      return FALSE;
+enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
+  struct checksum_backend *be;
+  BYTE buffer[CHUNK_SIZE];
+  size_t bytes_read;
+
+  if (!handle || !handle->backend_handle)
+    return ACQUIRE_ERROR;
+  if (handle->status != ACQUIRE_IN_PROGRESS)
+    return handle->status;
+  if (handle->cancel_flag) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Checksum verification cancelled");
+    cleanup_checksum_backend(handle);
+    return handle->status;
+  }
+
+  be = (struct checksum_backend *)handle->backend_handle;
+  bytes_read = fread(buffer, 1, CHUNK_SIZE, be->file);
+
+  if (bytes_read > 0) {
+    if (!CryptHashData(be->hHash, buffer, (DWORD)bytes_read, 0)) {
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "CryptHashData failed");
+      cleanup_checksum_backend(handle);
+    }
+    handle->bytes_processed += bytes_read;
+    return ACQUIRE_IN_PROGRESS;
+  }
+
+  if (ferror(be->file)) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "Error reading file");
+  } else {            /* EOF */
+    BYTE rgbHash[64]; /* SHA512_DIGEST_LENGTH */
+    DWORD cbHash = sizeof(rgbHash);
+    char hex_hash[129];
+    static const char rgbDigits[] = "0123456789abcdef";
+    DWORD i, k = 0;
+
+    if (CryptGetHashParam(be->hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
+      for (i = 0; i < cbHash; i++) {
+        hex_hash[k++] = rgbDigits[rgbHash[i] >> 4];
+        hex_hash[k++] = rgbDigits[rgbHash[i] & 0xf];
+      }
+      hex_hash[k] = '\0';
+      if (_stricmp(hex_hash, be->expected_hash) == 0) {
+        handle->status = ACQUIRE_COMPLETE;
+      } else {
+        acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                                 "Checksum mismatch");
+      }
+    } else {
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "CryptGetHashParam failed");
     }
   }
 
-  if (!bResult) {
-    LPTSTR errStr = get_error_message(0);
-    fprintf(stderr, "ReadFile failed: %hs\n", errStr);
-    LocalFree(errStr);
-
-    CryptDestroyHash(hHash);
-    CryptReleaseContext(hProv, 0);
-    CloseHandle(hFile);
-    return FALSE;
-  }
-
-  if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
-    DWORD k = 0;
-    for (DWORD i = 0; i < cbHash; i++) {
-      hash[k++] = rgbDigits[rgbHash[i] >> 4];
-      hash[k++] = rgbDigits[rgbHash[i] & 0xf];
-    }
-    hash[k] = '\0';
-  } else {
-    LPTSTR errStr = get_error_message(0);
-    fprintf(stderr, "CryptGetHashParam failed: %hs\n", errStr);
-    LocalFree(errStr);
-    CryptDestroyHash(hHash);
-    CryptReleaseContext(hProv, 0);
-    CloseHandle(hFile);
-    return FALSE;
-  }
-
-  CryptDestroyHash(hHash);
-  CryptReleaseContext(hProv, 0);
-  CloseHandle(hFile);
-
-  return TRUE;
+  cleanup_checksum_backend(handle);
+  return handle->status;
 }
 
-/* returns true if the SHA256 hex string matches */
-#ifndef LIBACQUIRE_SHA256_IMPL
-#define LIBACQUIRE_SHA256_IMPL
-bool sha256(const char *filename, const char *hash) {
-  CHAR result[SHA256_HASH_HEX_STR_LEN];
-  if (!sha256_file(filename, result))
-    return false;
-
-  if (!hash)
-    return false;
-
-  /* compare full length */
-  if (strlen(hash) != (SHA256_HASH_HEX_STR_LEN - 1))
-    return false;
-
-  return (strncmp(hash, result, SHA256_HASH_HEX_STR_LEN - 1) == 0);
+void acquire_verify_async_cancel(struct acquire_handle *handle) {
+  if (handle)
+    handle->cancel_flag = 1;
 }
-#endif /* !LIBACQUIRE_SHA256_IMPL */
 
-#ifndef LIBACQUIRE_SHA512_IMPL
-#define LIBACQUIRE_SHA512_IMPL
-bool sha512(const char *filename, const char *hash) {
-  fputs("SHA512 for wincrypt not implemented: always returns `false`\n",
-        stderr);
-  (void)filename;
-  (void)hash;
-  return false;
+int acquire_verify_sync(struct acquire_handle *handle, const char *filepath,
+                        enum Checksum algorithm, const char *expected_hash) {
+  if (!handle)
+    return -1;
+  if (acquire_verify_async_start(handle, filepath, algorithm, expected_hash) !=
+      0)
+    return -1;
+  while (acquire_verify_async_poll(handle) == ACQUIRE_IN_PROGRESS)
+    ;
+  return (handle->status == ACQUIRE_COMPLETE) ? 0 : -1;
 }
-#endif /* !LIBACQUIRE_SHA512_IMPL */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT &&       \
-          defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          defined(LIBACQUIRE_CRYPTO_IMPL) */
-
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
+          defined(LIBACQUIRE_USE_WINCRYPT) */
 #endif /* !LIBACQUIRE_WINCRYPT_H */

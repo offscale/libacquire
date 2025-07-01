@@ -1,9 +1,10 @@
 #ifndef TEST_CURL_BACKEND_H
 #define TEST_CURL_BACKEND_H
 
-#include <greatest.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <greatest.h>
 
 #include "acquire_checksums.h"
 #include "acquire_common_defs.h"
@@ -17,11 +18,6 @@
 #else
 #include <unistd.h> /* For usleep() */
 #endif
-
-/*
- * This test suite focuses on behaviors specific to the libcurl backend.
- * It is only compiled and run when LIBACQUIRE_USE_LIBCURL is enabled.
- */
 
 /**
  * @brief Helper function to poll a handle to completion.
@@ -72,7 +68,7 @@ TEST test_curl_download_fails_on_bad_host(void) {
 TEST test_curl_progress_reporting(void) {
   struct acquire_handle *handle = acquire_handle_init();
   char local_path[] = DOWNLOAD_DIR PATH_SEP "curl_progress_test.zip";
-  long long last_bytes_downloaded = 0;
+  off_t last_bytes_downloaded = 0;
   int progress_seen = 0;
 
   ASSERT(handle != NULL);
@@ -96,7 +92,8 @@ TEST test_curl_progress_reporting(void) {
   ASSERTm("Download did not make any progress", progress_seen == 1);
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
 
-  ASSERT_EQ(handle->total_size, 58545L);
+  /* Assert on final size AFTER the download is complete */
+  ASSERT_EQ_FMT(58545L, (long)handle->total_size, "%ld");
   ASSERT_EQ_FMT((long long)handle->total_size,
                 (long long)handle->bytes_processed, "%lld");
 
@@ -108,18 +105,23 @@ TEST test_curl_progress_reporting(void) {
  * @brief Test a successful HTTPS download that involves a redirect.
  */
 TEST test_curl_https_and_redirect_success(void) {
-  struct acquire_handle *handle = acquire_handle_init();
+  struct acquire_handle *dl_handle = acquire_handle_init();
+  struct acquire_handle *verify_handle = acquire_handle_init();
   char local_path[] = DOWNLOAD_DIR PATH_SEP "greatest_curl.h";
+  int result;
+  ASSERT(dl_handle != NULL && verify_handle != NULL);
 
-  ASSERT(handle != NULL);
+  acquire_download_sync(dl_handle, GREATEST_URL, local_path);
 
-  acquire_download_sync(handle, GREATEST_URL, local_path);
-
-  ASSERTm("Download failed", handle->status == ACQUIRE_COMPLETE);
+  ASSERTm("Download failed", dl_handle->status == ACQUIRE_COMPLETE);
   ASSERT(is_file(local_path));
-  ASSERT(sha256(local_path, GREATEST_SHA256));
 
-  acquire_handle_free(handle);
+  result = acquire_verify_sync(verify_handle, local_path, LIBACQUIRE_SHA256,
+                               GREATEST_SHA256);
+  ASSERT_EQ_FMT(0, result, "%d");
+
+  acquire_handle_free(dl_handle);
+  acquire_handle_free(verify_handle);
   PASS();
 }
 
