@@ -8,8 +8,9 @@
 #include <unistd.h>
 #endif
 
-/* Include the main library header */
+/* Include the main library headers */
 #include <acquire_download.h>
+#include <acquire_handle.h>
 
 /**
  * @brief Demonstrates the simple, blocking synchronous API.
@@ -33,7 +34,7 @@ void run_synchronous_download(void) {
     printf("Sync download complete! Saved to 'sync_download.json'.\n");
   } else {
     fprintf(stderr, "Sync download failed: %s\n",
-            acquire_handle_get_error(handle));
+            acquire_handle_get_error_string(handle));
   }
 
   acquire_handle_free(handle);
@@ -64,7 +65,7 @@ void run_asynchronous_download(void) {
           handle, "http://ipv4.download.thinkbroadband.com/2MB.zip",
           "./async_download.zip") != 0) {
     fprintf(stderr, "Failed to start async download: %s\n",
-            acquire_handle_get_error(handle));
+            acquire_handle_get_error_string(handle));
     acquire_handle_free(handle);
     return;
   }
@@ -73,24 +74,20 @@ void run_asynchronous_download(void) {
   do {
     off_t current, total;
 
-    /* Poll the handle to perform a chunk of work */
     status = acquire_download_async_poll(handle);
 
-    /* Query progress from the handle */
-    current = handle->bytes_downloaded;
+    current = handle->bytes_processed;
     total = handle->total_size;
 
     if (total > 0) {
-      printf("\rProgress: %ld / %ld bytes (%.0f%%)", (long)current, (long)total,
-             100.0 * (double)current / (double)total);
+      printf("\rProgress: %lld / %lld bytes (%.0f%%)", (long long)current,
+             (long long)total, 100.0 * (double)current / (double)total);
     } else {
-      printf("\rProgress: %ld bytes downloaded (total size unknown)",
-             (long)current);
+      printf("\rProgress: %lld bytes downloaded (total size unknown)",
+             (long long)current);
     }
     fflush(stdout);
 
-    /* In a real app, this is where you'd yield to your event loop.
-       Here, we just sleep to avoid a busy-wait. */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     Sleep(100); /* 100ms */
 #else
@@ -105,15 +102,18 @@ void run_asynchronous_download(void) {
   case ACQUIRE_COMPLETE:
     printf("Async download complete! Saved to 'async_download.zip'.\n");
     break;
-  case ACQUIRE_ERROR_CANCELLED:
-    printf("Async download was cancelled.\n");
-    break;
   case ACQUIRE_ERROR:
-    fprintf(stderr, "Async download failed: %s\n",
-            acquire_handle_get_error(handle));
+    if (acquire_handle_get_error_code(handle) == ACQUIRE_ERROR_CANCELLED) {
+      printf("Async download was cancelled.\n");
+    } else {
+      fprintf(stderr, "Async download failed: [%d] %s\n",
+              acquire_handle_get_error_code(handle),
+              acquire_handle_get_error_string(handle));
+    }
     break;
   default:
-    fprintf(stderr, "Async download ended in an unexpected state.\n");
+    fprintf(stderr, "Async download ended in an unexpected state: %d.\n",
+            status);
     break;
   }
 

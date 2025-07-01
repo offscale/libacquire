@@ -31,6 +31,8 @@ extern LIBACQUIRE_EXPORT bool is_downloaded(const char *url,
                                             const char *hash,
                                             const char *target_location);
 
+extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
+
 #include "acquire_common_defs.h"
 #include "acquire_config.h"
 

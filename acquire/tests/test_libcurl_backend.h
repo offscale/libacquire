@@ -5,8 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "acquire_checksums.h"
+#include "acquire_common_defs.h"
 #include "acquire_config.h"
 #include "acquire_download.h"
+#include "acquire_fileutils.h"
 #include "config_for_tests.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -54,7 +57,7 @@ TEST test_curl_download_fails_on_bad_host(void) {
                 "%d");
 
   ASSERT_EQ_FMT(ACQUIRE_ERROR, poll_to_completion(handle), "%d");
-  error_msg = acquire_handle_get_error(handle);
+  error_msg = acquire_handle_get_error_string(handle);
   ASSERT(error_msg != NULL);
   ASSERT(strlen(error_msg) > 0);
   printf("  -> Received expected error: %s\n", error_msg);
@@ -69,7 +72,7 @@ TEST test_curl_download_fails_on_bad_host(void) {
 TEST test_curl_progress_reporting(void) {
   struct acquire_handle *handle = acquire_handle_init();
   char local_path[] = DOWNLOAD_DIR PATH_SEP "curl_progress_test.zip";
-  off_t last_bytes_downloaded = 0;
+  long long last_bytes_downloaded = 0;
   int progress_seen = 0;
 
   ASSERT(handle != NULL);
@@ -83,18 +86,19 @@ TEST test_curl_progress_reporting(void) {
 #else
     usleep(50000);
 #endif
-    if (handle->bytes_downloaded > last_bytes_downloaded) {
+    if (handle->bytes_processed > last_bytes_downloaded) {
       progress_seen = 1;
     }
-    ASSERT(handle->bytes_downloaded >= last_bytes_downloaded);
-    last_bytes_downloaded = handle->bytes_downloaded;
+    ASSERT((long long)handle->bytes_processed >= last_bytes_downloaded);
+    last_bytes_downloaded = handle->bytes_processed;
   }
 
   ASSERTm("Download did not make any progress", progress_seen == 1);
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
 
   ASSERT_EQ(handle->total_size, 58545L);
-  ASSERT_EQ_FMT(handle->total_size, handle->bytes_downloaded, "%ld");
+  ASSERT_EQ_FMT((long long)handle->total_size,
+                (long long)handle->bytes_processed, "%lld");
 
   acquire_handle_free(handle);
   PASS();

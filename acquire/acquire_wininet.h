@@ -37,7 +37,7 @@ void acquire_handle_free(struct acquire_handle *handle) {
   free(handle);
 }
 
-const char *acquire_handle_get_error(struct acquire_handle *handle) {
+const char *acquire_handle_get_error_string(struct acquire_handle *handle) {
   return handle ? handle->error_message : "Invalid handle.";
 }
 
@@ -87,7 +87,7 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
       goto fail;
     }
     fwrite(buffer, 1, bytes_read, handle->output_file);
-    handle->bytes_downloaded += bytes_read;
+    handle->bytes_processed += bytes_read;
   }
 
   fclose(handle->output_file);

@@ -85,7 +85,9 @@ else ()
             "acquire_download.h"
             "acquire_extract.h"
             "acquire_fileutils.h"
+            "acquire_handle.h"
             "acquire_net_common.h"
+            "acquire_status_codes.h"
             "acquire_string_extras.h"
             "acquire_url_utils.h"
     )
@@ -257,6 +259,16 @@ else ()
                 )
                 list(APPEND impls "LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL")
             endif (NOT ("LIBACQUIRE_ACQUIRE_FILEUTILS_IMPL" IN_LIST impls))
+
+            ##########
+            # Handle #
+            ##########
+        elseif (src MATCHES "/gen_acquire_handle.c$")
+            set_source_files_properties(
+                    ${src} PROPERTIES
+                    COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_HANDLE_IMPL=1"
+            )
+
             #################
             # String extras #
             #################

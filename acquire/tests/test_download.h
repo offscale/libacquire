@@ -21,13 +21,10 @@
  */
 TEST test_sync_download(void) {
   struct acquire_handle *handle = acquire_handle_init();
-  char local_path[NAME_MAX + 1];
+  const char local_path[] = DOWNLOAD_DIR PATH_SEP "greatest_sync.h";
   int result;
 
   ASSERT(handle != NULL);
-
-  snprintf(local_path, sizeof(local_path), "%s%sgreatest_sync.h", DOWNLOAD_DIR,
-           PATH_SEP);
 
   /* Perform the synchronous download */
   result = acquire_download_sync(handle, GREATEST_URL, local_path);
@@ -50,13 +47,10 @@ TEST test_sync_download(void) {
  */
 TEST test_async_download(void) {
   struct acquire_handle *handle = acquire_handle_init();
-  char local_path[NAME_MAX + 1];
+  const char local_path[] = DOWNLOAD_DIR PATH_SEP "greatest_async.h";
   int result;
 
   ASSERT(handle != NULL);
-
-  snprintf(local_path, sizeof(local_path), "%s%sgreatest_async.h", DOWNLOAD_DIR,
-           PATH_SEP);
 
   /* Start the asynchronous download */
   result = acquire_download_async_start(handle, GREATEST_URL, local_path);
@@ -90,50 +84,30 @@ TEST test_async_download(void) {
  */
 TEST test_async_cancellation(void) {
   struct acquire_handle *handle = acquire_handle_init();
-  char local_path[NAME_MAX + 1];
-  int i;
+  const char local_path[] = DOWNLOAD_DIR PATH_SEP "greatest_cancelled.h";
   enum acquire_status status;
 
   ASSERT(handle != NULL);
 
-  snprintf(local_path, sizeof(local_path), "%s%sgreatest_cancelled.h",
-           DOWNLOAD_DIR, PATH_SEP);
-
-  /* Start the async download */
   ASSERT_EQ(0, acquire_download_async_start(handle, GREATEST_URL, local_path));
 
-  /* Poll a few times to let it start, then cancel */
-  for (i = 0; i < 5; ++i) {
-    status = acquire_download_async_poll(handle);
-    if (status != ACQUIRE_IN_PROGRESS)
-      break;
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    Sleep(10);
+  /* Let it run for a moment, then cancel */
+#ifdef _WIN32
+  Sleep(20);
 #else
-    usleep(10000);
+  usleep(20000);
 #endif
-  }
-
-  /* Request cancellation */
   acquire_download_async_cancel(handle);
 
   /* Continue polling until the operation terminates */
   while ((status = acquire_download_async_poll(handle)) ==
          ACQUIRE_IN_PROGRESS) {
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    Sleep(10);
-#else
-    usleep(10000);
-#endif
   }
 
-  /* Assert that it terminated with the CANCELLED status */
-  ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, status, "%d");
-
-  /* The file may or may not exist, and if it exists, it should be incomplete.
-   */
-  /* We don't assert on its state here, just that the cancellation was
-   * acknowledged. */
+  /* Assert that it terminated with an error AND the error code is CANCELLED */
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, acquire_handle_get_error_code(handle),
+                "%d");
 
   acquire_handle_free(handle);
   PASS();

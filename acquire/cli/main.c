@@ -1,22 +1,21 @@
-/* acquire/cli/main.c */
-#include "cli.h"
-#include <acquire_common_defs.h>
-#include <acquire_config.h>
-#include <acquire_download.h>
-#include <acquire_errors.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "acquire_common_defs.h"
+#include "acquire_config.h"
+#include "acquire_download.h"
+#include "acquire_handle.h"
+#include "acquire_net_common.h"
+#include "acquire_url_utils.h"
+
+#include "cli.h"
+
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #include <minwindef.h>
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-/*
- * This CLI tool now uses the synchronous download API for simplicity,
- * which is appropriate for a command-line application.
- */
 int main(int argc, char *argv[]) {
   struct DocoptArgs args;
   struct acquire_handle *handle;
@@ -38,7 +37,6 @@ int main(int argc, char *argv[]) {
     return ENOMEM;
   }
 
-  /* Determine the URL from the last valid argument */
   url_to_use = NULL;
   if (args.url != NULL) {
     url_to_use = args.url;
@@ -58,7 +56,6 @@ int main(int argc, char *argv[]) {
     goto cleanup;
   }
 
-  /* Determine the output path */
   if (args.output != NULL) {
     output_path = args.output;
   } else if (args.directory != NULL) {
@@ -82,7 +79,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (args.check) {
-    /* TODO: is_downloaded should be updated to use a handle or be deprecated */
     if (is_downloaded(url_to_use, string2checksum(args.checksum), args.hash,
                       args.directory)) {
       printf("File is already downloaded and verified.\n");
@@ -95,11 +91,10 @@ int main(int argc, char *argv[]) {
     printf("Downloading '%s' to '%s'...\n", url_to_use, output_path);
     if (acquire_download_sync(handle, url_to_use, output_path) != 0) {
       fprintf(stderr, "Download failed: %s\n",
-              acquire_handle_get_error(handle));
+              acquire_handle_get_error_string(handle));
       rc = EXIT_FAILURE;
     } else {
       printf("Download complete.\n");
-      /* TODO: Post-download checksum verification should be added here */
       rc = EXIT_SUCCESS;
     }
   }
