@@ -32,6 +32,18 @@ if (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
 endif (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
 set(GREATEST_FILE "${DOWNLOAD_DIR}/greatest/greatest.h")
 
+###############################################
+# Create a dummy corrupted zip file for tests #
+###############################################
+
+set(CORRUPT_ZIP_PATH "${DOWNLOAD_DIR}/corrupt.zip")
+file(WRITE "${CORRUPT_ZIP_PATH}" "This is not a real zip file, just some text.")
+file(TO_NATIVE_PATH "${CORRUPT_ZIP_PATH}" CORRUPT_ZIP_PATH_NATIVE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
+    string(REPLACE "\\" "\\\\" CORRUPT_ZIP_PATH_NATIVE "${CORRUPT_ZIP_PATH_NATIVE}")
+endif()
+
+
 ################################
 # Configure file (interpolate) #
 ################################
@@ -111,6 +123,7 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 set(EXEC_NAME ${exec_name})
 set(Header_Files
         "test_checksum.h"
+        "test_checksums_dispatch.h"
         "test_download.h"
         "test_fileutils.h"
         "test_string_extras.h"

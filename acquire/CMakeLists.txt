@@ -171,12 +171,23 @@ else ()
     endif ()
     list(APPEND header_impls "${NETWORK_LIB}")
 
+    #############
+    # Checksums #
+    #############
+    if (LIBACQUIRE_USE_LIBRHASH)
+        set(CHECKSUM_LIB "acquire_librhash.h")
+    elseif (LIBACQUIRE_USE_CRC32C)
+        set(CHECKSUM_LIB "acquire_crc32c.h")
+    endif ()
+    list(APPEND header_impls "${CHECKSUM_LIB}")
+
     message(STATUS "header_impls = ${header_impls}")
 
     foreach (header_file IN LISTS header_impls)
         if (header_file STREQUAL "")
             continue()
         endif (header_file STREQUAL "")
+        message(STATUS "Header: ${header_file}")
         get_filename_component(name_no_ext "${header_file}" NAME_WE)
         set(gen_header_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.h")
         set(gen_source_file "${CMAKE_BINARY_DIR}/gen/gen_${name_no_ext}.c")
@@ -188,6 +199,8 @@ else ()
             # set(associated_header "gen_acquire_checksums.h")
         elseif (header_file STREQUAL CHECKSUM_SRC_CRC32c)
             #
+        elseif (header_file STREQUAL CHECKSUM_LIB)
+            set(associated_header "gen_acquire_checksums.h")
         elseif (header_file STREQUAL ARCHIVE_LIB)
             set(associated_header "gen_acquire_extract.h")
         endif ()

@@ -9,6 +9,7 @@
 #include <kubazip/zip.h>
 
 #include "acquire_extract.h"
+#include "acquire_fileutils.h"
 #include "acquire_handle.h"
 
 static int on_extract_entry(const char *filename, void *arg) {
@@ -31,6 +32,14 @@ int acquire_extract_async_start(struct acquire_handle *handle,
   if (!handle || !archive_path || !dest_path) {
     if (handle)
       acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT, NULL);
+    return -1;
+  }
+
+  if (!is_file(archive_path)) {
+    acquire_handle_set_error(
+        handle, ACQUIRE_ERROR_ARCHIVE_OPEN_FAILED,
+        "Archive file does not exist or is not a regular file: %s",
+        archive_path);
     return -1;
   }
 

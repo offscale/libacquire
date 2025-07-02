@@ -2,16 +2,18 @@
 #define LIBACQUIRE_OPENSSL_H
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) || defined(LIBACQUIRE_USE_OPENSSL))
+    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                  \
+     defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL))
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #include "acquire_checksums.h"
 #include "acquire_handle.h"
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef LIBACQUIRE_USE_COMMON_CRYPTO
 #include <CommonCrypto/CommonDigest.h>
@@ -25,21 +27,20 @@ extern "C" {
 #define SHA512_Final CC_SHA512_Final
 #else
 #include <openssl/sha.h>
-#endif /* LIBACQUIRE_USE_COMMON_CRYPTO */
+#endif
 
 #ifndef SHA256_DIGEST_LENGTH
 #define SHA256_DIGEST_LENGTH 32
-#endif /* !SHA256_DIGEST_LENGTH */
+#endif
 
 #ifndef SHA512_DIGEST_LENGTH
 #define SHA512_DIGEST_LENGTH 64
-#endif /* !SHA512_DIGEST_LENGTH */
+#endif
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
-#endif /* !CHUNK_SIZE */
+#endif
 
-/* Internal state for an async checksum operation. */
 struct checksum_backend {
   FILE *file;
   enum Checksum algorithm;
@@ -61,9 +62,9 @@ static void cleanup_checksum_backend(struct acquire_handle *handle) {
   }
 }
 
-int acquire_verify_async_start(struct acquire_handle *handle,
-                               const char *filepath, enum Checksum algorithm,
-                               const char *expected_hash) {
+int _openssl_verify_async_start(struct acquire_handle *handle,
+                                const char *filepath, enum Checksum algorithm,
+                                const char *expected_hash) {
   struct checksum_backend *be;
   if (!handle || !filepath || !expected_hash) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
@@ -80,8 +81,7 @@ int acquire_verify_async_start(struct acquire_handle *handle,
 
   be->file = fopen(filepath, "rb");
   if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
-                             "Could not open file '%s': %s", filepath,
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
                              strerror(errno));
     free(be);
     return -1;
@@ -89,7 +89,9 @@ int acquire_verify_async_start(struct acquire_handle *handle,
 
   handle->backend_handle = be;
   be->algorithm = algorithm;
+
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+  be->expected_hash[sizeof(be->expected_hash) - 1] = '\0';
 
   switch (algorithm) {
   case LIBACQUIRE_SHA256:
@@ -99,8 +101,9 @@ int acquire_verify_async_start(struct acquire_handle *handle,
     SHA512_Init(&be->context.sha512);
     break;
   default:
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
-                             "Unsupported checksum algorithm for this backend");
+    acquire_handle_set_error(
+        handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+        "Unsupported checksum algorithm for OpenSSL backend");
     cleanup_checksum_backend(handle);
     return -1;
   }
@@ -109,10 +112,11 @@ int acquire_verify_async_start(struct acquire_handle *handle,
   return 0;
 }
 
-enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
+enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
   struct checksum_backend *be;
   unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
+  int i;
 
   if (!handle || !handle->backend_handle)
     return ACQUIRE_ERROR;
@@ -122,7 +126,7 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
                              "Checksum verification cancelled");
     cleanup_checksum_backend(handle);
-    return handle->status;
+    return ACQUIRE_ERROR;
   }
 
   be = (struct checksum_backend *)handle->backend_handle;
@@ -131,19 +135,25 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
   if (bytes_read > 0) {
     if (be->algorithm == LIBACQUIRE_SHA256)
       SHA256_Update(&be->context.sha256, buffer, bytes_read);
-    else
+    else if (be->algorithm == LIBACQUIRE_SHA512)
       SHA512_Update(&be->context.sha512, buffer, bytes_read);
+    else {
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+                               "Unsupported algorithm state in OpenSSL poll");
+      cleanup_checksum_backend(handle);
+      return ACQUIRE_ERROR;
+    }
     handle->bytes_processed += bytes_read;
     return ACQUIRE_IN_PROGRESS;
   }
 
   if (ferror(be->file)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
-                             "Error reading file: %s", strerror(errno));
-  } else { /* EOF */
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
+                             strerror(errno));
+  } else {
     unsigned char hash[SHA512_DIGEST_LENGTH];
     char hex_hash[SHA512_DIGEST_LENGTH * 2 + 1];
-    int i, hash_len;
+    int hash_len;
 
     if (be->algorithm == LIBACQUIRE_SHA256) {
       SHA256_Final(hash, &be->context.sha256);
@@ -155,6 +165,7 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
 
     for (i = 0; i < hash_len; i++)
       sprintf(hex_hash + (i * 2), "%02x", hash[i]);
+    hex_hash[hash_len * 2] = '\0';
 
     if (strncasecmp(hex_hash, be->expected_hash, hash_len * 2) == 0) {
       handle->status = ACQUIRE_COMPLETE;
@@ -162,6 +173,7 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "Checksum mismatch. Expected %s, got %s",
                                be->expected_hash, hex_hash);
+      handle->status = ACQUIRE_ERROR;
     }
   }
 
@@ -169,27 +181,16 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
   return handle->status;
 }
 
-void acquire_verify_async_cancel(struct acquire_handle *handle) {
+void _openssl_verify_async_cancel(struct acquire_handle *handle) {
   if (handle)
     handle->cancel_flag = 1;
 }
 
-int acquire_verify_sync(struct acquire_handle *handle, const char *filepath,
-                        enum Checksum algorithm, const char *expected_hash) {
-  if (!handle)
-    return -1;
-  if (acquire_verify_async_start(handle, filepath, algorithm, expected_hash) !=
-      0)
-    return -1;
-  while (acquire_verify_async_poll(handle) == ACQUIRE_IN_PROGRESS)
-    ;
-  return (handle->status == ACQUIRE_COMPLETE) ? 0 : -1;
-}
-
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-         (defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                             \
-         defined(LIBACQUIRE_USE_OPENSSL)) */
+#endif
+
+#endif /* LIBACQUIRE_IMPLEMENTATION && (LIBACQUIRE_USE_COMMON_CRYPTO ||        \
+          LIBACQUIRE_USE_OPENSSL) */
+
 #endif /* !LIBACQUIRE_OPENSSL_H */

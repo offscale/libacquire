@@ -3,14 +3,13 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #include "acquire_handle.h"
 #include "libacquire_export.h"
+#include <string.h> /* strncasecmp */
 
-/**
- * @brief Enumeration of supported checksum algorithms.
- */
+/** Checksum algorithms supported */
 enum Checksum {
   LIBACQUIRE_CRC32C,
   LIBACQUIRE_SHA256,
@@ -19,68 +18,205 @@ enum Checksum {
 };
 
 /**
- * @brief Converts a string name (e.g., "sha256") to a Checksum enum.
- * @return The corresponding enum, or LIBACQUIRE_UNSUPPORTED_CHECKSUM.
+ * @brief Convert string to checksum enum.
+ *
+ * Supports at least "CRC32C", "SHA256", "SHA512".
+ *
+ * @param s String of algorithm name (case-insensitive)
+ * @return Enum value or LIBACQUIRE_UNSUPPORTED_CHECKSUM if unknown.
  */
-extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *);
+extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *s);
 
-/* --- Asynchronous Verification API --- */
+/* --- Asynchronous API --- */
 
-/**
- * @brief Begins an asynchronous checksum verification (non-blocking).
- * @param handle An initialized acquire handle.
- * @param filepath The path to the file to verify.
- * @param algorithm The checksum algorithm to use.
- * @param expected_hash The expected hexadecimal checksum string.
- * @return 0 on success, non-zero on failure.
- */
 extern LIBACQUIRE_EXPORT int
 acquire_verify_async_start(struct acquire_handle *handle, const char *filepath,
                            enum Checksum algorithm, const char *expected_hash);
 
-/**
- * @brief Polls the status of an asynchronous verification, processing a chunk.
- * @param handle The handle for the in-progress operation.
- * @return The current status of the operation.
- */
 extern LIBACQUIRE_EXPORT enum acquire_status
 acquire_verify_async_poll(struct acquire_handle *handle);
 
-/**
- * @brief Requests cancellation of an asynchronous verification.
- * @param handle The handle for the operation to be cancelled.
- */
 extern LIBACQUIRE_EXPORT void
 acquire_verify_async_cancel(struct acquire_handle *handle);
 
-/* --- Synchronous Verification API --- */
+/* --- Synchronous API --- */
 
-/**
- * @brief Verifies a file's checksum synchronously (blocking).
- * @return 0 if the checksum matches, -1 on failure or mismatch.
- */
 extern LIBACQUIRE_EXPORT int acquire_verify_sync(struct acquire_handle *handle,
                                                  const char *filepath,
                                                  enum Checksum algorithm,
                                                  const char *expected_hash);
 
+/* --- Backend internal function declarations --- */
+
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+int _openssl_verify_async_start(struct acquire_handle *handle,
+                                const char *filepath, enum Checksum algorithm,
+                                const char *expected_hash);
+enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle);
+void _openssl_verify_async_cancel(struct acquire_handle *handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_WINCRYPT
+int _wincrypt_verify_async_start(struct acquire_handle *handle,
+                                 const char *filepath, enum Checksum algorithm,
+                                 const char *expected_hash);
+enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle);
+void _wincrypt_verify_async_cancel(struct acquire_handle *handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_LIBRHASH
+int _librhash_verify_async_start(struct acquire_handle *handle,
+                                 const char *filepath, enum Checksum algorithm,
+                                 const char *expected_hash);
+enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle);
+void _librhash_verify_async_cancel(struct acquire_handle *handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_CRC32C
+int _crc32c_verify_async_start(struct acquire_handle *handle,
+                               const char *filepath, enum Checksum algorithm,
+                               const char *expected_hash);
+enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle);
+void _crc32c_verify_async_cancel(struct acquire_handle *handle);
+#endif
+
 #if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_CHECKSUMS_IMPL)
+
+int acquire_verify_async_start(struct acquire_handle *handle,
+                               const char *filepath, enum Checksum algorithm,
+                               const char *expected_hash) {
+  if (!handle || !filepath || !expected_hash) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments");
+    return -1;
+  }
+
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+  if (algorithm == LIBACQUIRE_SHA256 || algorithm == LIBACQUIRE_SHA512)
+    return _openssl_verify_async_start(handle, filepath, algorithm,
+                                       expected_hash);
+#endif
+
+#ifdef LIBACQUIRE_USE_WINCRYPT
+  if (algorithm == LIBACQUIRE_SHA256 || algorithm == LIBACQUIRE_SHA512)
+    return _wincrypt_verify_async_start(handle, filepath, algorithm,
+                                        expected_hash);
+#endif
+
+#ifdef LIBACQUIRE_USE_LIBRHASH
+  if (algorithm == LIBACQUIRE_CRC32C || algorithm == LIBACQUIRE_SHA256 ||
+      algorithm == LIBACQUIRE_SHA512)
+    return _librhash_verify_async_start(handle, filepath, algorithm,
+                                        expected_hash);
+#endif
+
+#ifdef LIBACQUIRE_USE_CRC32C
+  if (algorithm == LIBACQUIRE_CRC32C)
+    return _crc32c_verify_async_start(handle, filepath, algorithm,
+                                      expected_hash);
+#endif
+
+  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+                           "Unsupported checksum algorithm");
+  return -1;
+}
+
+enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
+  if (!handle)
+    return ACQUIRE_ERROR;
+
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+  if (handle->backend_handle)
+    return _openssl_verify_async_poll(handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_WINCRYPT
+  if (handle->backend_handle)
+    return _wincrypt_verify_async_poll(handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_LIBRHASH
+  if (handle->backend_handle)
+    return _librhash_verify_async_poll(handle);
+#endif
+
+#ifdef LIBACQUIRE_USE_CRC32C
+  if (handle->backend_handle)
+    return _crc32c_verify_async_poll(handle);
+#endif
+
+  return ACQUIRE_ERROR;
+}
+
+void acquire_verify_async_cancel(struct acquire_handle *handle) {
+  if (!handle)
+    return;
+
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+  if (handle->backend_handle) {
+    _openssl_verify_async_cancel(handle);
+    return;
+  }
+#endif
+
+#ifdef LIBACQUIRE_USE_WINCRYPT
+  if (handle->backend_handle) {
+    _wincrypt_verify_async_cancel(handle);
+    return;
+  }
+#endif
+
+#ifdef LIBACQUIRE_USE_LIBRHASH
+  if (handle->backend_handle) {
+    _librhash_verify_async_cancel(handle);
+    return;
+  }
+#endif
+
+#ifdef LIBACQUIRE_USE_CRC32C
+  if (handle->backend_handle) {
+    _crc32c_verify_async_cancel(handle);
+    return;
+  }
+#endif
+}
+
+int acquire_verify_sync(struct acquire_handle *handle, const char *filepath,
+                        enum Checksum algorithm, const char *expected_hash) {
+  if (!handle || !filepath || !expected_hash)
+    return -1;
+
+  if (acquire_verify_async_start(handle, filepath, algorithm, expected_hash) !=
+      0)
+    return -1;
+
+  while (acquire_verify_async_poll(handle) == ACQUIRE_IN_PROGRESS)
+    ;
+
+  return (handle->status == ACQUIRE_COMPLETE) ? 0 : -1;
+}
+
 enum Checksum string2checksum(const char *const s) {
   if (s == NULL)
     return LIBACQUIRE_UNSUPPORTED_CHECKSUM;
-  else if (strncasecmp(s, "CRC32C", 6) == 0)
+  if (strncasecmp(s, "CRC32C", 6) == 0)
     return LIBACQUIRE_CRC32C;
-  else if (strncasecmp(s, "SHA256", 6) == 0)
+  if (strncasecmp(s, "SHA256", 6) == 0)
     return LIBACQUIRE_SHA256;
-  else if (strncasecmp(s, "SHA512", 6) == 0)
+  if (strncasecmp(s, "SHA512", 6) == 0)
     return LIBACQUIRE_SHA512;
-  else
-    return LIBACQUIRE_UNSUPPORTED_CHECKSUM;
+  return LIBACQUIRE_UNSUPPORTED_CHECKSUM;
 }
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          defined(LIBACQUIRE_CHECKSUMS_IMPL) */
+
+#endif /* LIBACQUIRE_IMPLEMENTATION && LIBACQUIRE_CHECKSUMS_IMPL */
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
-#endif /* !LIBACQUIRE_ACQUIRE_CHECKSUMS_H */
+#endif
+
+#endif /* LIBACQUIRE_ACQUIRE_CHECKSUMS_H */

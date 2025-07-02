@@ -106,6 +106,35 @@ x_parse_out_extension_should_be_include_both_dots_when_whole_filename_is_extensi
 }
 */
 
+TEST test_filesize(void) {
+  const off_t size = filesize(GREATEST_FILE);
+  ASSERT(size > 0);
+  PASS();
+}
+
+TEST test_filesize_non_existent(void) {
+  const off_t size = filesize("non-existent-file.xyz");
+  ASSERT_EQ_FMT(-1, (int)size, "%d");
+  PASS();
+}
+
+TEST test_is_relative(void) {
+  ASSERT(is_relative("foo/bar"));
+  ASSERT(is_relative("foo.txt"));
+  ASSERT(is_relative("./foo"));
+  PASS();
+}
+
+TEST test_is_absolute(void) {
+#ifdef _WIN32
+  ASSERT(!is_relative("C:\\Windows\\System32"));
+  ASSERT(!is_relative("\\Windows"));
+#else
+  ASSERT(!is_relative("/etc/passwd"));
+#endif
+  PASS();
+}
+
 /* Suites can group multiple tests with common setup. */
 SUITE(fileutils_suite) {
   RUN_TEST(x_is_directory_should_be_true);
@@ -121,6 +150,10 @@ SUITE(fileutils_suite) {
       x_parse_out_extension_should_be_include_both_dots_when_dot_then_whole_filename_is_extension);
   /* RUN_TEST(x_parse_out_extension_should_be_include_both_dots_when_whole_filename_is_extension);
    */
+  RUN_TEST(test_filesize);
+  RUN_TEST(test_filesize_non_existent);
+  RUN_TEST(test_is_relative);
+  RUN_TEST(test_is_absolute);
 }
 
 #endif /* !TEST_FILEUTILS_H */

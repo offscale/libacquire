@@ -92,10 +92,44 @@ TEST test_async_cancellation(void) {
   PASS();
 }
 
+TEST test_download_404_error(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  const char *url = "https://httpbin.org/status/404";
+  const char *dest = DOWNLOAD_DIR PATH_SEP "404.tmp";
+
+  ASSERT(handle != NULL);
+  acquire_download_sync(handle, url, dest);
+
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, handle->status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_HTTP_FAILURE,
+                acquire_handle_get_error_code(handle), "%d");
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
+TEST test_download_to_invalid_path(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  const char *url = GREATEST_URL;
+  const char *dest = "non/existent/dir/file.h";
+
+  ASSERT(handle != NULL);
+  acquire_download_sync(handle, url, dest);
+
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, handle->status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                acquire_handle_get_error_code(handle), "%d");
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
 SUITE(downloads_suite) {
   RUN_TEST(test_sync_download);
   RUN_TEST(test_async_download);
   RUN_TEST(test_async_cancellation);
+  RUN_TEST(test_download_404_error);
+  RUN_TEST(test_download_to_invalid_path);
 }
 
 #endif /* !TEST_DOWNLOAD_H */

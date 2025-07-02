@@ -76,6 +76,15 @@ int acquire_extract_async_start(struct acquire_handle *handle,
       acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT, NULL);
     return -1;
   }
+
+  if (!is_file(archive_path)) {
+    acquire_handle_set_error(
+        handle, ACQUIRE_ERROR_ARCHIVE_OPEN_FAILED,
+        "Archive file does not exist or is not a regular file: %s",
+        archive_path);
+    return -1;
+  }
+
   be =
       (struct libarchive_backend *)calloc(1, sizeof(struct libarchive_backend));
   if (!be) {

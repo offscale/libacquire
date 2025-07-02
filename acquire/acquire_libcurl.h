@@ -134,17 +134,36 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
     msg = curl_multi_info_read(be->multi_handle, &queued);
     if (msg) {
       if (msg->msg == CURLMSG_DONE) {
+        long response_code = 0;
+
+        /* First, check if the transfer was successful */
         if (msg->data.result == CURLE_OK) {
           handle->status = ACQUIRE_COMPLETE;
         } else {
-          acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_FAILURE,
-                                   "curl error: %s",
-                                   curl_easy_strerror(msg->data.result));
+          /*
+           * If the transfer failed, check if it was due to an HTTP
+           * error code (e.g., 404, 500).
+           */
+          curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE,
+                            &response_code);
+          if (response_code >= 400) {
+            acquire_handle_set_error(handle, ACQUIRE_ERROR_HTTP_FAILURE,
+                                     "HTTP error: %ld", response_code);
+          } else {
+            /* Otherwise, it's a general network failure. */
+            acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_FAILURE,
+                                     "cURL error: %s",
+                                     curl_easy_strerror(msg->data.result));
+          }
         }
       }
     } else {
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "Unknown curl multi handle state");
+      /* If still_running is 0 but we have no message, it implies success.
+       * This can happen on some platforms for empty files or cached responses.
+       * We check the final handle status to be sure. */
+      if (handle->status == ACQUIRE_IN_PROGRESS) {
+        handle->status = ACQUIRE_COMPLETE;
+      }
     }
     if (handle->output_file) {
       fclose(handle->output_file);

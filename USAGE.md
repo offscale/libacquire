@@ -80,6 +80,7 @@ This example shows a non-blocking download with a progress indicator, perfect fo
 
 ```c
 #include <stdio.h>
+
 #include <acquire_handle.h>
 #include <acquire_download.h>
 

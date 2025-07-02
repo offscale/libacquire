@@ -1,3 +1,4 @@
+/* acquire/acquire_extract.h */
 #ifndef LIBACQUIRE_ACQUIRE_EXTRACT_H
 #define LIBACQUIRE_ACQUIRE_EXTRACT_H
 
@@ -6,34 +7,22 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 /* --- Asynchronous API --- */
 
-/**
- * @brief Begins an asynchronous extraction (non-blocking).
- */
 extern LIBACQUIRE_EXPORT int
 acquire_extract_async_start(struct acquire_handle *handle,
                             const char *archive_path, const char *dest_path);
 
-/**
- * @brief Polls the status of an asynchronous extraction.
- */
 extern LIBACQUIRE_EXPORT enum acquire_status
 acquire_extract_async_poll(struct acquire_handle *handle);
 
-/**
- * @brief Requests cancellation of an asynchronous extraction.
- */
 extern LIBACQUIRE_EXPORT void
 acquire_extract_async_cancel(struct acquire_handle *handle);
 
 /* --- Synchronous API --- */
 
-/**
- * @brief Extracts an archive synchronously (blocking).
- */
 extern LIBACQUIRE_EXPORT int acquire_extract_sync(struct acquire_handle *handle,
                                                   const char *archive_path,
                                                   const char *dest_path);

@@ -1,52 +1,24 @@
 #ifndef LIBACQUIRE_ACQUIRE_CRC32C_H
 #define LIBACQUIRE_ACQUIRE_CRC32C_H
 
-/**
- * @file acquire_crc32c.h
- * @brief Header declaring the CRC32C checksum verification function.
- *
- * This header provides the interface and implementation of a function
- * to compute and verify the CRC32C checksum of a file against a known hash.
- */
-
 #ifdef __cplusplus
 extern "C" {
-#elif defined(HAS_STDBOOL) && !defined(bool)
-#include <stdbool.h>
-#else
-#include "acquire_stdbool.h"
-#endif /* __cplusplus */
-
-#include <stdio.h>
-#include <string.h>
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#else
-#include <unistd.h>
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
-defined(__NT__) */
+#endif
 
 #include "acquire_checksums.h"
 
-/*
- * Taken from FreeBSD implementation of CRC32C, specifically:
- * - usr.bin\cksum\crc32_algo.c @ d91d2b513eb30a226e87f0e52e2f9f232a2e1ca3
- *
- * Actually taken from:
- * - https://gist.github.com/Jessidhia/1484174
- *
- * Alternatives are to use `zlib`'s CRC32C impl conditionally or RHash or miniz
- * */
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C)
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "acquire_handle.h"
+
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
-#endif /* !CHUNK_SIZE */
-
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif /* !O_BINARY */
-
-unsigned int crc32_file(FILE *file);
-unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len);
+#endif
 
 static const unsigned int crctable[256] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -91,63 +63,127 @@ static const unsigned int crctable[256] = {
     0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
     0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
     0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
-    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
+    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
+
+/** Compute CRC32C update */
+unsigned int crc32_algo(unsigned int iv, unsigned char *buf, size_t len) {
+  unsigned int crc = iv ^ 0xffffffff;
+  size_t i;
+  for (i = 0; i < len; i++) {
+    crc = (crc >> 8) ^ crctable[(crc & 0xff) ^ buf[i]];
+  }
+  return crc ^ 0xffffffff;
+}
+
+struct checksum_backend {
+  FILE *file;
+  unsigned int crc_so_far;
+  char expected_hash[16];
 };
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
-    defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL)
-
-unsigned int crc32_algo(unsigned int iv, unsigned char *buf, long long len) {
-  unsigned int crc = iv ^ ~0;
-  for (; len; len--)
-    crc = (crc >> 8) ^ crctable[(crc & 0xff) ^ *buf++];
-  return crc ^ ~0;
-}
-
-unsigned int crc32_file(FILE *file) {
-  unsigned char buf[CHUNK_SIZE];
-  unsigned crc = 0;
-  size_t len;
-  while ((len = fread(&buf[0], sizeof(char), CHUNK_SIZE, file)) > 0) {
-    crc = crc32_algo(crc, buf, (long long)len);
+static void cleanup_crc32c_backend(struct acquire_handle *handle) {
+  if (handle && handle->backend_handle) {
+    struct checksum_backend *be =
+        (struct checksum_backend *)handle->backend_handle;
+    if (be->file)
+      fclose(be->file);
+    free(be);
+    handle->backend_handle = NULL;
   }
-  return crc;
 }
 
-/**
- * @brief Implementation of CRC32C checksum verification.
- *
- * Reads the file and computes its CRC32C checksum, then compares with
- * the hash string ignoring character cases.
- */
-bool crc32c(const char *const filename, const char *const hash) {
-  unsigned int crc32_res;
-  FILE *fh;
-  char computed[9];
+int _crc32c_verify_async_start(struct acquire_handle *handle,
+                               const char *filepath, enum Checksum algorithm,
+                               const char *expected_hash) {
+  struct checksum_backend *be;
+  if (algorithm != LIBACQUIRE_CRC32C) {
+    return -1; /* Not handled by this backend */
+  }
 
-  fprintf(stderr, "fopen %s\n", filename);
+  if (!handle || !filepath || !expected_hash) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments");
+    return -1;
+  }
 
-#if defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__)
-  fopen_s(&fh, filename, "rb");
-#else
-  fh = fopen(filename, "rb");
-#endif /* defined(_MSC_VER) || (defined(__STDC_LIB_EXT1__) &&                  \
-          __STDC_WANT_LIB_EXT1__) */
-  if (fh == NULL)
-    return false;
+  be = (struct checksum_backend *)calloc(1, sizeof(struct checksum_backend));
+  if (!be) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
+                             "crc32c backend");
+    return -1;
+  }
 
-  crc32_res = crc32_file(fh);
-  fclose(fh);
+  be->file = fopen(filepath, "rb");
+  if (!be->file) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
+                             strerror(errno));
+    free(be);
+    return -1;
+  }
 
-  snprintf(computed, sizeof(computed), "%08x", crc32_res);
-  return strcmp(computed, hash) == 0;
+  be->crc_so_far = 0;
+  strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+  be->expected_hash[sizeof(be->expected_hash) - 1] = '\0';
+  handle->backend_handle = be;
+  handle->status = ACQUIRE_IN_PROGRESS;
+  return 0;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
-          defined(LIBACQUIRE_ACQUIRE_CRC32C_IMPL) */
+enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
+  struct checksum_backend *be;
+  unsigned char buffer[CHUNK_SIZE];
+  size_t bytes_read;
+
+  if (!handle || !handle->backend_handle)
+    return ACQUIRE_ERROR;
+
+  if (handle->status != ACQUIRE_IN_PROGRESS)
+    return handle->status;
+
+  if (handle->cancel_flag) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Checksum verification cancelled");
+    cleanup_crc32c_backend(handle);
+    return ACQUIRE_ERROR;
+  }
+
+  be = (struct checksum_backend *)handle->backend_handle;
+  bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
+  if (bytes_read > 0) {
+    be->crc_so_far = crc32_algo(be->crc_so_far, buffer, bytes_read);
+    handle->bytes_processed += bytes_read;
+    return ACQUIRE_IN_PROGRESS;
+  }
+
+  if (ferror(be->file)) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
+                             strerror(errno));
+    handle->status = ACQUIRE_ERROR;
+  } else {
+    char computed_hex[9];
+    snprintf(computed_hex, sizeof(computed_hex), "%08x", be->crc_so_far);
+    if (strncasecmp(computed_hex, be->expected_hash, 8) == 0)
+      handle->status = ACQUIRE_COMPLETE;
+    else
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "CRC32C mismatch");
+  }
+
+  cleanup_crc32c_backend(handle);
+  return handle->status;
+}
+
+void _crc32c_verify_async_cancel(struct acquire_handle *handle) {
+  if (handle)
+    handle->cancel_flag = 1;
+}
+
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) \
+        */
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
 #endif /* !LIBACQUIRE_ACQUIRE_CRC32C_H */

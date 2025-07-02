@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "acquire_status_codes.h" /* Central status and error codes */
+#include "acquire_status_codes.h"
 #include "libacquire_export.h"
 
 #ifdef _MSC_VER
@@ -51,14 +51,6 @@ acquire_handle_get_error_code(struct acquire_handle *handle);
 extern LIBACQUIRE_EXPORT const char *
 acquire_handle_get_error_string(struct acquire_handle *handle);
 
-/**
- * @brief Sets the error state on a handle (for internal use by backends).
- *
- * @param handle The handle to modify.
- * @param code The error code to set.
- * @param fmt The printf-style format string for the error message.
- * @param ... Variable arguments for the format string.
- */
 extern LIBACQUIRE_EXPORT void
 acquire_handle_set_error(struct acquire_handle *handle,
                          enum acquire_error_code code, const char *fmt, ...)
