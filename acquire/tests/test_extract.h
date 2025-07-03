@@ -74,10 +74,85 @@ TEST test_extract_corrupted_archive(void) {
   PASS();
 }
 
+#ifdef LIBACQUIRE_USE_LIBARCHIVE
+TEST test_extract_async_success(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  enum acquire_status status;
+  ASSERT(handle != NULL);
+
+  ASSERT_EQ(0,
+            acquire_extract_async_start(handle, GREATEST_ARCHIVE, EXTRACT_DIR));
+
+  do {
+    status = acquire_extract_async_poll(handle);
+    if (status == ACQUIRE_IN_PROGRESS) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+      Sleep(1);
+#else
+      usleep(1000);
+#endif
+    }
+  } while (status == ACQUIRE_IN_PROGRESS);
+
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
+  ASSERT(is_file(EXTRACTED_CONTENT));
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
+TEST test_extract_async_cancellation(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  enum acquire_status status = ACQUIRE_IDLE;
+  int initial_poll_done = 0;
+
+  ASSERT(handle != NULL);
+
+  ASSERT_EQ(0,
+            acquire_extract_async_start(handle, GREATEST_ARCHIVE, EXTRACT_DIR));
+
+  /* Poll once to get it started */
+  status = acquire_extract_async_poll(handle);
+  initial_poll_done = 1;
+
+  if (status == ACQUIRE_IN_PROGRESS) {
+    acquire_extract_async_cancel(handle);
+    /* Poll until no longer in progress */
+    while ((status = acquire_extract_async_poll(handle)) ==
+           ACQUIRE_IN_PROGRESS) {
+      /* Spin */
+    }
+  }
+
+  /*
+   * Due to the small size of the test archive, the first poll might complete
+   * the entire operation. We only run the assertions if the cancellation
+   * was actually attempted (i.e., if the operation was still in progress
+   * after the first poll).
+   */
+  if (initial_poll_done && handle->cancel_flag) {
+    ASSERT_EQ_FMT(ACQUIRE_ERROR, status, "%d");
+    ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, acquire_handle_get_error_code(handle),
+                  "%d");
+  } else {
+    /* If the test was too fast to cancel, we just log it as a pass. */
+    ASSERT(status == ACQUIRE_COMPLETE || status == ACQUIRE_ERROR);
+  }
+
+  acquire_handle_free(handle);
+  PASS();
+}
+#endif /* LIBACQUIRE_USE_LIBARCHIVE */
+
 SUITE(extract_suite) {
   RUN_TEST(test_extract_sync_success);
   RUN_TEST(test_extract_non_existent_archive);
   RUN_TEST(test_extract_corrupted_archive);
+
+#ifdef LIBACQUIRE_USE_LIBARCHIVE
+  RUN_TEST(test_extract_async_success);
+  RUN_TEST(test_extract_async_cancellation);
+#endif /* LIBACQUIRE_USE_LIBARCHIVE */
 }
 
 #endif /* !LIBACQUIRE_TEST_EXTRACT_H */

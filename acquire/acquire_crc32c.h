@@ -6,90 +6,88 @@ extern "C" {
 #endif
 
 #include "acquire_checksums.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+
+struct checksum_backend {
+  FILE *file;
+  uint32_t crc;
+  char expected_hash[9]; /* 8 chars + '\0' */
+};
+
+#if defined(LIBACQUIRE_USE_CRC32C)
+int _crc32c_verify_async_start(struct acquire_handle *handle,
+                               const char *filepath, enum Checksum algorithm,
+                               const char *expected_hash);
+enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle);
+void _crc32c_verify_async_cancel(struct acquire_handle *handle);
+#endif
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C)
 
+#include "acquire_handle.h"
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "acquire_handle.h"
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
 #endif
 
-static const unsigned int crctable[256] = {
-    0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
-    0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
-    0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
-    0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
-    0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
-    0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
-    0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b, 0x35b5a8fa, 0x42b2986c,
-    0xdbbbc9d6, 0xacbcf940, 0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
-    0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
-    0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
-    0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190, 0x01db7106,
-    0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
-    0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
-    0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
-    0x6c0695ed, 0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
-    0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3, 0xfbd44c65,
-    0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2, 0x4adfa541, 0x3dd895d7,
-    0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a, 0x346ed9fc, 0xad678846, 0xda60b8d0,
-    0x44042d73, 0x33031de5, 0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa,
-    0xbe0b1010, 0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
-    0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17, 0x2eb40d81,
-    0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6, 0x03b6e20c, 0x74b1d29a,
-    0xead54739, 0x9dd277af, 0x04db2615, 0x73dc1683, 0xe3630b12, 0x94643b84,
-    0x0d6d6a3e, 0x7a6a5aa8, 0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1,
-    0xf00f9344, 0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
-    0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a, 0x67dd4acc,
-    0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5, 0xd6d6a3e8, 0xa1d1937e,
-    0x38d8c2c4, 0x4fdff252, 0xd1bb67f1, 0xa6bc5767, 0x3fb506dd, 0x48b2364b,
-    0xd80d2bda, 0xaf0a1b4c, 0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55,
-    0x316e8eef, 0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
-    0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe, 0xb2bd0b28,
-    0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31, 0x2cd99e8b, 0x5bdeae1d,
-    0x9b64c2b0, 0xec63f226, 0x756aa39c, 0x026d930a, 0x9c0906a9, 0xeb0e363f,
-    0x72076785, 0x05005713, 0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38,
-    0x92d28e9b, 0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
-    0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1, 0x18b74777,
-    0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c, 0x8f659eff, 0xf862ae69,
-    0x616bffd3, 0x166ccf45, 0xa00ae278, 0xd70dd2ee, 0x4e048354, 0x3903b3c2,
-    0xa7672661, 0xd06016f7, 0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc,
-    0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
-    0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
-    0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
-    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
+static const uint32_t crc32c_table[256] = {
+    0x00000000U, 0xF26B8303U, 0xE13B70F7U, 0x1350F3F4U, 0xC79A971FU,
+    0x35F1141CU, 0x26A1E7E8U, 0xD4CA64EBU, 0x8AD958CFU, 0x78B2DBCCU,
+    0x6BE22838U, 0x9989AB3BU, 0x4D43CFD0U, 0xBF284CD3U, 0xAC78BF27U,
+    0x5E133C24U, 0x105EC76FU, 0xE235446CU, 0xF165B798U, 0x030E349BU,
+    0xD7C45070U, 0x25AFD373U, 0x36FF2087U, 0xC494A384U, 0x9A879FA0U,
+    0x68EC1CA3U, 0x7BBCEF57U, 0x89D76C54U, 0x5D1D08BFU, 0xAF768BBCU,
+    0xBC267848U, 0x4E4DFB4BU, 0x20BD8EDEU, 0xD2D60DDDU, 0xC186FE29U,
+    0x33ED7D2AU, 0xE72719C1U, 0x154C9AC2U, 0x061C6936U, 0xF477EA35U,
+    0xAA64D611U, 0x580F5512U, 0x4B5FA6E6U, 0xB93425E5U, 0x6DFE410EU,
+    0x9F95C20DU, 0x8CC531F9U, 0x7EAEB2FAU, 0x30E349B1U, 0xC288CAB2U,
+    0xD1D83946U, 0x23B3BA45U, 0xF779DEAEU, 0x05125DADU, 0x1642AE59U,
+    0xE4292D5AU, 0xBA3A117EU, 0x4851927DU, 0x5B016189U, 0xA96AE28AU,
+    0x7DA08661U, 0x8FCB0562U, 0x9C9BF696U, 0x6EF07595U, 0x417B1DBCU,
+    0xB3109EBFU, 0xA0406D4BU, 0x522BEE48U, 0x86E18AA3U, 0x748A09A0U,
+    0x67DAFA54U, 0x95B17957U, 0xCBA24573U, 0x39C9C670U, 0x2A993584U,
+    0xD8F2B687U, 0x0C38D26CU, 0xFE53516FU, 0xED03A29BU, 0x1F682198U,
+    0x5125DAD3U, 0xA34E59D0U, 0xB01EAA24U, 0x42752927U, 0x96BF4DCCU,
+    0x64D4CECFU, 0x77843D3BU, 0x85EFBE38U, 0xDBFC821CU, 0x2997011FU,
+    0x3AC7F2EBU, 0xC8AC71E8U, 0x1C71F743U, 0xEE1A7440U, 0xFF4A87B4U,
+    0x0D2104B7U, 0x79EB605CU, 0x8B80E35FU, 0x98D010ABU, 0x6ABBD3A8U,
+    0x3E71B743U, 0xCC1A3440U, 0xDF4A67B4U, 0x2D21E4B7U, 0x59EBA05CU,
+    0xAB80235FU, 0xB8D0D0ABU, 0x4ABE53A8U, 0x64DAB3E0U, 0x96B130E3U,
+    0x85E16317U, 0x778AE014U, 0xF4F10ACFU, 0x069A89CCU, 0x15CA7A38U,
+    0xE7A1F93BU, 0xB3E8D5D0U, 0x418356D3U, 0x52D3A527U, 0xA0B82624U,
+    0x747242CFU, 0x8619C1CCU, 0x95493238U, 0x6722B13BU, 0xD4158D1FU,
+    0x267E0E1CU, 0x352EFDE8U, 0xC7457EEBU, 0x138F1A00U, 0xE1E49903U,
+    0xF2B46AF7U, 0x00DFEDF4U, 0x84427D3FU, 0x7629F43CU, 0x657907C8U,
+    0x971284CBU, 0x43D8E020U, 0xB1B36323U, 0xA2E390D7U, 0x508813D4U,
+    0xDB23E5AU, 0xEF496C59U, 0xFC199FAFU, 0x0E721CA8U, 0x8021308CU,
+    0x724AB38FU, 0x611A407BU, 0x9371C378U, 0x47BBE793U, 0xB5D06490U,
+    0xA6809764U, 0x54EA1467U, 0x2087CF2CU, 0xD2E84C2FU, 0xC1B8BFDBU,
+    0x33D33CD8U, 0xF94F00B3U, 0x0B2483B0U, 0x18747044U, 0xEA1FF347U};
 
-/** Compute CRC32C update */
-unsigned int crc32_algo(unsigned int iv, unsigned char *buf, size_t len) {
-  unsigned int crc = iv ^ 0xffffffff;
+static uint32_t crc32c_init(void) { return 0xFFFFFFFFU; }
+
+static uint32_t crc32c_update(uint32_t crc, const unsigned char *data, size_t len) {
   size_t i;
-  for (i = 0; i < len; i++) {
-    crc = (crc >> 8) ^ crctable[(crc & 0xff) ^ buf[i]];
+  for (i = 0; i < len; ++i) {
+    uint8_t idx = (uint8_t)((crc ^ data[i]) & 0xFFU);
+    crc = crc32c_table[idx] ^ (crc >> 8);
   }
-  return crc ^ 0xffffffff;
+  return crc;
 }
 
-struct checksum_backend {
-  FILE *file;
-  unsigned int crc_so_far;
-  char expected_hash[16];
-};
+static uint32_t crc32c_finalize(uint32_t crc) { return crc ^ 0xFFFFFFFFU; }
 
 static void cleanup_crc32c_backend(struct acquire_handle *handle) {
-  if (handle && handle->backend_handle) {
-    struct checksum_backend *be =
-        (struct checksum_backend *)handle->backend_handle;
-    if (be->file)
-      fclose(be->file);
-    free(be);
-    handle->backend_handle = NULL;
-  }
+  if (!handle || !handle->backend_handle) return;
+  struct checksum_backend *be = (struct checksum_backend *)handle->backend_handle;
+  if (be->file) fclose(be->file);
+  free(be);
+  handle->backend_handle = NULL;
 }
 
 int _crc32c_verify_async_start(struct acquire_handle *handle,
@@ -97,34 +95,26 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
                                const char *expected_hash) {
   struct checksum_backend *be;
   if (algorithm != LIBACQUIRE_CRC32C) {
-    return -1; /* Not handled by this backend */
-  }
-
-  if (!handle || !filepath || !expected_hash) {
-    if (handle)
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
-                               "Invalid arguments");
     return -1;
   }
-
+  if (!handle || !filepath || !expected_hash) {
+    if (handle) acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,"Invalid arguments");
+    return -1;
+  }
   be = (struct checksum_backend *)calloc(1, sizeof(struct checksum_backend));
   if (!be) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
-                             "crc32c backend");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "Out of memory");
     return -1;
   }
-
   be->file = fopen(filepath, "rb");
   if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
-                             strerror(errno));
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,"Cannot open file: %s", strerror(errno));
     free(be);
     return -1;
   }
-
-  be->crc_so_far = 0;
-  strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
-  be->expected_hash[sizeof(be->expected_hash) - 1] = '\0';
+  be->crc = crc32c_init();
+  strncpy(be->expected_hash, expected_hash, 8);
+  be->expected_hash[8] = '\0';
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
   return 0;
@@ -134,53 +124,44 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
   struct checksum_backend *be;
   unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
-
-  if (!handle || !handle->backend_handle)
-    return ACQUIRE_ERROR;
-
-  if (handle->status != ACQUIRE_IN_PROGRESS)
-    return handle->status;
-
+  if (!handle || !handle->backend_handle) return ACQUIRE_ERROR;
+  if (handle->status != ACQUIRE_IN_PROGRESS) return handle->status;
   if (handle->cancel_flag) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
-                             "Checksum verification cancelled");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED, "Operation cancelled");
     cleanup_crc32c_backend(handle);
+    handle->status = ACQUIRE_ERROR;
     return ACQUIRE_ERROR;
   }
-
   be = (struct checksum_backend *)handle->backend_handle;
   bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
   if (bytes_read > 0) {
-    be->crc_so_far = crc32_algo(be->crc_so_far, buffer, bytes_read);
+    be->crc = crc32c_update(be->crc, buffer, bytes_read);
     handle->bytes_processed += bytes_read;
     return ACQUIRE_IN_PROGRESS;
   }
-
   if (ferror(be->file)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
-                             strerror(errno));
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "File read error: %s", strerror(errno));
     handle->status = ACQUIRE_ERROR;
   } else {
     char computed_hex[9];
-    snprintf(computed_hex, sizeof(computed_hex), "%08x", be->crc_so_far);
-    if (strncasecmp(computed_hex, be->expected_hash, 8) == 0)
+    uint32_t final_crc = crc32c_finalize(be->crc);
+    snprintf(computed_hex, sizeof(computed_hex), "%08x", final_crc);
+    if (strncasecmp(computed_hex, be->expected_hash, 8) == 0) {
       handle->status = ACQUIRE_COMPLETE;
-    else
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "CRC32C mismatch");
+    } else {
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CRC32C mismatch: expected %s, got %s", be->expected_hash, computed_hex);
+      handle->status = ACQUIRE_ERROR;
+    }
   }
-
   cleanup_crc32c_backend(handle);
   return handle->status;
 }
 
 void _crc32c_verify_async_cancel(struct acquire_handle *handle) {
-  if (handle)
-    handle->cancel_flag = 1;
+  if (handle) handle->cancel_flag = 1;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) \
-        */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) */
 
 #ifdef __cplusplus
 }

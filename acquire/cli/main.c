@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
   int rc = EXIT_SUCCESS;
   char *url_to_use;
   char *output_path;
-  char final_output_path[NAME_MAX + 1];
+  char *output_path_alloc = NULL;
+  char final_output_path_buf[NAME_MAX + 1];
 
   memset(&args, 0, sizeof(args));
   rc = docopt(&args, argc, argv, 1, LIBACQUIRE_VERSION);
@@ -59,23 +60,21 @@ int main(int argc, char *argv[]) {
 
   if (args.output != NULL) {
     output_path = args.output;
-  } else if (args.directory != NULL) {
-    const char *filename = get_path_from_url(url_to_use);
-    if (filename == NULL || *filename == '\0') {
-      fprintf(stderr, "Error: Could not determine filename from URL.\n");
+  } else {
+    output_path_alloc = get_path_from_url(url_to_use);
+    if (output_path_alloc == NULL || *output_path_alloc == '\0') {
+      fprintf(stderr,
+              "Error: Could not determine filename from URL and no "
+              "output directory was specified.\n");
       rc = EXIT_FAILURE;
       goto cleanup;
     }
-    snprintf(final_output_path, sizeof(final_output_path), "%s%s%s",
-             args.directory, PATH_SEP, filename);
-    output_path = final_output_path;
-  } else {
-    output_path = (char *)get_path_from_url(url_to_use);
-    if (output_path == NULL || *output_path == '\0') {
-      fprintf(stderr, "Error: Could not determine filename from URL and no "
-                      "output directory was specified.\n");
-      rc = EXIT_FAILURE;
-      goto cleanup;
+    if (args.directory != NULL) {
+      snprintf(final_output_path_buf, sizeof(final_output_path_buf), "%s%s%s",
+               args.directory, PATH_SEP, output_path_alloc);
+      output_path = final_output_path_buf;
+    } else {
+      output_path = output_path_alloc;
     }
   }
 
@@ -102,5 +101,6 @@ int main(int argc, char *argv[]) {
 
 cleanup:
   acquire_handle_free(handle);
+  free(output_path_alloc);
   return rc;
 }

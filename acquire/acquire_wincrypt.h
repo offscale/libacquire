@@ -1,35 +1,53 @@
-#ifndef LIBACQUIRE_WINCRYPT_H
-#define LIBACQUIRE_WINCRYPT_H
-
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_WINCRYPT)
+#ifndef LIBACQUIRE_ACQUIRE_WINCRYPT_H
+#define LIBACQUIRE_ACQUIRE_WINCRYPT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// Includes needed for declarations and struct definitions
 #include "acquire_checksums.h"
-#include "acquire_handle.h"
-
-#include <errno.h>
-#include <string.h>
-#include <wincrypt.h>
+#include <stdio.h>
+#if defined(_WIN32)
 #include <windows.h>
+#include <wincrypt.h>
+#endif
+
+// This struct definition MUST be outside the implementation guard
+struct wincrypt_backend {
+#if defined(_WIN32)
+  HCRYPTPROV hProv;
+  HCRYPTHASH hHash;
+#else
+  void *dummy; /* Ensure struct is not empty on non-windows */
+#endif
+  FILE *file;
+  char expected_hash[130];
+};
+
+#if defined(LIBACQUIRE_USE_WINCRYPT)
+int _wincrypt_verify_async_start(struct acquire_handle *handle,
+                                 const char *filepath, enum Checksum algorithm,
+                                 const char *expected_hash);
+enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle);
+void _wincrypt_verify_async_cancel(struct acquire_handle *handle);
+#endif
+
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_WINCRYPT)
+
+#include "acquire_handle.h"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
 #endif
 
-struct checksum_backend {
-  FILE *file;
-  HCRYPTPROV hProv;
-  HCRYPTHASH hHash;
-  char expected_hash[129];
-};
-
-static void cleanup_checksum_backend(struct acquire_handle *handle) {
+static void cleanup_wincrypt_backend(struct acquire_handle *handle) {
   if (handle && handle->backend_handle) {
-    struct checksum_backend *be =
-        (struct checksum_backend *)handle->backend_handle;
+    struct wincrypt_backend *be =
+        (struct wincrypt_backend *)handle->backend_handle;
     if (be->hHash)
       CryptDestroyHash(be->hHash);
     if (be->hProv)
@@ -44,14 +62,8 @@ static void cleanup_checksum_backend(struct acquire_handle *handle) {
 int _wincrypt_verify_async_start(struct acquire_handle *handle,
                                  const char *filepath, enum Checksum algorithm,
                                  const char *expected_hash) {
-  struct checksum_backend *be;
-  ALG_ID alg_id;
-
-  if (!handle || !filepath || !expected_hash) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
-                             "Invalid arguments for verification");
-    return -1;
-  }
+  struct wincrypt_backend *be;
+  ALG_ID alg_id = 0;
 
   switch (algorithm) {
   case LIBACQUIRE_SHA256:
@@ -61,43 +73,36 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
     alg_id = CALG_SHA_512;
     break;
   default:
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
-                             "Unsupported algorithm for WinCrypt backend");
     return -1;
   }
 
-  be = (struct checksum_backend *)calloc(1, sizeof(struct checksum_backend));
+  be = (struct wincrypt_backend *)calloc(1, sizeof(struct wincrypt_backend));
   if (!be) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
-                             "Could not allocate checksum backend");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "wincrypt backend");
     return -1;
   }
 
   be->file = fopen(filepath, "rb");
   if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
-                             strerror(errno));
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s", strerror(errno));
     free(be);
+    return -1;
+  }
+
+  if (!CryptAcquireContext(&be->hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
+    cleanup_wincrypt_backend(handle);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CryptAcquireContext failed");
+    return -1;
+  }
+
+  if (!CryptCreateHash(be->hProv, alg_id, 0, 0, &be->hHash)) {
+    cleanup_wincrypt_backend(handle);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CryptCreateHash failed");
     return -1;
   }
 
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
   be->expected_hash[sizeof(be->expected_hash) - 1] = '\0';
-
-  if (!CryptAcquireContext(&be->hProv, NULL, NULL, PROV_RSA_AES,
-                           CRYPT_VERIFYCONTEXT)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                             "CryptAcquireContext failed");
-    cleanup_checksum_backend(handle);
-    return -1;
-  }
-
-  if (!CryptCreateHash(be->hProv, alg_id, 0, 0, &be->hHash)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                             "CryptCreateHash failed");
-    cleanup_checksum_backend(handle);
-    return -1;
-  }
 
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
@@ -105,74 +110,57 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
 }
 
 enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle) {
-  struct checksum_backend *be;
-  BYTE buffer[CHUNK_SIZE];
+  struct wincrypt_backend *be;
+  unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
-  DWORD i, k;
 
   if (!handle || !handle->backend_handle)
     return ACQUIRE_ERROR;
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
   if (handle->cancel_flag) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
-                             "Checksum verification cancelled");
-    cleanup_checksum_backend(handle);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED, "Verification cancelled");
+    cleanup_wincrypt_backend(handle);
     return ACQUIRE_ERROR;
   }
 
-  be = (struct checksum_backend *)handle->backend_handle;
-  bytes_read = fread(buffer, 1, CHUNK_SIZE, be->file);
+  be = (struct wincrypt_backend *)handle->backend_handle;
+  bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
 
   if (bytes_read > 0) {
     if (!CryptHashData(be->hHash, buffer, (DWORD)bytes_read, 0)) {
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "CryptHashData failed");
-      cleanup_checksum_backend(handle);
-      return ACQUIRE_ERROR;
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CryptHashData failed");
+      handle->status = ACQUIRE_ERROR;
+    } else {
+      handle->bytes_processed += bytes_read;
+      return ACQUIRE_IN_PROGRESS;
     }
-    handle->bytes_processed += bytes_read;
-    return ACQUIRE_IN_PROGRESS;
   }
 
   if (ferror(be->file)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
-                             strerror(errno));
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s", strerror(errno));
     handle->status = ACQUIRE_ERROR;
   } else {
-    BYTE rgbHash[64];
-    DWORD cbHash = sizeof(rgbHash);
-    char hex_hash[129];
-    static const char rgbDigits[] = "0123456789abcdef";
-
-    if (CryptGetHashParam(be->hHash, HP_HASHVAL, rgbHash, &cbHash, 0)) {
-      for (i = 0, k = 0; i < cbHash; i++) {
-        hex_hash[k++] = rgbDigits[rgbHash[i] >> 4];
-        hex_hash[k++] = rgbDigits[rgbHash[i] & 0xf];
+    BYTE hash[64];
+    DWORD hash_len = sizeof(hash);
+    char computed_hex[130];
+    int i;
+    if (CryptGetHashParam(be->hHash, HP_HASHVAL, hash, &hash_len, 0)) {
+      for (i = 0; i < (int)hash_len; i++) {
+        sprintf(computed_hex + (i * 2), "%02x", hash[i]);
       }
-      hex_hash[k] = '\0';
-
-#ifdef _WIN32
-      if (_stricmp(hex_hash, be->expected_hash) == 0)
+      computed_hex[hash_len * 2] = '\0';
+      if (strncasecmp(computed_hex, be->expected_hash, hash_len * 2) == 0) {
         handle->status = ACQUIRE_COMPLETE;
-      else
-        acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                                 "Checksum mismatch");
-#else
-      if (strcasecmp(hex_hash, be->expected_hash) == 0)
-        handle->status = ACQUIRE_COMPLETE;
-      else
-        acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                                 "Checksum mismatch");
-#endif
+      } else {
+        acquire_handle_set_error( handle, ACQUIRE_ERROR_UNKNOWN, "Hash mismatch. Expected %s, got %s", be->expected_hash, computed_hex);
+      }
     } else {
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "CryptGetHashParam failed");
-      handle->status = ACQUIRE_ERROR;
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CryptGetHashParam failed");
     }
   }
 
-  cleanup_checksum_backend(handle);
+  cleanup_wincrypt_backend(handle);
   return handle->status;
 }
 
@@ -181,10 +169,10 @@ void _wincrypt_verify_async_cancel(struct acquire_handle *handle) {
     handle->cancel_flag = 1;
 }
 
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_WINCRYPT) */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBACQUIRE_IMPLEMENTATION && LIBACQUIRE_USE_WINCRYPT */
-
-#endif /* !LIBACQUIRE_WINCRYPT_H */
+#endif /* !LIBACQUIRE_ACQUIRE_WINCRYPT_H */

@@ -7,7 +7,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 /* --- Synchronous API --- */
 extern LIBACQUIRE_EXPORT int
@@ -27,6 +27,6 @@ acquire_download_async_cancel(struct acquire_handle *handle);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_ACQUIRE_DOWNLOAD_H */

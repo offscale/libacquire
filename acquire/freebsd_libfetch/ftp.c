@@ -100,9 +100,6 @@ __FBSDID("$FreeBSD$");
 #define FTP_SYNTAX_ERROR 500
 #define FTP_PROTOCOL_ERROR 999
 
-static struct url cached_host;
-static conn_t *cached_connection;
-
 #define isftpreply(foo)                                                        \
   (isdigit((unsigned char)foo[0]) && isdigit((unsigned char)foo[1]) &&         \
    isdigit((unsigned char)foo[2]) && (foo[3] == ' ' || foo[3] == '\0'))
@@ -551,8 +548,6 @@ static int ftp_closefn(void *v) {
   io->dconn = NULL;
   DEBUGF("Waiting for final status\n");
   r = ftp_chkerr(io->cconn);
-  if (io->cconn == cached_connection && io->cconn->ref == 1)
-    cached_connection = NULL;
   fetch_close(io->cconn);
   free(io);
   return (r == FTP_TRANSFER_COMPLETE) ? 0 : -1;
@@ -888,8 +883,9 @@ static int ftp_authenticate(conn_t *conn, struct url *url, struct url *purl) {
       if ((pwd = getenv("FTP_PASSWORD")) != NULL)
         DEBUGF("FTP_PASSWORD=%s\n", pwd);
     if (pwd == NULL || *pwd == '\0') {
-      if ((logname = getlogin()) == NULL)
-        logname = FTP_ANONYMOUS_USER;
+      if ((logname = getenv("LOGNAME")) == NULL)
+        if ((logname = getenv("USER")) == NULL)
+          logname = FTP_ANONYMOUS_USER;
       if ((len = snprintf(pbuf, MAXLOGNAME + 1, "%s@", logname)) < 0)
         len = 0;
       else if (len > MAXLOGNAME)
@@ -966,48 +962,7 @@ fouch:
  */
 static void ftp_disconnect(conn_t *conn) {
   (void)ftp_cmd(conn, "QUIT");
-  if (conn == cached_connection && conn->ref == 1)
-    cached_connection = NULL;
   fetch_close(conn);
-}
-
-/*
- * Check if we're already connected
- */
-static int ftp_isconnected(struct url *url) {
-  return (cached_connection && (strcmp(url->host, cached_host.host) == 0) &&
-          (strcmp(url->user, cached_host.user) == 0) &&
-          (strcmp(url->pwd, cached_host.pwd) == 0) &&
-          (url->port == cached_host.port));
-}
-
-/*
- * Check the cache, reconnect if no luck
- */
-static conn_t *ftp_cached_connect(struct url *url, struct url *purl,
-                                  const char *flags) {
-  conn_t *conn;
-  int e;
-
-  /* set default port */
-  if (!url->port)
-    url->port = fetch_default_port(url->scheme);
-
-  /* try to use previously cached connection */
-  if (ftp_isconnected(url)) {
-    e = ftp_cmd(cached_connection, "NOOP");
-    if (e == FTP_OK || e == FTP_SYNTAX_ERROR)
-      return (fetch_ref(cached_connection));
-  }
-
-  /* connect to server */
-  if ((conn = ftp_connect(url, purl, flags)) == NULL)
-    return (NULL);
-  if (cached_connection)
-    ftp_disconnect(cached_connection);
-  cached_connection = fetch_ref(conn);
-  memcpy(&cached_host, url, sizeof(*url));
-  return (conn);
 }
 
 /*
@@ -1061,8 +1016,12 @@ FILE *ftp_request(struct url *url, const char *op, struct url_stat *us,
      */
   }
 
+  /* set default port */
+  if (!url->port)
+    url->port = fetch_default_port(url->scheme);
+
   /* connect to server */
-  conn = ftp_cached_connect(url, purl, flags);
+  conn = ftp_connect(url, purl, flags);
   if (purl)
     fetchFreeURL(purl);
   if (conn == NULL)
@@ -1079,7 +1038,6 @@ FILE *ftp_request(struct url *url, const char *op, struct url_stat *us,
 
   /* just a stat */
   if (strcmp(op, "STAT") == 0) {
-    --conn->ref;
     ftp_disconnect(conn);
     return (FILE *)1; /* bogus return value */
   }

@@ -53,7 +53,15 @@ TEST test_curl_progress_reporting(void) {
   while (acquire_download_async_poll(handle) == ACQUIRE_IN_PROGRESS)
     ;
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, handle->status, "%d");
-  ASSERT_EQ_FMT(58545L, (long)handle->total_size, "%ld");
+  /*
+   * The server may use chunked encoding, in which case the Content-Length
+   * header is not sent and handle->total_size will remain -1.
+   * Instead, we verify handle->bytes_processed, which is always updated
+   * and should equal the final file size.
+   */
+  ASSERT_EQ_FMT(58545L, (long)handle->bytes_processed, "%ld");
+  /* As a sanity check, also verify the size of the file on disk. */
+  ASSERT_EQ_FMT(58545L, (long)filesize(local_path), "%ld");
   acquire_handle_free(handle);
   PASS();
 }

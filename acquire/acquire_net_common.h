@@ -1,4 +1,3 @@
-/* acquire/acquire_net_common.h */
 #ifndef LIBACQUIRE_ACQUIRE_NET_COMMON_H
 #define LIBACQUIRE_ACQUIRE_NET_COMMON_H
 
@@ -33,15 +32,30 @@ extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
                    const char *target_location) {
   char full_local_fname[NAME_MAX + 1];
-  const char *filename = is_url(url) ? get_path_from_url(url) : url;
+  char *filename_from_url = NULL;
+  const char *filename;
   struct acquire_handle *verify_handle;
   int result;
+  bool is_verified = false;
+
+  if (is_url(url)) {
+    filename_from_url = get_path_from_url(url);
+    filename = filename_from_url;
+  } else {
+    filename = url;
+  }
+
+  if (filename == NULL || *filename == '\0' || hash == NULL) {
+    free(filename_from_url);
+    return false;
+  }
 
   if (target_location == NULL) {
     target_location = get_download_dir();
   }
 
-  if (filename == NULL || *filename == '\0' || !is_directory(target_location)) {
+  if (!is_directory(target_location)) {
+    free(filename_from_url);
     return false;
   }
 
@@ -49,16 +63,23 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
            filename);
 
   if (!is_file(full_local_fname)) {
+    free(filename_from_url);
     return false;
   }
 
   verify_handle = acquire_handle_init();
-  if (!verify_handle)
+  if (!verify_handle) {
+    free(filename_from_url);
     return false;
+  }
 
   result = acquire_verify_sync(verify_handle, full_local_fname, checksum, hash);
   acquire_handle_free(verify_handle);
-  return result == 0;
+
+  is_verified = (result == 0);
+
+  free(filename_from_url);
+  return is_verified;
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \

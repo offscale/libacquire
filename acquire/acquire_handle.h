@@ -33,14 +33,14 @@ struct acquire_error {
 };
 
 struct acquire_handle {
-  off_t bytes_processed;
-  off_t total_size;
+  volatile off_t bytes_processed;
+  volatile off_t total_size;
   char current_file[PATH_MAX];
-  enum acquire_status status;
+  volatile enum acquire_status status;
   void *backend_handle;
   FILE *output_file;
   struct acquire_error error;
-  int cancel_flag;
+  volatile int cancel_flag;
 };
 
 extern LIBACQUIRE_EXPORT struct acquire_handle *acquire_handle_init(void);

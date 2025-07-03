@@ -20,6 +20,24 @@
 #include "acquire_download.h"
 #include "acquire_handle.h"
 
+/* --- Global cURL State Management --- */
+static int g_acquire_curl_ref_count = 0;
+
+static void acquire_curl_global_init(void) {
+  if (g_acquire_curl_ref_count == 0) {
+    curl_global_init(CURL_GLOBAL_ALL);
+  }
+  g_acquire_curl_ref_count++;
+}
+
+static void acquire_curl_global_cleanup(void) {
+  g_acquire_curl_ref_count--;
+  if (g_acquire_curl_ref_count == 0) {
+    curl_global_cleanup();
+  }
+}
+/* --- */
+
 #if defined(LIBACQUIRE_DOWNLOAD_DIR_IMPL)
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
@@ -29,6 +47,31 @@ struct curl_backend {
   CURLM *multi_handle;
   CURL *easy_handle;
 };
+
+/* --- Internal Helpers --- */
+static void cleanup_curl_backend(struct acquire_handle *handle) {
+  if (!handle)
+    return;
+  if (handle->backend_handle) {
+    struct curl_backend *be = (struct curl_backend *)handle->backend_handle;
+    if (be->multi_handle && be->easy_handle) {
+      curl_multi_remove_handle(be->multi_handle, be->easy_handle);
+    }
+    if (be->easy_handle) {
+      curl_easy_cleanup(be->easy_handle);
+    }
+    if (be->multi_handle) {
+      curl_multi_cleanup(be->multi_handle);
+    }
+    acquire_curl_global_cleanup(); /* Decrement ref count and maybe cleanup */
+    free(be);
+    handle->backend_handle = NULL;
+  }
+  if (handle->output_file) {
+    fclose(handle->output_file);
+    handle->output_file = NULL;
+  }
+}
 
 /* --- Internal Callbacks --- */
 static size_t write_callback(void *ptr, size_t size, size_t nmemb,
@@ -76,20 +119,24 @@ int acquire_download_async_start(struct acquire_handle *handle, const char *url,
                              "curl backend memory allocation failed");
     return -1;
   }
-  handle->backend_handle = be;
 
-  curl_global_init(CURL_GLOBAL_ALL);
+  acquire_curl_global_init();
+
   be->easy_handle = curl_easy_init();
   if (!be->easy_handle) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_INIT_FAILED,
                              "curl_easy_init() failed");
+    free(be);
+    acquire_curl_global_cleanup(); /* Cleanup on failure */
     return -1;
   }
+  handle->backend_handle = be; /* Assign only after successful init */
 
   handle->output_file = fopen(dest_path, "wb");
   if (!handle->output_file) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
                              "Failed to open destination file: %s", dest_path);
+    cleanup_curl_backend(handle);
     return -1;
   }
 
@@ -125,6 +172,8 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
   if (handle->cancel_flag) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
                              "Download cancelled by user");
+    handle->status = ACQUIRE_ERROR;
+    cleanup_curl_backend(handle);
     return handle->status;
   }
 
@@ -138,19 +187,22 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
 
         /* First, check if the transfer was successful */
         if (msg->data.result == CURLE_OK) {
+          curl_off_t cl;
           handle->status = ACQUIRE_COMPLETE;
+          /* Explicitly get final size to ensure it's set */
+          if (curl_easy_getinfo(msg->easy_handle,
+                                CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
+                                &cl) == CURLE_OK &&
+              cl >= 0) {
+            handle->total_size = (off_t)cl;
+          }
         } else {
-          /*
-           * If the transfer failed, check if it was due to an HTTP
-           * error code (e.g., 404, 500).
-           */
           curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE,
                             &response_code);
           if (response_code >= 400) {
             acquire_handle_set_error(handle, ACQUIRE_ERROR_HTTP_FAILURE,
                                      "HTTP error: %ld", response_code);
           } else {
-            /* Otherwise, it's a general network failure. */
             acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_FAILURE,
                                      "cURL error: %s",
                                      curl_easy_strerror(msg->data.result));
@@ -158,17 +210,19 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
         }
       }
     } else {
-      /* If still_running is 0 but we have no message, it implies success.
-       * This can happen on some platforms for empty files or cached responses.
-       * We check the final handle status to be sure. */
+      /* If still_running is 0 but we have no message, it implies success. */
       if (handle->status == ACQUIRE_IN_PROGRESS) {
+        curl_off_t cl;
         handle->status = ACQUIRE_COMPLETE;
+        if (curl_easy_getinfo(be->easy_handle,
+                              CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
+                              &cl) == CURLE_OK &&
+            cl >= 0) {
+          handle->total_size = (off_t)cl;
+        }
       }
     }
-    if (handle->output_file) {
-      fclose(handle->output_file);
-      handle->output_file = NULL;
-    }
+    cleanup_curl_backend(handle);
   }
   return handle->status;
 }

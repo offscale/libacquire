@@ -4,6 +4,7 @@
 #include <acquire_common_defs.h>
 #include <config_for_tests.h>
 #include <greatest.h>
+#include <stdio.h> /* for remove() */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 
@@ -11,7 +12,14 @@
 #include <unistd.h>
 #endif
 
-TEST test_verify_sync_success(void) {
+// SHA256 of an empty string ""
+#define EMPTY_FILE_SHA256                                                      \
+  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+// Create and destroy an empty file for testing
+static const char *EMPTY_FILE_PATH = DOWNLOAD_DIR PATH_SEP "empty.txt";
+
+TEST test_verify_sync_success_sha256(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
   ASSERT(h != NULL);
@@ -22,6 +30,20 @@ TEST test_verify_sync_success(void) {
   acquire_handle_free(h);
   PASS();
 }
+
+#if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
+TEST test_verify_sync_success_crc32c(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+  result =
+      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_CRC32C, GREATEST_CRC32C);
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, h->status, "%d");
+  acquire_handle_free(h);
+  PASS();
+}
+#endif
 
 TEST test_verify_sync_failure_bad_hash(void) {
   struct acquire_handle *h = acquire_handle_init();
@@ -87,12 +109,47 @@ TEST test_verify_async_cancellation(void) {
   PASS();
 }
 
+TEST test_verify_empty_file(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  FILE *f = fopen(EMPTY_FILE_PATH, "w");
+  if (f)
+    fclose(f);
+
+  ASSERT(h != NULL);
+  result = acquire_verify_sync(h, EMPTY_FILE_PATH, LIBACQUIRE_SHA256,
+                               EMPTY_FILE_SHA256);
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, h->status, "%d");
+  acquire_handle_free(h);
+  remove(EMPTY_FILE_PATH);
+  PASS();
+}
+
+TEST test_unsupported_algorithm(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+  result = acquire_verify_sync(h, GREATEST_FILE,
+                               LIBACQUIRE_UNSUPPORTED_CHECKSUM, "hash");
+  ASSERT_EQ(-1, result);
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+                acquire_handle_get_error_code(h), "%d");
+  acquire_handle_free(h);
+  PASS();
+}
+
 SUITE(checksums_suite) {
-  RUN_TEST(test_verify_sync_success);
+  RUN_TEST(test_verify_sync_success_sha256);
+#if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
+  RUN_TEST(test_verify_sync_success_crc32c);
+#endif
   RUN_TEST(test_verify_sync_failure_bad_hash);
   RUN_TEST(test_verify_sync_failure_bad_file);
   RUN_TEST(test_verify_async_success);
   RUN_TEST(test_verify_async_cancellation);
+  RUN_TEST(test_verify_empty_file);
+  RUN_TEST(test_unsupported_algorithm);
 }
 
 #endif /* !TEST_CHECKSUM_H */

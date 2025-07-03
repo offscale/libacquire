@@ -16,7 +16,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <string.h>
+#ifndef strdup
 #define strdup _strdup
+#endif /* !strdup */
 #else
 #include "acquire_string_extras.h"
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
@@ -30,19 +33,17 @@ extern "C" {
 /**
  * @brief Extract the path component (filename) from a URL string.
  *
- * Given a URL string, returns a pointer to a static buffer holding
+ * Given a URL string, returns a newly allocated string containing
  * everything after the last '/' character in the URL, stopping before any
  * query ('?') or fragment ('#') delimiter.
  *
  * If the URL is NULL or empty, returns NULL.
  *
  * @param url Input URL string.
- * @return Pointer to static buffer with filepath component xor `NULL`.
- *
- * @note Returned pointer points to a static buffer that may be overwritten
- * on later calls.
+ * @return Pointer to a newly allocated string, or `NULL` on failure.
+ *         The caller is responsible for freeing this memory.
  */
-extern LIBACQUIRE_EXPORT const char *get_path_from_url(const char *url);
+extern LIBACQUIRE_EXPORT char *get_path_from_url(const char *url);
 
 /**
  * @brief Check whether a given string appears to be a URL.
@@ -58,10 +59,10 @@ extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
     defined(LIBACQUIRE_ACQUIRE_URL_UTILS_IMPL)
 
-const char *get_path_from_url(const char *url) {
-  static char buf[NAME_MAX + 1];
-  const char *last_slash;
-  size_t i;
+char *get_path_from_url(const char *url) {
+  char buf[NAME_MAX + 1];
+  const char *last_slash, *end;
+  size_t len;
 
   if (!url || url[0] == '\0')
     return NULL;
@@ -72,14 +73,20 @@ const char *get_path_from_url(const char *url) {
   else
     last_slash = url;
 
-  for (i = 0; i < NAME_MAX && last_slash[i] != '\0'; i++) {
-    if (last_slash[i] == '?' || last_slash[i] == '#')
-      break;
-    buf[i] = last_slash[i];
+  end = last_slash;
+  while (*end != '\0' && *end != '?' && *end != '#') {
+    end++;
   }
-  buf[i] = '\0';
 
-  return buf;
+  len = end - last_slash;
+  if (len >= sizeof(buf)) {
+    len = sizeof(buf) - 1;
+  }
+
+  strncpy(buf, last_slash, len);
+  buf[len] = '\0';
+
+  return strdup(buf);
 }
 
 bool is_url(const char *maybe_url) {

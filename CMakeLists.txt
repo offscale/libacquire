@@ -102,15 +102,18 @@ endif ()
 add_library("${PROJECT_NAME}_compiler_flags" INTERFACE)
 target_compile_features("${PROJECT_NAME}_compiler_flags" INTERFACE "c_std_${CMAKE_C_STANDARD}")
 
-# add compiler warning flags just when building this project via
-# the BUILD_INTERFACE genex
 set(gcc_like "$<COMPILE_LANG_AND_ID:C,CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
 set(msvc "$<COMPILE_LANG_AND_ID:C,CXX,MSVC>")
 target_compile_options(
         "${PROJECT_NAME}_compiler_flags"
         INTERFACE
-        "$<${gcc_like}:$<BUILD_INTERFACE:-Wshadow;-Wformat=2;-Wall;-Wno-missing-braces;-Wno-long-long;-pedantic>>"
+        "$<$<AND:${gcc_like},$<CONFIG:Debug>>:$<BUILD_INTERFACE:-Wshadow;-Wformat=2;-Wall;-Wno-missing-braces;-Wno-long-long;-pedantic;-fprofile-arcs;-ftest-coverage>>"
         "$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi;-permissive->>"
+)
+target_link_options(
+        "${PROJECT_NAME}_compiler_flags"
+        INTERFACE
+        "$<$<AND:${gcc_like},$<CONFIG:Debug>>:$<BUILD_INTERFACE:--coverage>>"
 )
 
 # control where the static and shared libraries are built so that on windows

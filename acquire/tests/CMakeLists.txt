@@ -4,7 +4,7 @@ set(exec_name "test_${PROJECT_NAME}")
 # Dependencies download #
 #########################
 
-set(GREATEST_CRC32C "f83d6ce5")
+set(GREATEST_CRC32C "f687ac89")
 set(GREATEST_SHA256 "b3f89ecad2301c64c580f328cc03a74d92f4cd4bf42ab18d3d4bfb7b8be5b948")
 set(GREATEST_ARCHIVE_SHA256 "67bad60cd59fffc6b5bc65934deb338b61e8399703807458539c82afbba87d31")
 
@@ -42,7 +42,6 @@ file(TO_NATIVE_PATH "${CORRUPT_ZIP_PATH}" CORRUPT_ZIP_PATH_NATIVE)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" CORRUPT_ZIP_PATH_NATIVE "${CORRUPT_ZIP_PATH_NATIVE}")
 endif()
-
 
 ################################
 # Configure file (interpolate) #
@@ -126,6 +125,7 @@ set(Header_Files
         "test_checksums_dispatch.h"
         "test_download.h"
         "test_fileutils.h"
+        "test_net_common.h"
         "test_string_extras.h"
         "test_url_utils.h"
 )
@@ -147,7 +147,6 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}"
         "${PROJECT_NAME}_compiler_flags"
-        #"${CHECKSUM_LIBRARIES}"
 )
 
 if (LIBACQUIRE_USE_MINIZ)
@@ -165,7 +164,6 @@ test_wrapper()
 
 if (LIBACQUIRE_USE_LIBCURL)
     set(EXEC_NAME "test_curl_helpers")
-    #add_dependencies("${PROJECT_NAME}" "${EXEC_NAME}")
 
     set(Test_Libcurl_Header_Files "test_libcurl_backend.h")
     source_group("${EXEC_NAME} Header Files" FILES "${Test_Libcurl_Header_Files}")
@@ -247,7 +245,6 @@ if (NOT (EXTRACT_LIB STREQUAL "WINCOMPRESSAPI"))
                 PRIVATE
                 "${PROJECT_NAME}"
                 "$<$<STREQUAL:${ARCHIVE_LIB},libarchive>:${LibArchive_LIBRARIES}>"
-                # "$<$<STREQUAL:${ARCHIVE_LIB},miniz>:miniz>"
         )
 
         test_wrapper()

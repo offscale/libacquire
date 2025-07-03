@@ -5,7 +5,9 @@
 #include "test_checksum.h"
 #include "test_checksums_dispatch.h"
 #include "test_download.h"
+#include "test_extract.h"
 #include "test_fileutils.h"
+#include "test_net_common.h"
 #include "test_string_extras.h"
 #include "test_url_utils.h"
 
@@ -18,7 +20,8 @@ int main(int argc, char **argv) {
   RUN_SUITE(checksum_dispatch_suite);
   RUN_SUITE(downloads_suite);
   RUN_SUITE(fileutils_suite);
-  RUN_SUITE(strnstr_suite);
+  RUN_SUITE(net_common_suite);
+  RUN_SUITE(string_extras_suite);
   RUN_SUITE(url_utils_suite);
   GREATEST_MAIN_END();
 }

@@ -1535,16 +1535,13 @@ int fetch_add_entry(struct url_ent **p, int *size, int *len, const char *name,
 
 /*** Authentication-related utility functions ********************************/
 
-static const char *fetch_read_word(FILE *f) {
-  static char word[1024];
-
+static int fetch_read_word(FILE *f, char *word, size_t len) {
   if (fscanf(f, " %1023s ", word) != 1)
-    return (NULL);
-  return (word);
+    return (-1);
+  return (0);
 }
 
 static int fetch_netrc_open(void) {
-  struct passwd *pwd;
   char fn[PATH_MAX];
   const char *p;
   int fd, serrno;
@@ -1556,13 +1553,11 @@ static int fetch_netrc_open(void) {
                  "longer than PATH_MAX");
       return (-1);
     }
-  } else {
-    if ((p = getenv("HOME")) == NULL) {
-      if ((pwd = getpwuid(getuid())) == NULL || (p = pwd->pw_dir) == NULL)
-        return (-1);
-    }
+  } else if ((p = getenv("HOME")) != NULL) {
     if (snprintf(fn, sizeof(fn), "%s/.netrc", p) >= (int)sizeof(fn))
-      return (-1);
+      return -1;
+  } else {
+    return -1;
   }
 
   if ((fd = open(fn, O_RDONLY)) < 0) {
@@ -1577,7 +1572,7 @@ static int fetch_netrc_open(void) {
  * Get authentication data for a URL from .netrc
  */
 int fetch_netrc_auth(struct url *url) {
-  const char *word;
+  char word[1024];
   int serrno;
   FILE *f;
 
@@ -1595,22 +1590,23 @@ int fetch_netrc_auth(struct url *url) {
   }
   rewind(f);
   DEBUGF("searching netrc for %s\n", url->host);
-  while ((word = fetch_read_word(f)) != NULL) {
+  while (fetch_read_word(f, word, sizeof(word)) == 0) {
     if (strcmp(word, "default") == 0) {
       DEBUGF("using default netrc settings\n");
       break;
     }
-    if (strcmp(word, "machine") == 0 && (word = fetch_read_word(f)) != NULL &&
+    if (strcmp(word, "machine") == 0 &&
+        fetch_read_word(f, word, sizeof(word)) == 0 &&
         strcasecmp(word, url->host) == 0) {
       DEBUGF("using netrc settings for %s\n", word);
       break;
     }
   }
-  if (word == NULL)
+  if (feof(f) || ferror(f))
     goto ferr;
-  while ((word = fetch_read_word(f)) != NULL) {
+  while (fetch_read_word(f, word, sizeof(word)) == 0) {
     if (strcmp(word, "login") == 0) {
-      if ((word = fetch_read_word(f)) == NULL)
+      if (fetch_read_word(f, word, sizeof(word)) != 0)
         goto ferr;
       if (snprintf(url->user, sizeof(url->user), "%s", word) >
           (int)sizeof(url->user)) {
@@ -1618,7 +1614,7 @@ int fetch_netrc_auth(struct url *url) {
         url->user[0] = '\0';
       }
     } else if (strcmp(word, "password") == 0) {
-      if ((word = fetch_read_word(f)) == NULL)
+      if (fetch_read_word(f, word, sizeof(word)) != 0)
         goto ferr;
       if (snprintf(url->pwd, sizeof(url->pwd), "%s", word) >
           (int)sizeof(url->pwd)) {
@@ -1626,7 +1622,7 @@ int fetch_netrc_auth(struct url *url) {
         url->pwd[0] = '\0';
       }
     } else if (strcmp(word, "account") == 0) {
-      if ((word = fetch_read_word(f)) == NULL)
+      if (fetch_read_word(f, word, sizeof(word)) != 0)
         goto ferr;
       /* XXX not supported! */
     } else {

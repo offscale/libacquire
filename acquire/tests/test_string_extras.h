@@ -23,10 +23,30 @@ TEST x_strnstr_should_fail(void) {
   PASS();
 }
 
+TEST test_strcasestr_found(void) {
+  const char *haystack = "Hello, World! Welcome to the new WORLD.";
+  ASSERT_STR_EQ("World! Welcome to the new WORLD.",
+                strcasestr(haystack, "world"));
+  ASSERT_STR_EQ("WORLD.", strcasestr(haystack, "WORLD."));
+  ASSERT_STR_EQ(
+      haystack,
+      strcasestr(haystack, "")); /* Empty string should match start */
+  PASS();
+}
+
+TEST test_strcasestr_not_found(void) {
+  const char *haystack = "Hello, World!";
+  ASSERT_EQ(NULL, strcasestr(haystack, "goodbye"));
+  ASSERT_EQ(NULL, strcasestr(haystack, "worlds")); /* 's' too many */
+  PASS();
+}
+
 /* Suites can group multiple tests with common setup. */
-SUITE(strnstr_suite) {
+SUITE(string_extras_suite) {
   RUN_TEST(x_strnstr_should_succeed);
   RUN_TEST(x_strnstr_should_fail);
+  RUN_TEST(test_strcasestr_found);
+  RUN_TEST(test_strcasestr_not_found);
 }
 
 #endif /* !TEST_STRING_EXTRAS_H */
