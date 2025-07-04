@@ -5,9 +5,9 @@
 
 #include <greatest.h>
 
-#include "acquire_checksums.h" /* For verify API */
+#include "acquire_checksums.h"
 #include "acquire_common_defs.h"
-#include "acquire_config.h"
+#include "acquire_download.h"
 #include "config_for_tests.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)

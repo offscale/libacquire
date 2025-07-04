@@ -1,22 +1,22 @@
 #ifndef TEST_CHECKSUM_H
 #define TEST_CHECKSUM_H
 
-#include <acquire_common_defs.h>
-#include <config_for_tests.h>
 #include <greatest.h>
-#include <stdio.h> /* for remove() */
+#include <stdio.h>
+
+#include "acquire_checksums.h" /* For string2checksum and verify API */
+#include "acquire_fileutils.h" /* For is_file */
+#include "acquire_handle.h"    /* For handle functions */
+#include "config_for_tests.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-
+/* No extra includes needed for Windows at the moment */
 #else
 #include <unistd.h>
 #endif
 
-// SHA256 of an empty string ""
 #define EMPTY_FILE_SHA256                                                      \
   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-// Create and destroy an empty file for testing
 static const char *EMPTY_FILE_PATH = DOWNLOAD_DIR PATH_SEP "empty.txt";
 
 TEST test_verify_sync_success_sha256(void) {
@@ -133,7 +133,7 @@ TEST test_unsupported_algorithm(void) {
   result = acquire_verify_sync(h, GREATEST_FILE,
                                LIBACQUIRE_UNSUPPORTED_CHECKSUM, "hash");
   ASSERT_EQ(-1, result);
-  ASSERT_EQ_FMT(ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
                 acquire_handle_get_error_code(h), "%d");
   acquire_handle_free(h);
   PASS();

@@ -63,9 +63,8 @@ int main(int argc, char *argv[]) {
   } else {
     output_path_alloc = get_path_from_url(url_to_use);
     if (output_path_alloc == NULL || *output_path_alloc == '\0') {
-      fprintf(stderr,
-              "Error: Could not determine filename from URL and no "
-              "output directory was specified.\n");
+      fprintf(stderr, "Error: Could not determine filename from URL and no "
+                      "output directory was specified.\n");
       rc = EXIT_FAILURE;
       goto cleanup;
     }

@@ -161,7 +161,7 @@ int acquire_download_async_start(struct acquire_handle *handle, const char *url,
 
 enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
   struct curl_backend *be;
-  int still_running = 0;
+  int still_running = 0, r;
   CURLMsg *msg;
   if (!handle || !handle->backend_handle)
     return ACQUIRE_ERROR;
@@ -177,7 +177,14 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
     return handle->status;
   }
 
-  curl_multi_perform(be->multi_handle, &still_running);
+  r = curl_multi_perform(be->multi_handle, &still_running);
+  if (r != CURLM_OK) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_FAILURE,
+                             "curl_multi_perform() failed: %s",
+                             curl_multi_strerror(r));
+    cleanup_curl_backend(handle);
+    return handle->status;
+  }
   if (still_running == 0) {
     int queued;
     msg = curl_multi_info_read(be->multi_handle, &queued);

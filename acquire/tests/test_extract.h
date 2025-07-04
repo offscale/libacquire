@@ -132,8 +132,8 @@ TEST test_extract_async_cancellation(void) {
    */
   if (initial_poll_done && handle->cancel_flag) {
     ASSERT_EQ_FMT(ACQUIRE_ERROR, status, "%d");
-    ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, acquire_handle_get_error_code(handle),
-                  "%d");
+    ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED,
+                  acquire_handle_get_error_code(handle), "%d");
   } else {
     /* If the test was too fast to cancel, we just log it as a pass. */
     ASSERT(status == ACQUIRE_COMPLETE || status == ACQUIRE_ERROR);

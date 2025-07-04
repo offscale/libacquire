@@ -7,6 +7,7 @@ function(generate_header_and_source_from_header_only guard_name associated_heade
 
     # implementation
     # - superior to basic find/extract, as it parses: str & char literals; comments (both kinds); and line-continuation.
+    # - also it replaces `#include "acquire_%s.h"` with `#include "gen_acquire_%s.h"` if it exists
 
     if (NOT EXISTS "${input_file}")
         message(FATAL_ERROR "Input file not found: ${input_file}")

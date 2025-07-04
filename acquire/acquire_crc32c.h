@@ -3,18 +3,11 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
-#include "acquire_checksums.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "acquire_common_defs.h"
 
-struct checksum_backend {
-  FILE *file;
-  uint32_t crc;
-  char expected_hash[9]; /* 8 chars + '\0' */
-};
+struct acquire_handle; /* Forward declaration */
 
 #if defined(LIBACQUIRE_USE_CRC32C)
 int _crc32c_verify_async_start(struct acquire_handle *handle,
@@ -28,12 +21,19 @@ void _crc32c_verify_async_cancel(struct acquire_handle *handle);
 
 #include "acquire_handle.h"
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
 #endif
+
+struct checksum_backend {
+  FILE *file;
+  uint32_t crc;
+  char expected_hash[9];
+};
 
 static const uint32_t crc32c_table[256] = {
     0x00000000U, 0xF26B8303U, 0xE13B70F7U, 0x1350F3F4U, 0xC79A971FU,
@@ -64,14 +64,14 @@ static const uint32_t crc32c_table[256] = {
     0x267E0E1CU, 0x352EFDE8U, 0xC7457EEBU, 0x138F1A00U, 0xE1E49903U,
     0xF2B46AF7U, 0x00DFEDF4U, 0x84427D3FU, 0x7629F43CU, 0x657907C8U,
     0x971284CBU, 0x43D8E020U, 0xB1B36323U, 0xA2E390D7U, 0x508813D4U,
-    0xDB23E5AU, 0xEF496C59U, 0xFC199FAFU, 0x0E721CA8U, 0x8021308CU,
+    0xDB23E5AU,  0xEF496C59U, 0xFC199FAFU, 0x0E721CA8U, 0x8021308CU,
     0x724AB38FU, 0x611A407BU, 0x9371C378U, 0x47BBE793U, 0xB5D06490U,
     0xA6809764U, 0x54EA1467U, 0x2087CF2CU, 0xD2E84C2FU, 0xC1B8BFDBU,
     0x33D33CD8U, 0xF94F00B3U, 0x0B2483B0U, 0x18747044U, 0xEA1FF347U};
 
 static uint32_t crc32c_init(void) { return 0xFFFFFFFFU; }
-
-static uint32_t crc32c_update(uint32_t crc, const unsigned char *data, size_t len) {
+static uint32_t crc32c_update(uint32_t crc, const unsigned char *data,
+                              size_t len) {
   size_t i;
   for (i = 0; i < len; ++i) {
     uint8_t idx = (uint8_t)((crc ^ data[i]) & 0xFFU);
@@ -79,13 +79,15 @@ static uint32_t crc32c_update(uint32_t crc, const unsigned char *data, size_t le
   }
   return crc;
 }
-
 static uint32_t crc32c_finalize(uint32_t crc) { return crc ^ 0xFFFFFFFFU; }
 
 static void cleanup_crc32c_backend(struct acquire_handle *handle) {
-  if (!handle || !handle->backend_handle) return;
-  struct checksum_backend *be = (struct checksum_backend *)handle->backend_handle;
-  if (be->file) fclose(be->file);
+  struct checksum_backend *be;
+  if (!handle || !handle->backend_handle)
+    return;
+  be = (struct checksum_backend *)handle->backend_handle;
+  if (be->file)
+    fclose(be->file);
   free(be);
   handle->backend_handle = NULL;
 }
@@ -94,21 +96,24 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
                                const char *filepath, enum Checksum algorithm,
                                const char *expected_hash) {
   struct checksum_backend *be;
-  if (algorithm != LIBACQUIRE_CRC32C) {
+  if (algorithm != LIBACQUIRE_CRC32C)
     return -1;
-  }
   if (!handle || !filepath || !expected_hash) {
-    if (handle) acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,"Invalid arguments");
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments");
     return -1;
   }
   be = (struct checksum_backend *)calloc(1, sizeof(struct checksum_backend));
   if (!be) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "Out of memory");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
+                             "Out of memory");
     return -1;
   }
   be->file = fopen(filepath, "rb");
   if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,"Cannot open file: %s", strerror(errno));
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                             "Cannot open file: %s", strerror(errno));
     free(be);
     return -1;
   }
@@ -124,12 +129,14 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
   struct checksum_backend *be;
   unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
-  if (!handle || !handle->backend_handle) return ACQUIRE_ERROR;
-  if (handle->status != ACQUIRE_IN_PROGRESS) return handle->status;
+  if (!handle || !handle->backend_handle)
+    return ACQUIRE_ERROR;
+  if (handle->status != ACQUIRE_IN_PROGRESS)
+    return handle->status;
   if (handle->cancel_flag) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED, "Operation cancelled");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Operation cancelled");
     cleanup_crc32c_backend(handle);
-    handle->status = ACQUIRE_ERROR;
     return ACQUIRE_ERROR;
   }
   be = (struct checksum_backend *)handle->backend_handle;
@@ -140,8 +147,8 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
     return ACQUIRE_IN_PROGRESS;
   }
   if (ferror(be->file)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "File read error: %s", strerror(errno));
-    handle->status = ACQUIRE_ERROR;
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", strerror(errno));
   } else {
     char computed_hex[9];
     uint32_t final_crc = crc32c_finalize(be->crc);
@@ -149,8 +156,9 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
     if (strncasecmp(computed_hex, be->expected_hash, 8) == 0) {
       handle->status = ACQUIRE_COMPLETE;
     } else {
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "CRC32C mismatch: expected %s, got %s", be->expected_hash, computed_hex);
-      handle->status = ACQUIRE_ERROR;
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "CRC32C mismatch: expected %s, got %s",
+                               be->expected_hash, computed_hex);
     }
   }
   cleanup_crc32c_backend(handle);
@@ -158,13 +166,15 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
 }
 
 void _crc32c_verify_async_cancel(struct acquire_handle *handle) {
-  if (handle) handle->cancel_flag = 1;
+  if (handle)
+    handle->cancel_flag = 1;
 }
 
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) */
+#endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) \
+        */
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_ACQUIRE_CRC32C_H */

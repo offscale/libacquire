@@ -69,6 +69,7 @@ source_group("Header Files" FILES "${Header_Files}")
 option(DEBUG_TOKENISER "OFF")
 
 include("${CMAKE_SOURCE_DIR}/cmake/generate_header_and_source_from_header_only.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/rewrite_includes_to_gen.cmake")
 
 if (LIBACQUIRE_HEADER_ONLY)
     message(STATUS "LIBACQUIRE_HEADER_ONLY")
@@ -230,6 +231,22 @@ else ()
             message(WARNING "Missing generated source: ${gen_source_file_rel}")
         endif ()
     endforeach (header_file IN LISTS header_impls)
+
+    file(GLOB gen_headers_list
+            LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_BINARY_DIR}/gen"
+            "${CMAKE_BINARY_DIR}/gen/gen_*.h"
+    )
+    set(files_to_process "")
+    list(APPEND files_to_process "${gen_source_files}")
+    list(APPEND files_to_process "${gen_header_files}")
+
+    message(STATUS "gen_headers_list = ${gen_headers_list}")
+    message(STATUS "gen_source_files = ${gen_source_files}")
+    rewrite_includes_to_gen(
+            SOURCE_FILES "${files_to_process}"
+            GEN_HEADERS "${gen_headers_list}"
+    )
 
     # Set compile definitions per source file to avoid multiple definitions
     set(impls "")

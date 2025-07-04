@@ -28,9 +28,8 @@ TEST test_strcasestr_found(void) {
   ASSERT_STR_EQ("World! Welcome to the new WORLD.",
                 strcasestr(haystack, "world"));
   ASSERT_STR_EQ("WORLD.", strcasestr(haystack, "WORLD."));
-  ASSERT_STR_EQ(
-      haystack,
-      strcasestr(haystack, "")); /* Empty string should match start */
+  ASSERT_STR_EQ(haystack,
+                strcasestr(haystack, "")); /* Empty string should match start */
   PASS();
 }
 
