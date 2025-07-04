@@ -88,6 +88,8 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     return -1;
   }
   if (strlen(expected_hash) != expected_len) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+                             "Invalid hash length for selected algorithm");
     return -1;
   }
   be = (struct openssl_backend *)calloc(1, sizeof(struct openssl_backend));

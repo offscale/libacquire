@@ -98,8 +98,11 @@ static int progress_callback(void *clientp, curl_off_t dltotal,
 /* --- API Implementation --- */
 int acquire_download_sync(struct acquire_handle *handle, const char *url,
                           const char *dest_path) {
-  if (!handle)
+  if (!handle || !url || !dest_path) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT, NULL);
     return -1;
+  }
   if (acquire_download_async_start(handle, url, dest_path) != 0)
     return -1;
   while (acquire_download_async_poll(handle) == ACQUIRE_IN_PROGRESS)

@@ -59,11 +59,26 @@ TEST test_handle_set_error_with_formatting(void) {
   PASS();
 }
 
+TEST test_handle_set_error_no_fmt(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  ASSERT(h != NULL);
+
+  acquire_handle_set_error(h, ACQUIRE_ERROR_UNKNOWN, NULL);
+
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, h->status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_UNKNOWN, acquire_handle_get_error_code(h), "%d");
+  ASSERT_STR_EQ("", acquire_handle_get_error_string(h));
+
+  acquire_handle_free(h);
+  PASS();
+}
+
 SUITE(handle_suite) {
   RUN_TEST(test_handle_initialization);
   RUN_TEST(test_handle_set_and_get_error);
   RUN_TEST(test_handle_null_safety);
   RUN_TEST(test_handle_set_error_with_formatting);
+  RUN_TEST(test_handle_set_error_no_fmt);
 }
 
 #endif /* !TEST_HANDLE_H */

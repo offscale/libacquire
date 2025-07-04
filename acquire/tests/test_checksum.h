@@ -60,8 +60,8 @@ TEST test_verify_sync_failure_bad_file(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
   ASSERT(h != NULL);
-  result =
-      acquire_verify_sync(h, "nonexistent.file", LIBACQUIRE_SHA256, "hash");
+  result = acquire_verify_sync(h, "nonexistent.file", LIBACQUIRE_SHA256,
+                               GREATEST_SHA256);
   ASSERT_EQ_FMT(-1, result, "%d");
   ASSERT_EQ_FMT(ACQUIRE_ERROR, h->status, "%d");
   ASSERT_EQ_FMT(ACQUIRE_ERROR_FILE_OPEN_FAILED,
@@ -139,7 +139,30 @@ TEST test_unsupported_algorithm(void) {
   PASS();
 }
 
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+TEST test_invalid_hash_length(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+  /* SHA256 should be 64 chars, provide a shorter one */
+  result =
+      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA256, "short_hash");
+  ASSERT_EQ_FMT(-1, result, "%d");
+  ASSERT_EQ(ACQUIRE_ERROR, h->status);
+  ASSERT_EQ(ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+            acquire_handle_get_error_code(h));
+  acquire_handle_free(h);
+  PASS();
+}
+#endif
+
 SUITE(checksums_suite) {
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
+    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
+  RUN_TEST(test_invalid_hash_length);
+#endif
+  RUN_TEST(test_unsupported_algorithm);
   RUN_TEST(test_verify_sync_success_sha256);
 #if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
   RUN_TEST(test_verify_sync_success_crc32c);
@@ -149,7 +172,6 @@ SUITE(checksums_suite) {
   RUN_TEST(test_verify_async_success);
   RUN_TEST(test_verify_async_cancellation);
   RUN_TEST(test_verify_empty_file);
-  RUN_TEST(test_unsupported_algorithm);
 }
 
 #endif /* !TEST_CHECKSUM_H */

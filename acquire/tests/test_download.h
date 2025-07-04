@@ -124,12 +124,32 @@ TEST test_download_to_invalid_path(void) {
   PASS();
 }
 
+TEST test_sync_download_invalid_args(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+
+  result = acquire_download_sync(NULL, GREATEST_URL, "file.tmp");
+  ASSERT_EQ(-1, result);
+
+  result = acquire_download_sync(h, NULL, "file.tmp");
+  ASSERT_EQ(-1, result);
+  ASSERT_EQ(ACQUIRE_ERROR_INVALID_ARGUMENT, acquire_handle_get_error_code(h));
+
+  result = acquire_download_sync(h, GREATEST_URL, NULL);
+  ASSERT_EQ(-1, result);
+  ASSERT_EQ(ACQUIRE_ERROR_INVALID_ARGUMENT, acquire_handle_get_error_code(h));
+
+  acquire_handle_free(h);
+  PASS();
+}
+
 SUITE(downloads_suite) {
-  RUN_TEST(test_sync_download);
-  RUN_TEST(test_async_download);
   RUN_TEST(test_async_cancellation);
+  RUN_TEST(test_async_download);
   RUN_TEST(test_download_404_error);
   RUN_TEST(test_download_to_invalid_path);
+  RUN_TEST(test_sync_download);
+  RUN_TEST(test_sync_download_invalid_args);
 }
 
 #endif /* !TEST_DOWNLOAD_H */

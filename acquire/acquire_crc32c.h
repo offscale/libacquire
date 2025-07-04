@@ -98,6 +98,11 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
   struct checksum_backend *be;
   if (algorithm != LIBACQUIRE_CRC32C)
     return -1;
+  if (strlen(expected_hash) != 8) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+                             "Invalid hash length for CRC32C");
+    return -1;
+  }
   if (!handle || !filepath || !expected_hash) {
     if (handle)
       acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,

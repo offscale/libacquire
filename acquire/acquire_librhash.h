@@ -65,17 +65,26 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
                                  const char *expected_hash) {
   struct rhash_backend *be;
   unsigned int rhash_algo_id = 0;
+  size_t expected_len = 0;
   switch (algorithm) {
   case LIBACQUIRE_CRC32C:
     rhash_algo_id = RHASH_CRC32C;
+    expected_len = 8;
     break;
   case LIBACQUIRE_SHA256:
     rhash_algo_id = RHASH_SHA256;
+    expected_len = 64;
     break;
   case LIBACQUIRE_SHA512:
     rhash_algo_id = RHASH_SHA512;
+    expected_len = 128;
     break;
   default:
+    return -1;
+  }
+  if (strlen(expected_hash) != expected_len) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+                             "Invalid hash length for selected algorithm");
     return -1;
   }
   if (!rhash_lib_initialized) {

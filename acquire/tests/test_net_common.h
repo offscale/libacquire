@@ -22,8 +22,8 @@ static void setup_net_common_suite(void *arg) {
 TEST test_is_downloaded_success(void) {
   /* This test uses the URL to determine the filename "greatest.h", then
      checks for it in DOWNLOAD_DIR. */
-  bool result = is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256, GREATEST_SHA256,
-                              DOWNLOAD_DIR);
+  const bool result = is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256,
+                                    GREATEST_SHA256, DOWNLOAD_DIR);
   ASSERT(result);
   PASS();
 }
@@ -72,7 +72,7 @@ TEST test_is_downloaded_invalid_args(void) {
 
 TEST test_is_downloaded_non_existent_target_dir(void) {
   /* Providing a target directory that doesn't exist should fail. */
-  bool result =
+  const bool result =
       is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256, GREATEST_SHA256, BAD_DIR);
   ASSERT_FALSE(result);
   PASS();
@@ -80,21 +80,25 @@ TEST test_is_downloaded_non_existent_target_dir(void) {
 
 TEST test_is_downloaded_from_local_path(void) {
   /* Test using a local path directly instead of a URL. */
-  const bool result = is_downloaded(NET_COMMON_TEST_FILE, LIBACQUIRE_SHA256,
-                                    GREATEST_SHA256, NULL);
+  const bool result =
+      is_downloaded(NET_COMMON_TEST_FILE, LIBACQUIRE_SHA256, GREATEST_SHA256,
+                    NULL); /* target_location is ignored for local paths */
   ASSERT(result);
   PASS();
 }
 
 SUITE(net_common_suite) {
   setup_net_common_suite(NULL); /* Manually call setup. */
-  RUN_TEST(test_is_downloaded_success);
-  RUN_TEST(test_is_downloaded_file_missing);
-  RUN_TEST(test_is_downloaded_bad_hash);
   RUN_TEST(test_is_downloaded_bad_algorithm);
+  RUN_TEST(test_is_downloaded_bad_hash);
+  RUN_TEST(test_is_downloaded_file_missing);
+  RUN_TEST(test_is_downloaded_from_local_path);
+  RUN_TEST(test_is_downloaded_from_local_path);
+  RUN_TEST(test_is_downloaded_invalid_args);
   RUN_TEST(test_is_downloaded_invalid_args);
   RUN_TEST(test_is_downloaded_non_existent_target_dir);
-  RUN_TEST(test_is_downloaded_from_local_path);
+  RUN_TEST(test_is_downloaded_non_existent_target_dir);
+  RUN_TEST(test_is_downloaded_success);
 }
 
 #endif /* !TEST_NET_COMMON_H */

@@ -62,14 +62,22 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
                                  const char *expected_hash) {
   struct wincrypt_backend *be;
   ALG_ID alg_id = 0;
+  size_t expected_len = 0;
   switch (algorithm) {
   case LIBACQUIRE_SHA256:
     alg_id = CALG_SHA_256;
+    expected_len = 64;
     break;
   case LIBACQUIRE_SHA512:
     alg_id = CALG_SHA_512;
+    expected_len = 128;
     break;
   default:
+    return -1;
+  }
+  if (strlen(expected_hash) != expected_len) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+                             "Invalid hash length for selected algorithm");
     return -1;
   }
   be = (struct wincrypt_backend *)calloc(1, sizeof(struct wincrypt_backend));

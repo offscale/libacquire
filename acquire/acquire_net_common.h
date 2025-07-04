@@ -29,65 +29,53 @@ extern LIBACQUIRE_EXPORT const char *get_download_dir(void);
 
 #include <string.h>
 
-bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
-                   const char *target_location) {
-  char full_local_fname[NAME_MAX + 1];
+bool is_downloaded(const char *url_or_path, enum Checksum checksum,
+                   const char *hash, const char *target_location) {
+
+  char path_buffer[NAME_MAX + 1];
+  const char *file_to_check;
   char *filename_from_url = NULL;
-  const char *filename;
   struct acquire_handle *verify_handle;
   int result;
-  bool is_verified = false;
 
-  if (is_url(url)) {
-    filename_from_url = get_path_from_url(url);
-    filename = filename_from_url;
-  } else {
-    filename = url;
-  }
-
-  if (filename == NULL || *filename == '\0' || hash == NULL) {
-    free(filename_from_url);
+  if (url_or_path == NULL || hash == NULL) {
     return false;
   }
 
-  if (target_location == NULL) {
-    target_location = get_download_dir();
+  if (is_url(url_or_path)) {
+    filename_from_url = get_path_from_url(url_or_path);
+    if (filename_from_url == NULL || *filename_from_url == '\0') {
+      free(filename_from_url);
+      return false; /* Cannot determine filename from URL. */
+    }
+    if (target_location == NULL) {
+      target_location = get_download_dir();
+    }
+    if (!is_directory(target_location)) {
+      free(filename_from_url);
+      return false; /* Download directory is invalid. */
+    }
+    snprintf(path_buffer, sizeof(path_buffer), "%s%s%s", target_location,
+             PATH_SEP, filename_from_url);
+    file_to_check = path_buffer;
+    free(filename_from_url);
+  } else {
+    file_to_check = url_or_path;
   }
 
-  if (is_file(filename)) {
-    size_t len = strlen(filename);
-    if (len > NAME_MAX)
-      len = NAME_MAX - 1;
-    memcpy(full_local_fname, filename, len);
-    full_local_fname[len] = '\0';
-  } else {
-    if (!is_directory(target_location) && !is_file(target_location)) {
-      free(filename_from_url);
-      return false;
-    }
-
-    snprintf(full_local_fname, NAME_MAX + 1, "%s" PATH_SEP "%s",
-             target_location, filename);
-
-    if (!is_file(full_local_fname)) {
-      free(filename_from_url);
-      return false;
-    }
+  if (!is_file(file_to_check)) {
+    return false;
   }
 
   verify_handle = acquire_handle_init();
   if (!verify_handle) {
-    free(filename_from_url);
     return false;
   }
 
-  result = acquire_verify_sync(verify_handle, full_local_fname, checksum, hash);
+  result = acquire_verify_sync(verify_handle, file_to_check, checksum, hash);
   acquire_handle_free(verify_handle);
 
-  is_verified = (result == 0);
-
-  free(filename_from_url);
-  return is_verified;
+  return result == 0;
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
