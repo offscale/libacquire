@@ -121,6 +121,7 @@ configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests
 
 set(EXEC_NAME ${exec_name})
 set(Header_Files
+        "test_handle.h"
         "test_checksum.h"
         "test_checksums_dispatch.h"
         "test_download.h"

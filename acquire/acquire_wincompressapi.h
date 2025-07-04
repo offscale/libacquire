@@ -44,7 +44,7 @@ static int extract_all_entries(struct acquire_handle *handle,
   /* For brevity, we will treat this as a placeholder. The original logic was
      complex and only supported STORE method. A full implementation is beyond
      this scope. */
-  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
                            "WinCompressAPI backend is a placeholder and does "
                            "not support extraction.");
   return -1;

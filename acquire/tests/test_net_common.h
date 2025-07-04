@@ -57,12 +57,44 @@ TEST test_is_downloaded_bad_algorithm(void) {
   PASS();
 }
 
+TEST test_is_downloaded_invalid_args(void) {
+  /* Invalid URL should result in a NULL filename and early exit */
+  bool result =
+      is_downloaded(NULL, LIBACQUIRE_SHA256, GREATEST_SHA256, DOWNLOAD_DIR);
+  ASSERT_FALSE(result);
+
+  /* Invalid hash should cause an early exit */
+  result = is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256, NULL, DOWNLOAD_DIR);
+  ASSERT_FALSE(result);
+
+  PASS();
+}
+
+TEST test_is_downloaded_non_existent_target_dir(void) {
+  /* Providing a target directory that doesn't exist should fail. */
+  bool result =
+      is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256, GREATEST_SHA256, BAD_DIR);
+  ASSERT_FALSE(result);
+  PASS();
+}
+
+TEST test_is_downloaded_from_local_path(void) {
+  /* Test using a local path directly instead of a URL. */
+  const bool result = is_downloaded(NET_COMMON_TEST_FILE, LIBACQUIRE_SHA256,
+                                    GREATEST_SHA256, NULL);
+  ASSERT(result);
+  PASS();
+}
+
 SUITE(net_common_suite) {
   setup_net_common_suite(NULL); /* Manually call setup. */
   RUN_TEST(test_is_downloaded_success);
   RUN_TEST(test_is_downloaded_file_missing);
   RUN_TEST(test_is_downloaded_bad_hash);
   RUN_TEST(test_is_downloaded_bad_algorithm);
+  RUN_TEST(test_is_downloaded_invalid_args);
+  RUN_TEST(test_is_downloaded_non_existent_target_dir);
+  RUN_TEST(test_is_downloaded_from_local_path);
 }
 
 #endif /* !TEST_NET_COMMON_H */

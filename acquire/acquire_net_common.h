@@ -54,17 +54,25 @@ bool is_downloaded(const char *url, enum Checksum checksum, const char *hash,
     target_location = get_download_dir();
   }
 
-  if (!is_directory(target_location)) {
-    free(filename_from_url);
-    return false;
-  }
+  if (is_file(filename)) {
+    size_t len = strlen(filename);
+    if (len > NAME_MAX)
+      len = NAME_MAX - 1;
+    memcpy(full_local_fname, filename, len);
+    full_local_fname[len] = '\0';
+  } else {
+    if (!is_directory(target_location) && !is_file(target_location)) {
+      free(filename_from_url);
+      return false;
+    }
 
-  snprintf(full_local_fname, NAME_MAX + 1, "%s" PATH_SEP "%s", target_location,
-           filename);
+    snprintf(full_local_fname, NAME_MAX + 1, "%s" PATH_SEP "%s",
+             target_location, filename);
 
-  if (!is_file(full_local_fname)) {
-    free(filename_from_url);
-    return false;
+    if (!is_file(full_local_fname)) {
+      free(filename_from_url);
+      return false;
+    }
   }
 
   verify_handle = acquire_handle_init();

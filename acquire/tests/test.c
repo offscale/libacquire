@@ -7,6 +7,7 @@
 #include "test_download.h"
 #include "test_extract.h"
 #include "test_fileutils.h"
+#include "test_handle.h"
 #include "test_net_common.h"
 #include "test_string_extras.h"
 #include "test_url_utils.h"
@@ -16,10 +17,11 @@ GREATEST_MAIN_DEFS();
 
 int main(int argc, char **argv) {
   GREATEST_MAIN_BEGIN();
-  RUN_SUITE(checksums_suite);
   RUN_SUITE(checksum_dispatch_suite);
+  RUN_SUITE(checksums_suite);
   RUN_SUITE(downloads_suite);
   RUN_SUITE(fileutils_suite);
+  RUN_SUITE(handle_suite);
   RUN_SUITE(net_common_suite);
   RUN_SUITE(string_extras_suite);
   RUN_SUITE(url_utils_suite);

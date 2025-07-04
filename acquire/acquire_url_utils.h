@@ -90,7 +90,7 @@ char *get_path_from_url(const char *url) {
 }
 
 bool is_url(const char *maybe_url) {
-  if (strlen(maybe_url) < 8)
+  if (maybe_url == NULL || strlen(maybe_url) < 8)
     return false;
   else if (maybe_url[0] == 'h' && maybe_url[1] == 't' && maybe_url[2] == 't' &&
            maybe_url[3] == 'p')

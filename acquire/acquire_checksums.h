@@ -93,7 +93,7 @@ int acquire_verify_async_start(struct acquire_handle *handle,
   if (handle->error.code != ACQUIRE_OK)
     return -1;
 #endif
-  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
                            "Unsupported checksum or no backend");
   return -1;
 }
