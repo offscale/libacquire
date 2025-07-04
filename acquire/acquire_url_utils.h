@@ -68,9 +68,11 @@ char *get_path_from_url(const char *url) {
     return NULL;
 
   last_slash = strrchr(url, '/');
-  if (last_slash)
+  if (last_slash) {
+    if ((last_slash - url) < 9)
+      return strdup("");
     last_slash++;
-  else
+  } else
     last_slash = url;
 
   end = last_slash;
@@ -90,20 +92,12 @@ char *get_path_from_url(const char *url) {
 }
 
 bool is_url(const char *maybe_url) {
-  if (maybe_url == NULL || strlen(maybe_url) < 8)
-    return false;
-  else if (maybe_url[0] == 'h' && maybe_url[1] == 't' && maybe_url[2] == 't' &&
-           maybe_url[3] == 'p')
-    return (maybe_url[4] == ':' && maybe_url[5] == '/' &&
-            maybe_url[6] == '/') ||
-           (maybe_url[4] == 's' && maybe_url[5] == ':' && maybe_url[6] == '/' &&
-            maybe_url[7] == '/');
-  else if (maybe_url[0] == 'f' && maybe_url[1] == 't' && maybe_url[2] == 'p')
-    return (maybe_url[3] == ':' && maybe_url[4] == '/' &&
-            maybe_url[5] == '/') ||
-           (maybe_url[3] == 's' && maybe_url[4] == ':' && maybe_url[5] == '/' &&
-            maybe_url[6] == '/');
-  return false /* strchr(maybe_url, '/') != NULL */;
+  return maybe_url != NULL && strlen(maybe_url) > 5 &&
+         (strncasecmp(maybe_url, "http://", 7) == 0 ||
+          strncasecmp(maybe_url, "https://", 8) == 0 ||
+          strncasecmp(maybe_url, "ftp://", 6) == 0 ||
+          strncasecmp(maybe_url, "ftps://", 7) == 0 ||
+          strncasecmp(maybe_url, "file://", 7) == 0);
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \

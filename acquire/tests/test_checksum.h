@@ -10,13 +10,15 @@
 #include "config_for_tests.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-/* No extra includes needed for Windows at the moment */
 #else
 #include <unistd.h>
 #endif
 
 #define EMPTY_FILE_SHA256                                                      \
   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+#define GREATEST_SHA512                                                        \
+  "3dd506fcf7b60d46e3a3865b9159f19ad35b359398bcb736c9f8de239059187ae625fb0041" \
+  "7f16a8bb8520c7bbeb388e974a3294aa3eb4c4f93185831ed2b6a2e"
 static const char *EMPTY_FILE_PATH = DOWNLOAD_DIR PATH_SEP "empty.txt";
 
 TEST test_verify_sync_success_sha256(void) {
@@ -25,6 +27,18 @@ TEST test_verify_sync_success_sha256(void) {
   ASSERT(h != NULL);
   result =
       acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA256, GREATEST_SHA256);
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_COMPLETE, h->status, "%d");
+  acquire_handle_free(h);
+  PASS();
+}
+
+TEST test_verify_sync_success_sha512(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+  result =
+      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA512, GREATEST_SHA512);
   ASSERT_EQ_FMT(0, result, "%d");
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, h->status, "%d");
   acquire_handle_free(h);
@@ -139,8 +153,6 @@ TEST test_unsupported_algorithm(void) {
   PASS();
 }
 
-#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
-    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
 TEST test_invalid_hash_length(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
@@ -155,15 +167,12 @@ TEST test_invalid_hash_length(void) {
   acquire_handle_free(h);
   PASS();
 }
-#endif
 
 SUITE(checksums_suite) {
-#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) ||                                   \
-    defined(LIBACQUIRE_USE_OPENSSL) || defined(LIBACQUIRE_USE_LIBRESSL)
   RUN_TEST(test_invalid_hash_length);
-#endif
   RUN_TEST(test_unsupported_algorithm);
   RUN_TEST(test_verify_sync_success_sha256);
+  RUN_TEST(test_verify_sync_success_sha512);
 #if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
   RUN_TEST(test_verify_sync_success_crc32c);
 #endif

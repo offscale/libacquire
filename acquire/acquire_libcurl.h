@@ -209,7 +209,11 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
         } else {
           curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE,
                             &response_code);
-          if (response_code >= 400) {
+          if (msg->data.result == CURLE_COULDNT_RESOLVE_HOST) {
+            acquire_handle_set_error(handle, ACQUIRE_ERROR_HOST_NOT_FOUND,
+                                     "Could not resolve host: %s",
+                                     curl_easy_strerror(msg->data.result));
+          } else if (response_code >= 400) {
             acquire_handle_set_error(handle, ACQUIRE_ERROR_HTTP_FAILURE,
                                      "HTTP error: %ld", response_code);
           } else {

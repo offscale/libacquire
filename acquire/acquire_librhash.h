@@ -77,7 +77,7 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
     break;
   case LIBACQUIRE_SHA512:
     rhash_algo_id = RHASH_SHA512;
-    expected_len = 128;
+    expected_len = 129;
     break;
   default:
     return -1;

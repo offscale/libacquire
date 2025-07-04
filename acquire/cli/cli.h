@@ -112,7 +112,6 @@ struct DocoptArgs {
   char *directory;
   char *hash;
   char *output;
-  const char *usage_pattern;
   const char *help_message[17];
 };
 

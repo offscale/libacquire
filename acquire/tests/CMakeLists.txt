@@ -38,7 +38,7 @@ set(GREATEST_FILE "${DOWNLOAD_DIR}/greatest/greatest.h")
 
 set(CORRUPT_ZIP_PATH "${DOWNLOAD_DIR}/corrupt.zip")
 file(WRITE "${CORRUPT_ZIP_PATH}" "This is not a real zip file, just some text.")
-file(TO_NATIVE_PATH "${CORRUPT_ZIP_PATH}" CORRUPT_ZIP_PATH_NATIVE)
+file(TO_NATIVE_PATH "${CORRUPT_ZIP_PATH_NATIVE}" CORRUPT_ZIP_PATH_NATIVE)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" CORRUPT_ZIP_PATH_NATIVE "${CORRUPT_ZIP_PATH_NATIVE}")
 endif()
@@ -129,10 +129,13 @@ set(Header_Files
         "test_net_common.h"
         "test_string_extras.h"
         "test_url_utils.h"
+        "test_cli.h"
+        "test_libfetch.h"
 )
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "test.c")
+# Add cli.c to the test sources
+set(Source_Files "test.c" "${CMAKE_SOURCE_DIR}/acquire/cli/cli.c")
 source_group("Source Files" FILES "${Source_Files}")
 
 set_source_files_properties("test_string_extras.c"
@@ -150,16 +153,24 @@ target_link_libraries(
         "${PROJECT_NAME}_compiler_flags"
 )
 
+if(LIBACQUIRE_USE_MY_LIBFETCH)
+    target_link_libraries(${EXEC_NAME} PRIVATE freebsd_libfetch)
+endif()
+
 if (LIBACQUIRE_USE_MINIZ)
     find_package(kubazip CONFIG REQUIRED)
     target_link_libraries("${EXEC_NAME}" PRIVATE kubazip::kubazip)
 endif (LIBACQUIRE_USE_MINIZ)
 
+# Add include directories for the tests
 target_include_directories(
         "${EXEC_NAME}"
         PRIVATE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire/cli>"
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire/cli>"
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire/freebsd_libfetch>"
         "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 test_wrapper()
 

@@ -108,6 +108,22 @@ TEST test_download_404_error(void) {
   PASS();
 }
 
+TEST test_download_bad_host(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  const char *url = "http://this-is-not-a-real-domain.invalid/";
+  const char *dest = DOWNLOAD_DIR PATH_SEP "bad_host.tmp";
+
+  ASSERT(handle != NULL);
+  acquire_download_sync(handle, url, dest);
+
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, handle->status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_HOST_NOT_FOUND,
+                acquire_handle_get_error_code(handle), "%d");
+
+  acquire_handle_free(handle);
+  PASS();
+}
+
 TEST test_download_to_invalid_path(void) {
   struct acquire_handle *handle = acquire_handle_init();
   const char *url = GREATEST_URL;
@@ -147,6 +163,7 @@ SUITE(downloads_suite) {
   RUN_TEST(test_async_cancellation);
   RUN_TEST(test_async_download);
   RUN_TEST(test_download_404_error);
+  RUN_TEST(test_download_bad_host);
   RUN_TEST(test_download_to_invalid_path);
   RUN_TEST(test_sync_download);
   RUN_TEST(test_sync_download_invalid_args);

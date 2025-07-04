@@ -17,28 +17,63 @@ extern "C" {
 
 /* Test get_path_from_url behavior */
 TEST test_get_path_valid_url(void) {
+  char *path;
   const char *url = "https://example.com/path/to/file.txt?query=123#frag";
-  const char *path = get_path_from_url(url);
+
+  path = get_path_from_url(url);
+  ASSERT(path != NULL);
   ASSERT_STR_EQ("file.txt", path);
+  free(path);
+
+  PASS();
+}
+
+TEST test_get_path_no_path(void) {
+  char *path;
+  const char *url = "https://example.com";
+
+  path = get_path_from_url(url);
+  ASSERT(path != NULL);
+  ASSERT_STR_EQ("", path);
+  free(path);
+
+  PASS();
+}
+
+TEST test_get_path_trailing_slash(void) {
+  char *path;
+  const char *url = "https://example.com/some/dir/";
+
+  path = get_path_from_url(url);
+  ASSERT(path != NULL);
+  ASSERT_STR_EQ("", path);
+  free(path);
+
   PASS();
 }
 
 TEST test_get_path_no_slash(void) {
+  char *path;
   const char *url = "filename_only";
-  const char *path = get_path_from_url(url);
+  path = get_path_from_url(url);
+  ASSERT(path != NULL);
   ASSERT_STR_EQ("filename_only", path);
+  free(path);
+
   PASS();
 }
 
 TEST test_get_path_empty_string(void) {
-  const char *path = get_path_from_url("");
+  char *path = get_path_from_url("");
   ASSERT_EQ(NULL, path);
+  free(path);
   PASS();
 }
 
 TEST test_get_path_null(void) {
-  const char *path = get_path_from_url(NULL);
+  char *path = get_path_from_url(NULL);
   ASSERT_EQ(NULL, path);
+  free(path);
   PASS();
 }
 
@@ -79,8 +114,16 @@ TEST test_is_url_no_scheme(void) {
   PASS();
 }
 
+TEST test_is_url_case_insensitive(void) {
+  ASSERT(is_url("HTTP://EXAMPLE.COM"));
+  ASSERT(is_url("Ftps://EXAMPLE.COM"));
+  PASS();
+}
+
 SUITE(url_utils_suite) {
   RUN_TEST(test_get_path_valid_url);
+  RUN_TEST(test_get_path_no_path);
+  RUN_TEST(test_get_path_trailing_slash);
   RUN_TEST(test_get_path_no_slash);
   RUN_TEST(test_get_path_empty_string);
   RUN_TEST(test_get_path_null);
@@ -91,6 +134,7 @@ SUITE(url_utils_suite) {
   RUN_TEST(test_is_url_ftps);
   RUN_TEST(test_is_url_too_short);
   RUN_TEST(test_is_url_no_scheme);
+  RUN_TEST(test_is_url_case_insensitive);
 }
 
 #ifdef __cplusplus
