@@ -120,6 +120,11 @@ TEST test_is_url_case_insensitive(void) {
   PASS();
 }
 
+TEST test_is_url_file(void) {
+  ASSERT(is_url("file:///path/to/thing"));
+  PASS();
+}
+
 SUITE(url_utils_suite) {
   RUN_TEST(test_get_path_valid_url);
   RUN_TEST(test_get_path_no_path);
@@ -132,6 +137,7 @@ SUITE(url_utils_suite) {
   RUN_TEST(test_is_url_https);
   RUN_TEST(test_is_url_ftp);
   RUN_TEST(test_is_url_ftps);
+  RUN_TEST(test_is_url_file);
   RUN_TEST(test_is_url_too_short);
   RUN_TEST(test_is_url_no_scheme);
   RUN_TEST(test_is_url_case_insensitive);

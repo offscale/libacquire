@@ -16,10 +16,14 @@ TEST x_strnstr_should_succeed(void) {
   PASS();
 }
 
+TEST x_strnstr_should_succeed_with_embedded_null(void) {
+  ASSERT_EQ(test_buffer,
+            strnstr(test_buffer, test_target, strlen(test_buffer)));
+  PASS();
+}
+
 TEST x_strnstr_should_fail(void) {
-  ASSERT_EQ(strcmp(test_buffer,
-                   strnstr(test_buffer, test_target, strlen(test_buffer))),
-            0);
+  ASSERT_EQ(NULL, strnstr(test_buffer, "world!", strlen(test_buffer)));
   PASS();
 }
 
@@ -43,6 +47,7 @@ TEST test_strcasestr_not_found(void) {
 /* Suites can group multiple tests with common setup. */
 SUITE(string_extras_suite) {
   RUN_TEST(x_strnstr_should_succeed);
+  RUN_TEST(x_strnstr_should_succeed_with_embedded_null);
   RUN_TEST(x_strnstr_should_fail);
   RUN_TEST(test_strcasestr_found);
   RUN_TEST(test_strcasestr_not_found);

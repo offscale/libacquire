@@ -55,7 +55,91 @@ TEST test_libfetch_base64_encoder(void) {
   PASS();
 }
 
+/* === FILE.C TESTS === */
+TEST test_file_c_get(void) {
+  struct url *u = fetchParseURL("file://" GREATEST_FILE);
+  struct url_stat st;
+  FILE *f;
+  ASSERT(u);
+  f = fetchXGetFile(u, &st, "");
+  ASSERT(f);
+  ASSERT(st.size > 0);
+  fclose(f);
+  fetchFreeURL(u);
+  PASS();
+}
+
+TEST test_file_c_put(void) {
+  char test_path[PATH_MAX];
+  struct url *u;
+  FILE *f;
+  snprintf(test_path, sizeof(test_path), "%s%sput_test.txt", DOWNLOAD_DIR,
+           PATH_SEP);
+
+  u = fetchMakeURL("file", NULL, 0, test_path, NULL, NULL);
+  ASSERT(u);
+  f = fetchPutFile(u, "");
+  ASSERT(f);
+  fprintf(f, "hello");
+  fclose(f);
+  ASSERT(is_file(test_path));
+  remove(test_path);
+  fetchFreeURL(u);
+  PASS();
+}
+
+SUITE(libfetch_file_suite) {
+  RUN_TEST(test_file_c_get);
+  RUN_TEST(test_file_c_put);
+}
+
+/* === COMMON.C TESTS === */
+#if !defined(_WIN32)
+TEST test_common_no_proxy_match(void) {
+  setenv("no_proxy", "*.example.com, .google.com, other.org", 1);
+  ASSERT(fetch_no_proxy_match("host.example.com"));
+  ASSERT(fetch_no_proxy_match("sub.host.example.com"));
+  ASSERT_FALSE(fetch_no_proxy_match("host.example.org"));
+  ASSERT(fetch_no_proxy_match("www.google.com"));
+  ASSERT_FALSE(fetch_no_proxy_match("google.com.bad"));
+  ASSERT(fetch_no_proxy_match("other.org"));
+
+  setenv("no_proxy", "*", 1);
+  ASSERT(fetch_no_proxy_match("anything.com"));
+
+  unsetenv("no_proxy");
+  PASS();
+}
+
+TEST test_common_netrc_auth(void) {
+  char netrc_path[PATH_MAX];
+  FILE *f;
+  struct url *u;
+
+  snprintf(netrc_path, sizeof(netrc_path), "%s%s_test.netrc", DOWNLOAD_DIR,
+           PATH_SEP);
+  f = fopen(netrc_path, "w");
+  ASSERT(f);
+  fprintf(f, "machine test-host.com login myuser password mypass\n");
+  fclose(f);
+  setenv("NETRC", netrc_path, 1);
+  u = fetchParseURL("ftp://test-host.com/file");
+  ASSERT(u);
+  ASSERT_EQ(0, fetch_netrc_auth(u));
+  ASSERT_STR_EQ("myuser", u->user);
+  ASSERT_STR_EQ("mypass", u->pwd);
+  fetchFreeURL(u);
+  unsetenv("NETRC");
+  remove(netrc_path);
+  PASS();
+}
+#endif
+
 SUITE(libfetch_suite) {
+#if !defined(_WIN32)
+  RUN_TEST(test_common_no_proxy_match);
+  RUN_TEST(test_common_netrc_auth);
+#endif
   RUN_TEST(test_libfetch_url_parser);
   RUN_TEST(test_libfetch_base64_encoder);
 }

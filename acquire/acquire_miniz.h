@@ -44,12 +44,17 @@ int acquire_extract_async_start(struct acquire_handle *handle,
   }
 
   handle->status = ACQUIRE_IN_PROGRESS;
+  if (handle->cancel_flag) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Extraction cancelled");
+    return -1;
+  }
   result = zip_extract(archive_path, dest_path, on_extract_entry, handle);
 
   if (result == 0) {
     handle->status = ACQUIRE_COMPLETE;
   } else {
-    if (handle->cancel_flag) {
+    if (result == -1 && handle->cancel_flag) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
                                "Extraction cancelled");
     } else {

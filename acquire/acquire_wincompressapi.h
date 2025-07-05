@@ -36,15 +36,7 @@ typedef struct _ZIP_LOCAL_FILE_HEADER {
 static int extract_all_entries(struct acquire_handle *handle,
                                const char *archive_path,
                                const char *dest_path) {
-  /* (This internal function contains the original synchronous logic) */
-  /* ... complex synchronous logic from your original file ... */
-  /* On error: acquire_handle_set_error(handle, ...); return -1; */
-  /* On success: return 0; */
-
-  /* For brevity, we will treat this as a placeholder. The original logic was
-     complex and only supported STORE method. A full implementation is beyond
-     this scope. */
-  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
                            "WinCompressAPI backend is a placeholder and does "
                            "not support extraction.");
   return -1;

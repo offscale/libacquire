@@ -74,6 +74,46 @@ TEST test_extract_corrupted_archive(void) {
   PASS();
 }
 
+/* --- Backend specific tests --- */
+
+#ifdef LIBACQUIRE_USE_WINCOMPRESSAPI
+TEST test_extract_wincompressapi_placeholder(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  int result;
+  ASSERT(handle != NULL);
+
+  result = acquire_extract_sync(handle, GREATEST_ARCHIVE, EXTRACT_DIR);
+
+  ASSERT_EQ_FMT(-1, result, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR, handle->status, "%d");
+  ASSERT_EQ_FMT(ACQUIRE_ERROR_UNSUPPORTED_ARCHIVE_FORMAT,
+                acquire_handle_get_error_code(handle), "%d");
+  acquire_handle_free(handle);
+  PASS();
+}
+#endif /* LIBACQUIRE_USE_WINCOMPRESSAPI */
+
+#ifdef LIBACQUIRE_USE_MINIZ
+TEST test_extract_miniz_cancellation(void) {
+  struct acquire_handle *handle = acquire_handle_init();
+  int result;
+  ASSERT(handle != NULL);
+
+  /* The miniz backend is synchronous, but cancellation is checked
+     via a callback. We can trigger it before starting. */
+  acquire_extract_async_cancel(handle); /* Sets the flag */
+
+  result = acquire_extract_sync(handle, GREATEST_ARCHIVE, EXTRACT_DIR);
+
+  ASSERT_EQ(-1, result);
+  ASSERT_EQ(ACQUIRE_ERROR, handle->status);
+  ASSERT_EQ(ACQUIRE_ERROR_CANCELLED, acquire_handle_get_error_code(handle));
+
+  acquire_handle_free(handle);
+  PASS();
+}
+#endif /* LIBACQUIRE_USE_MINIZ */
+
 #ifdef LIBACQUIRE_USE_LIBARCHIVE
 TEST test_extract_async_success(void) {
   struct acquire_handle *handle = acquire_handle_init();
@@ -148,6 +188,13 @@ SUITE(extract_suite) {
   RUN_TEST(test_extract_sync_success);
   RUN_TEST(test_extract_non_existent_archive);
   RUN_TEST(test_extract_corrupted_archive);
+
+#ifdef LIBACQUIRE_USE_WINCOMPRESSAPI
+  RUN_TEST(test_extract_wincompressapi_placeholder);
+#endif /* LIBACQUIRE_USE_WINCOMPRESSAPI */
+#ifdef LIBACQUIRE_USE_MINIZ
+  RUN_TEST(test_extract_miniz_cancellation);
+#endif /* LIBACQUIRE_USE_MINIZ */
 
 #ifdef LIBACQUIRE_USE_LIBARCHIVE
   RUN_TEST(test_extract_async_success);
