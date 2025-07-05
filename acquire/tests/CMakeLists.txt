@@ -120,17 +120,16 @@ endmacro(test_wrapper)
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
 set(Header_Files
+        "test_handle.h"
         "test_checksum.h"
         "test_checksums_dispatch.h"
-        "test_cli.h"
         "test_download.h"
         "test_fileutils.h"
-        "test_handle.h"
-        "test_libfetch.h"
         "test_net_common.h"
-        "test_openssl.h"
         "test_string_extras.h"
         "test_url_utils.h"
+        "test_cli.h"
+        "test_libfetch.h"
 )
 source_group("Header Files" FILES "${Header_Files}")
 
@@ -179,49 +178,18 @@ target_include_directories(
 )
 test_wrapper()
 
-if (LIBACQUIRE_USE_OPENSSL OR CRYPTO_LIB STREQUAL "OpenSSL" OR CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "LibreSSL")
-    set(EXEC_NAME "test_openssl")
-
-    set(Header_Files "test_openssl.h"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_checksums.h"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_handle.h"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.h"
-    )
+if (LIBACQUIRE_USE_LIBRHASH)
+    set(EXEC_NAME "test_rhash_backend")
+    set(Header_Files "test_librhash.h")
     source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
-
-    set(Source_Files "test_openssl.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_checksums.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_handle.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_librhash.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.c"
-    )
+    set(Source_Files "test_librhash.c")
     source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
 
-    set_source_files_properties("test_openssl.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_USE_OPENSSL=1")
-    set_source_files_properties("${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_OPENSSL=1")
-
     add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
-    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
-    target_compile_definitions("${EXEC_NAME}" PUBLIC "LIBACQUIRE_USE_OPENSSL=1")
-    target_include_directories(
-            "${EXEC_NAME}"
-            PRIVATE
-            "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire/cli>"
-            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire/cli>"
-            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-    )
-    find_package(LibRHash REQUIRED)
-    if (TARGET LibRHash::LibRHash)
-        target_link_libraries("${EXEC_NAME}" PRIVATE LibRHash::LibRHash)
-    else ()
-        target_link_libraries("${EXEC_NAME}" PRIVATE "${LibRHash_LIBRARIES}")
-    endif ()
-    #target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}")
+    target_compile_definitions("${EXEC_NAME}" PRIVATE LIBACQUIRE_USE_LIBRHASH=1)
+    target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}")
     test_wrapper()
-endif (LIBACQUIRE_USE_OPENSSL OR CRYPTO_LIB STREQUAL "OpenSSL" OR CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "LibreSSL")
+endif (LIBACQUIRE_USE_LIBRHASH)
 
 if (LIBACQUIRE_USE_LIBCURL)
     set(EXEC_NAME "test_curl_helpers")

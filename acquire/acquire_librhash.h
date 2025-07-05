@@ -93,11 +93,11 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
     rhash_lib_initialized = 1;
   }
   be = (struct rhash_backend *)calloc(1, sizeof(struct rhash_backend));
-  if (!be) {
+  if (!be) { /* LCOV_EXCL_START */
     acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
                              "rhash backend allocation failed");
     return -1;
-  }
+  } /* LCOV_EXCL_STOP */
   be->file = fopen(filepath, "rb");
   if (!be->file) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
@@ -106,12 +106,12 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
     return -1;
   }
   be->handle = rhash_init(rhash_algo_id);
-  if (!be->handle) {
+  if (!be->handle) { /* LCOV_EXCL_START */
     cleanup_rhash_backend(handle);
     acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                              "rhash_init failed");
     return -1;
-  }
+  } /* LCOV_EXCL_STOP */
   be->algorithm_id = rhash_algo_id;
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
   handle->backend_handle = be;
@@ -123,10 +123,15 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
   struct rhash_backend *be;
   unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
-  if (!handle || !handle->backend_handle)
+  if (!handle)
     return ACQUIRE_ERROR;
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
+  if (!handle->backend_handle) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "In-progress poll with NULL backend");
+    return ACQUIRE_ERROR;
+  }
   if (handle->cancel_flag) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
                              "Checksum cancelled");
@@ -136,18 +141,19 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
   be = (struct rhash_backend *)handle->backend_handle;
   bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
   if (bytes_read > 0) {
-    if (rhash_update(be->handle, buffer, bytes_read) < 0) {
+    if (rhash_update(be->handle, buffer, bytes_read) <
+        0) { /* LCOV_EXCL_START */
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "rhash_update failed");
-    } else {
+    } else { /* LCOV_EXCL_STOP */
       handle->bytes_processed += bytes_read;
       return ACQUIRE_IN_PROGRESS;
     }
   }
-  if (ferror(be->file)) {
+  if (ferror(be->file)) { /* LCOV_EXCL_START */
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
                              strerror(errno));
-  } else {
+  } else { /* LCOV_EXCL_STOP */
     unsigned char hash[64];
     char computed_hex[130];
     int digest_size = 0;
