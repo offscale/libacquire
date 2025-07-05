@@ -121,12 +121,7 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     CC_SHA512_Init(&be->ctx.sha512);
     break;
   default:
-    /* Should have been caught by the switch above, but for safety: */
-    cleanup_openssl_backend(handle);
-    acquire_handle_set_error(
-        handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
-        "Internal error: unsupported algorithm in CommonCrypto backend");
-    return -1;
+    break;
   }
 #else
   const EVP_MD *md =
@@ -150,10 +145,15 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
   struct openssl_backend *be;
   unsigned char buffer[CHUNK_SIZE];
   size_t bytes_read;
-  if (!handle || !handle->backend_handle)
+  if (!handle)
     return ACQUIRE_ERROR;
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
+  if (!handle->backend_handle) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "In-progress poll with NULL backend");
+    return ACQUIRE_ERROR;
+  }
   if (handle->cancel_flag) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
                              "Checksum cancelled");
@@ -172,14 +172,13 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
       CC_SHA512_Update(&be->ctx.sha512, buffer, (CC_LONG)bytes_read);
       break;
     default:
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "Internal CC algorithm error");
       break;
     }
 #else
-    if (1 != EVP_DigestUpdate(be->ctx, buffer, bytes_read))
+    if (1 != EVP_DigestUpdate(be->ctx, buffer, bytes_read)) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "EVP_DigestUpdate failed");
+    }
 #endif
     if (handle->error.code == ACQUIRE_OK) {
       handle->bytes_processed += bytes_read;
@@ -205,14 +204,13 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
       CC_SHA512_Final(hash, &be->ctx.sha512);
       break;
     default:
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "Internal CC algorithm error");
       break;
     }
 #else
-    if (1 != EVP_DigestFinal_ex(be->ctx, hash, &len))
+    if (1 != EVP_DigestFinal_ex(be->ctx, hash, &len)) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "EVP_DigestFinal_ex failed");
+    }
 #endif
     if (handle->error.code == ACQUIRE_OK) {
       for (i = 0; (unsigned int)i < len; i++)

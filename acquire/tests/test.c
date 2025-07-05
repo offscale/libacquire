@@ -12,9 +12,15 @@
 #if defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_MY_LIBFETCH
 #include "test_libfetch.h"
 #endif /* defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_MY_LIBFETCH */
+#include "acquire_config.h"
 #include "test_net_common.h"
 #include "test_string_extras.h"
 #include "test_url_utils.h"
+#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
+    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL)
+#include "test_openssl.h"
+#endif
 
 #ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".test_downloads"; }
@@ -33,6 +39,12 @@ int main(int argc, char **argv) {
   RUN_SUITE(checksums_suite);
   RUN_SUITE(downloads_suite);
   RUN_SUITE(net_common_suite);
+
+#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
+    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL)
+  RUN_SUITE(openssl_backend_suite);
+#endif
 
 #if defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_MY_LIBFETCH
   RUN_SUITE(libfetch_suite);

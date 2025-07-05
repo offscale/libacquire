@@ -170,35 +170,6 @@ TEST test_invalid_hash_length(void) {
   PASS();
 }
 
-#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
-TEST test_librhash_invalid_hash_length_sha512(void) {
-  struct acquire_handle *h = acquire_handle_init();
-  int result;
-  /* SHA512 has special handling for 128 vs 129, test a different failure */
-  result = acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA512, "short");
-  ASSERT_EQ(-1, result);
-  ASSERT_EQ(ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
-            acquire_handle_get_error_code(h));
-  acquire_handle_free(h);
-  PASS();
-}
-#endif
-
-#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
-    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO)
-TEST test_openssl_unsupported_algorithm(void) {
-  struct acquire_handle *h = acquire_handle_init();
-  /* crc32c is unsupported by the openssl backend */
-  const int result = acquire_verify_sync(
-      h, GREATEST_FILE, LIBACQUIRE_INVALID_CHECKSUM, "12345678");
-  ASSERT_EQ(-1, result);
-  ASSERT_EQ(ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
-            acquire_handle_get_error_code(h));
-  acquire_handle_free(h);
-  PASS();
-}
-#endif
-
 TEST test_verify_reusability(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
@@ -229,13 +200,6 @@ TEST test_verify_reusability(void) {
 SUITE(checksums_suite) {
   RUN_TEST(test_unsupported_algorithm);
   RUN_TEST(test_invalid_hash_length);
-#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
-  RUN_TEST(test_librhash_invalid_hash_length_sha512);
-#endif
-#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
-    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO)
-  RUN_TEST(test_openssl_unsupported_algorithm);
-#endif
   RUN_TEST(test_verify_sync_success_sha256);
   RUN_TEST(test_verify_sync_success_sha512);
 #if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH ||             \

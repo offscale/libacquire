@@ -41,7 +41,7 @@ file(WRITE "${CORRUPT_ZIP_PATH}" "This is not a real zip file, just some text.")
 file(TO_NATIVE_PATH "${CORRUPT_ZIP_PATH_NATIVE}" CORRUPT_ZIP_PATH_NATIVE)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT MSYS AND NOT CYGWIN)
     string(REPLACE "\\" "\\\\" CORRUPT_ZIP_PATH_NATIVE "${CORRUPT_ZIP_PATH_NATIVE}")
-endif()
+endif ()
 
 ################################
 # Configure file (interpolate) #
@@ -120,16 +120,17 @@ endmacro(test_wrapper)
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
 set(Header_Files
-        "test_handle.h"
         "test_checksum.h"
         "test_checksums_dispatch.h"
+        "test_cli.h"
         "test_download.h"
         "test_fileutils.h"
+        "test_handle.h"
+        "test_libfetch.h"
         "test_net_common.h"
+        "test_openssl.h"
         "test_string_extras.h"
         "test_url_utils.h"
-        "test_cli.h"
-        "test_libfetch.h"
 )
 source_group("Header Files" FILES "${Header_Files}")
 
@@ -157,9 +158,9 @@ target_link_libraries(
         "${PROJECT_NAME}_compiler_flags"
 )
 
-if(LIBACQUIRE_USE_MY_LIBFETCH)
+if (LIBACQUIRE_USE_MY_LIBFETCH)
     target_link_libraries(${EXEC_NAME} PRIVATE freebsd_libfetch)
-endif()
+endif ()
 
 if (LIBACQUIRE_USE_MINIZ)
     find_package(kubazip CONFIG REQUIRED)
@@ -177,6 +178,50 @@ target_include_directories(
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 test_wrapper()
+
+if (LIBACQUIRE_USE_OPENSSL OR CRYPTO_LIB STREQUAL "OpenSSL" OR CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "LibreSSL")
+    set(EXEC_NAME "test_openssl")
+
+    set(Header_Files "test_openssl.h"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_checksums.h"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_handle.h"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.h"
+    )
+    source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
+
+    set(Source_Files "test_openssl.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_checksums.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_handle.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_librhash.c"
+            "${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.c"
+    )
+    source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
+
+    set_source_files_properties("test_openssl.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_USE_OPENSSL=1")
+    set_source_files_properties("${CMAKE_BINARY_DIR}/gen/gen_acquire_openssl.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_USE_OPENSSL=1")
+
+    add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
+    target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
+    target_compile_definitions("${EXEC_NAME}" PUBLIC "LIBACQUIRE_USE_OPENSSL=1")
+    target_include_directories(
+            "${EXEC_NAME}"
+            PRIVATE
+            "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/acquire/cli>"
+            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/acquire/cli>"
+            "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+    )
+    find_package(LibRHash REQUIRED)
+    if (TARGET LibRHash::LibRHash)
+        target_link_libraries("${EXEC_NAME}" PRIVATE LibRHash::LibRHash)
+    else ()
+        target_link_libraries("${EXEC_NAME}" PRIVATE "${LibRHash_LIBRARIES}")
+    endif ()
+    #target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}")
+    test_wrapper()
+endif (LIBACQUIRE_USE_OPENSSL OR CRYPTO_LIB STREQUAL "OpenSSL" OR CRYPTO_LIB STREQUAL "CommonCrypto" OR CRYPTO_LIB STREQUAL "LibreSSL")
 
 if (LIBACQUIRE_USE_LIBCURL)
     set(EXEC_NAME "test_curl_helpers")

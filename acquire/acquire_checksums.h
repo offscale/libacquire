@@ -8,10 +8,8 @@ extern "C" {
 #include "acquire_handle.h"
 #include "libacquire_export.h"
 
-#include "acquire_crc32c.h"
 #include "acquire_librhash.h"
 #include "acquire_openssl.h"
-#include "acquire_wincrypt.h"
 
 extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *s);
 extern LIBACQUIRE_EXPORT int
