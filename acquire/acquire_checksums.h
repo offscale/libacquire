@@ -54,7 +54,7 @@ int acquire_verify_async_start(struct acquire_handle *handle,
   if (!handle || !filepath || !expected_hash) {
     if (handle)
       acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
-                               "Invalid arguments");
+                               "Invalid arguments provided for verification");
     return -1;
   }
   handle->active_backend = ACQUIRE_BACKEND_NONE;
@@ -99,8 +99,9 @@ int acquire_verify_async_start(struct acquire_handle *handle,
   if (handle->error.code != ACQUIRE_OK)
     return -1;
 #endif /* defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
-  acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
-                           "Unsupported checksum or no backend");
+  acquire_handle_set_error(
+      handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+      "Unsupported checksum algorithm or no backend available");
   return -1;
 }
 
@@ -130,7 +131,7 @@ enum acquire_status acquire_verify_async_poll(struct acquire_handle *handle) {
     if (handle->status != ACQUIRE_IN_PROGRESS)
       return handle->status;
     acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                             "No active backend");
+                             "No active backend for checksum operation");
     return ACQUIRE_ERROR;
   }
 }
@@ -149,9 +150,9 @@ int acquire_verify_sync(struct acquire_handle *handle, const char *filepath,
   do {
     status = acquire_verify_async_poll(handle);
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    Sleep(100); /* 100ms */
+    Sleep(10); /* 10ms poll interval */
 #else
-    usleep(100000); /* 100ms */
+    usleep(10000); /* 10ms poll interval */
 #endif
   } while (status == ACQUIRE_IN_PROGRESS);
   return (status == ACQUIRE_COMPLETE) ? 0 : -1;

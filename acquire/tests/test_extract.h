@@ -103,6 +103,25 @@ TEST test_extract_reusability(void) {
   PASS();
 }
 
+TEST test_async_extract_invalid_args(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  enum acquire_status status;
+
+  ASSERT_EQ(-1, acquire_extract_async_start(NULL, "archive.zip", "dest"));
+  ASSERT_EQ(-1, acquire_extract_async_start(h, NULL, "dest"));
+  ASSERT_EQ(ACQUIRE_ERROR_INVALID_ARGUMENT, acquire_handle_get_error_code(h));
+  ASSERT_EQ(-1, acquire_extract_async_start(h, "archive.zip", NULL));
+  ASSERT_EQ(ACQUIRE_ERROR_INVALID_ARGUMENT, acquire_handle_get_error_code(h));
+
+  status = acquire_extract_async_poll(NULL);
+  ASSERT_EQ(ACQUIRE_ERROR, status);
+
+  acquire_extract_async_cancel(NULL);
+
+  acquire_handle_free(h);
+  PASS();
+}
+
 /* --- Backend specific tests --- */
 
 #if defined(LIBACQUIRE_USE_WINCOMPRESSAPI) && LIBACQUIRE_USE_WINCOMPRESSAPI
@@ -226,6 +245,7 @@ SUITE(extract_suite) {
   RUN_TEST(test_extract_non_existent_archive);
   RUN_TEST(test_extract_corrupted_archive);
   RUN_TEST(test_extract_invalid_args);
+  RUN_TEST(test_async_extract_invalid_args);
   RUN_TEST(test_extract_reusability);
 
 #if defined(LIBACQUIRE_USE_WINCOMPRESSAPI) && LIBACQUIRE_USE_WINCOMPRESSAPI
@@ -239,8 +259,6 @@ SUITE(extract_suite) {
 #if defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
   RUN_TEST(test_extract_async_success);
   RUN_TEST(test_extract_async_cancellation);
-  /* RUN_TEST(test_extract_async_cancellation_large_file); */
 #endif /* defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE */
 }
-
 #endif /* !LIBACQUIRE_TEST_EXTRACT_H */

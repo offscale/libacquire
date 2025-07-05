@@ -94,7 +94,7 @@ TEST test_cli_parsing_output_file(void) {
 
 TEST test_cli_parsing_help(void) {
   struct DocoptArgs args;
-  const char *const src_argv[] = {"acquire", "--help"};
+  const char *const src_argv[] = {"acquire", "-h"};
   int argc = 2;
   char **argv = create_argv(src_argv, argc);
   int result = docopt(&args, argc, argv, 1, "test-version");
@@ -106,20 +106,104 @@ TEST test_cli_parsing_help(void) {
   PASS();
 }
 
-TEST test_cli_missing_required_arg_value(void) {
+TEST test_cli_parsing_version(void) {
   struct DocoptArgs args;
-  const char *const src_argv[] = {"acquire", "--directory"}; /* Missing value */
+  const char *const src_argv[] = {"acquire", "--version"};
   int argc = 2;
   char **argv = create_argv(src_argv, argc);
-  int result = docopt(&args, argc, argv, 1, "test-version");
+  int result = docopt(&args, argc, argv, 1, "test-version-1.2.3");
 
-  ASSERT_EQ_FMT(1, result, "%d");
+  ASSERT_EQ(EXIT_FAILURE, result); /* version exits */
+  ASSERT(args.version);
+  free_argv(argv);
+
+  /* Test with NULL version string */
+  argv = create_argv(src_argv, argc);
+  result = docopt(&args, argc, argv, 0, NULL);
+  ASSERT_EQ(EXIT_FAILURE, result);
+  ASSERT(args.version);
 
   free_argv(argv);
   PASS();
 }
 
-TEST test_cli_no_args(void) {
+TEST test_cli_parsing_short_options_and_terminator(void) {
+  struct DocoptArgs args;
+  const char *const src_argv[] = {"acquire", "-d", "./tmp",         "-o",
+                                  "out.zip", "--", "http://url.com"};
+  int argc = 7;
+  char **argv = create_argv(src_argv, argc);
+  int result = docopt(&args, argc, argv, 1, "v1");
+
+  ASSERT_EQ(EXIT_SUCCESS, result);
+  ASSERT_STR_EQ("./tmp", args.directory);
+  ASSERT_STR_EQ("out.zip", args.output);
+  ASSERT_STR_EQ("http://url.com", args.url);
+
+  free_argv(argv);
+  PASS();
+}
+
+TEST test_cli_parsing_unknown_option(void) {
+  struct DocoptArgs args;
+  const char *const src_argv[] = {"acquire", "--nonexistent-option"};
+  int argc = 2;
+  char **argv = create_argv(src_argv, argc);
+  int result = docopt(&args, argc, argv, 1, "v1");
+
+  ASSERT_EQ(EXIT_FAILURE, result);
+
+  free_argv(argv);
+  PASS();
+}
+
+TEST test_cli_missing_required_arg_value(void) {
+  struct DocoptArgs args;
+  char **argv;
+
+  const char *const dir_argv[] = {"acquire", "--directory"};
+  argv = create_argv(dir_argv, 2);
+  ASSERT_EQ(EXIT_FAILURE, docopt(&args, 2, argv, 0, "v"));
+  free_argv(argv);
+
+  {
+    const char *const hash_argv[] = {"acquire", "--hash"};
+    argv = create_argv(hash_argv, 2);
+    ASSERT_EQ(EXIT_FAILURE, docopt(&args, 2, argv, 0, "v"));
+    free_argv(argv);
+  }
+
+  {
+    const char *const checksum_argv[] = {"acquire", "--checksum"};
+    argv = create_argv(checksum_argv, 2);
+    ASSERT_EQ(EXIT_FAILURE, docopt(&args, 2, argv, 0, "v"));
+    free_argv(argv);
+  }
+
+  {
+    const char *const output_argv[] = {"acquire", "-o"};
+    argv = create_argv(output_argv, 2);
+    ASSERT_EQ(EXIT_FAILURE, docopt(&args, 2, argv, 0, "v"));
+    free_argv(argv);
+  }
+
+  PASS();
+}
+
+TEST test_cli_no_args_with_help_off(void) {
+  struct DocoptArgs args;
+  const char *const src_argv[] = {"acquire"};
+  int argc = 1;
+  char **argv = create_argv(src_argv, argc);
+  int result = docopt(&args, argc, argv, 0, "test-version");
+
+  ASSERT_EQ(EXIT_FAILURE, result);
+
+  free_argv(argv);
+  PASS();
+}
+
+TEST test_cli_no_args_with_help_on(void) {
   struct DocoptArgs args;
   const char *const src_argv[] = {"acquire"};
   int argc = 1;
@@ -132,13 +216,55 @@ TEST test_cli_no_args(void) {
   PASS();
 }
 
+TEST test_cli_parsing_terminator_cases(void) {
+  struct DocoptArgs args;
+  char **argv;
+  int result;
+
+  const char *const src_argv1[] = {"acquire", "--"};
+  argv = create_argv(src_argv1, 2);
+  result = docopt(&args, 2, argv, 0, "v1");
+  ASSERT_EQ(EXIT_SUCCESS, result);
+  ASSERT_EQ(NULL, args.url);
+  free_argv(argv);
+
+  {
+    const char *const src_argv2[] = {"acquire", "url1", "--", "url2"};
+    argv = create_argv(src_argv2, 4);
+    result = docopt(&args, 4, argv, 0, "v1");
+    ASSERT_EQ(EXIT_SUCCESS, result);
+    ASSERT_STR_EQ("url1", args.url);
+    free_argv(argv);
+  }
+
+  PASS();
+}
+
+TEST test_cli_multiple_positional_args(void) {
+  struct DocoptArgs args;
+  const char *const src_argv[] = {"acquire", "url1", "url2"};
+  int argc = 3;
+  char **argv = create_argv(src_argv, argc);
+  int result = docopt(&args, 3, argv, 0, "v1");
+  ASSERT_EQ(EXIT_SUCCESS, result);
+  ASSERT_STR_EQ("url1", args.url); /* only first one is taken */
+  free_argv(argv);
+  PASS();
+}
+
 SUITE(cli_suite) {
   RUN_TEST(test_cli_parsing_download_and_verify);
   RUN_TEST(test_cli_parsing_check);
   RUN_TEST(test_cli_parsing_output_file);
   RUN_TEST(test_cli_parsing_help);
   RUN_TEST(test_cli_missing_required_arg_value);
-  RUN_TEST(test_cli_no_args);
+  RUN_TEST(test_cli_no_args_with_help_off);
+  RUN_TEST(test_cli_no_args_with_help_on);
+  RUN_TEST(test_cli_parsing_version);
+  RUN_TEST(test_cli_parsing_short_options_and_terminator);
+  RUN_TEST(test_cli_parsing_unknown_option);
+  RUN_TEST(test_cli_parsing_terminator_cases);
+  RUN_TEST(test_cli_multiple_positional_args);
 }
 
 #endif /* !TEST_CLI_H */

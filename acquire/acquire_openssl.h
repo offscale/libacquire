@@ -27,12 +27,14 @@ void _openssl_verify_async_cancel(struct acquire_handle *handle);
 #endif
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
-#ifndef ACQUIRE_OPENSSL_IMPL_
-#define ACQUIRE_OPENSSL_IMPL_
 
 #if (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO ||  \
      defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL ||              \
      defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL)
+
+#ifndef EVP_MAX_MD_SIZE
+#define EVP_MAX_MD_SIZE 64
+#endif /* !EVP_MAX_MD_SIZE */
 
 #include "acquire_handle.h"
 #include <errno.h>
@@ -97,7 +99,8 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
   }
   be = (struct openssl_backend *)calloc(1, sizeof(struct openssl_backend));
   if (!be) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "openssl");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
+                             "openssl backend memory allocation failed");
     return -1;
   }
   be->file = fopen(filepath, "rb");
@@ -108,7 +111,7 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     return -1;
   }
 
-#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) || !LIBACQUIRE_USE_COMMON_CRYPTO
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO
   be->algorithm = algorithm;
   switch (algorithm) {
   case LIBACQUIRE_SHA256:
@@ -118,7 +121,12 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     CC_SHA512_Init(&be->ctx.sha512);
     break;
   default:
-    break;
+    /* Should have been caught by the switch above, but for safety: */
+    cleanup_openssl_backend(handle);
+    acquire_handle_set_error(
+        handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
+        "Internal error: unsupported algorithm in CommonCrypto backend");
+    return -1;
   }
 #else
   const EVP_MD *md =
@@ -126,7 +134,8 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
   be->ctx = EVP_MD_CTX_new();
   if (!be->ctx || (1 != EVP_DigestInit_ex(be->ctx, md, NULL))) {
     cleanup_openssl_backend(handle);
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "EVP init failed");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "EVP_DigestInit_ex failed");
     return -1;
   }
 #endif
@@ -146,7 +155,8 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
   if (handle->cancel_flag) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED, "Cancelled");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Checksum cancelled");
     cleanup_openssl_backend(handle);
     return ACQUIRE_ERROR;
   }
@@ -162,11 +172,14 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
       CC_SHA512_Update(&be->ctx.sha512, buffer, (CC_LONG)bytes_read);
       break;
     default:
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "Internal CC algorithm error");
       break;
     }
 #else
     if (1 != EVP_DigestUpdate(be->ctx, buffer, bytes_read))
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "EVP_Update");
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "EVP_DigestUpdate failed");
 #endif
     if (handle->error.code == ACQUIRE_OK) {
       handle->bytes_processed += bytes_read;
@@ -177,11 +190,11 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
                              strerror(errno));
   } else {
-    unsigned char hash[CC_SHA512_DIGEST_LENGTH];
-    char computed_hex[130];
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    char computed_hex[EVP_MAX_MD_SIZE * 2 + 1];
     unsigned int len = 0;
     int i;
-#ifdef LIBACQUIRE_USE_COMMON_CRYPTO
+#if defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO
     switch (be->algorithm) {
     case LIBACQUIRE_SHA256:
       len = CC_SHA256_DIGEST_LENGTH;
@@ -192,22 +205,25 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
       CC_SHA512_Final(hash, &be->ctx.sha512);
       break;
     default:
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "Internal CC algorithm error");
       break;
     }
 #else
     if (1 != EVP_DigestFinal_ex(be->ctx, hash, &len))
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "EVP_Final");
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "EVP_DigestFinal_ex failed");
 #endif
     if (handle->error.code == ACQUIRE_OK) {
-      for (i = 0; i < len; i++)
+      for (i = 0; (unsigned int)i < len; i++)
         sprintf(computed_hex + (i * 2), "%02x", hash[i]);
       computed_hex[len * 2] = '\0';
       if (strncasecmp(computed_hex, be->expected_hash, len * 2) == 0)
         handle->status = ACQUIRE_COMPLETE;
       else
         acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                                 "Hash mismatch: %s != %s", be->expected_hash,
-                                 computed_hex);
+                                 "Hash mismatch: expected %s, got %s",
+                                 be->expected_hash, computed_hex);
     }
   }
   cleanup_openssl_backend(handle);
@@ -222,7 +238,6 @@ void _openssl_verify_async_cancel(struct acquire_handle *handle) {
           LIBACQUIRE_USE_COMMON_CRYPTO || defined(LIBACQUIRE_USE_OPENSSL) &&   \
           LIBACQUIRE_USE_OPENSSL || defined(LIBACQUIRE_USE_LIBRESSL) &&        \
           LIBACQUIRE_USE_LIBRESSL) */
-#endif /* ACQUIRE_OPENSSL_IMPL_ */
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) */
 
 #ifdef __cplusplus

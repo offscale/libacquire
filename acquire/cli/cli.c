@@ -80,7 +80,6 @@ int docopt(struct DocoptArgs *args, int argc, char *argv[], const bool help,
       continue;
     }
 
-    /* Options with arguments */
     if (strncmp(arg, "--directory=", 12) == 0) {
       args->directory = (char *)(arg + 12);
     } else if (strcmp(arg, "-d") == 0 || strcmp(arg, "--directory") == 0) {
@@ -121,12 +120,10 @@ int docopt(struct DocoptArgs *args, int argc, char *argv[], const bool help,
       fprintf(stderr, "Unknown option: %s\n", arg);
       return EXIT_FAILURE;
     } else {
-      /* Positional argument */
       if (!url_is_set) {
         args->url = (char *)arg;
         url_is_set = 1;
       }
-      /* Note: This simple parser only handles one URL. */
     }
   }
 

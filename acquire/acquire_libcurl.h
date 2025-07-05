@@ -114,8 +114,12 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
 int acquire_download_async_start(struct acquire_handle *handle, const char *url,
                                  const char *dest_path) {
   struct curl_backend *be;
-  if (!handle)
+  if (!handle || !url || !dest_path) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments");
     return -1;
+  }
 
   be = (struct curl_backend *)calloc(1, sizeof(struct curl_backend));
   if (!be) {

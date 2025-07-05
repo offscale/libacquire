@@ -114,8 +114,12 @@ fail:
  */
 int acquire_download_async_start(struct acquire_handle *handle, const char *url,
                                  const char *dest_path) {
-  if (handle == NULL)
+  if (!handle || !url || !dest_path) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments");
     return -1;
+  }
   handle->status = ACQUIRE_IN_PROGRESS;
   /* This implementation is blocking, so all work completes here. */
   return acquire_download_sync(handle, url, dest_path);

@@ -82,7 +82,8 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
   default:
     return -1;
   }
-  if (strlen(expected_hash) != expected_len) {
+  if (strlen(expected_hash) != expected_len &&
+      !(algorithm == LIBACQUIRE_SHA512 && strlen(expected_hash) == 128)) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
                              "Invalid hash length for selected algorithm");
     return -1;
@@ -93,7 +94,8 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
   }
   be = (struct rhash_backend *)calloc(1, sizeof(struct rhash_backend));
   if (!be) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "rhash");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY,
+                             "rhash backend allocation failed");
     return -1;
   }
   be->file = fopen(filepath, "rb");
@@ -106,7 +108,8 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
   be->handle = rhash_init(rhash_algo_id);
   if (!be->handle) {
     cleanup_rhash_backend(handle);
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "rhash_init");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                             "rhash_init failed");
     return -1;
   }
   be->algorithm_id = rhash_algo_id;
@@ -125,7 +128,8 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
   if (handle->cancel_flag) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED, "Cancelled");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                             "Checksum cancelled");
     cleanup_rhash_backend(handle);
     return ACQUIRE_ERROR;
   }
@@ -133,7 +137,8 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
   bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
   if (bytes_read > 0) {
     if (rhash_update(be->handle, buffer, bytes_read) < 0) {
-      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN, "rhash_update");
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "rhash_update failed");
     } else {
       handle->bytes_processed += bytes_read;
       return ACQUIRE_IN_PROGRESS;
@@ -148,14 +153,13 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
     int digest_size = 0;
     rhash_final(be->handle, hash);
     digest_size = rhash_get_digest_size(be->algorithm_id);
-    /*rhash_print_hex(computed_hex, hash, digest_size, RHPR_DEFAULT);*/
     to_hex(computed_hex, hash, (size_t)digest_size);
     if (strncasecmp(computed_hex, be->expected_hash, digest_size * 2) == 0) {
       handle->status = ACQUIRE_COMPLETE;
     } else {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                               "Hash mismatch: %s != %s", be->expected_hash,
-                               computed_hex);
+                               "Hash mismatch: expected %s, got %s",
+                               be->expected_hash, computed_hex);
     }
   }
   cleanup_rhash_backend(handle);
