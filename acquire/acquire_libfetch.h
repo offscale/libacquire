@@ -3,7 +3,6 @@
 
 #if defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH &&             \
     defined(LIBACQUIRE_IMPLEMENTATION)
-#define LIBACQUIRE_LIBFETCH_H
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <synchapi.h>
@@ -19,7 +18,7 @@
 #include "acquire_download.h"
 #include "fetch.h"
 
-#if defined(LIBACQUIRE_DOWNLOAD_DIR_IMPL)
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
@@ -149,7 +148,7 @@ void acquire_download_async_cancel(struct acquire_handle *handle) {
   }
 }
 
-#endif /* defined(LIBACQUIRE_USE_LIBFETCH) &&                                  \
-LIBACQUIRE_USE_LIBFETCH && defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH &&       \
+          defined(LIBACQUIRE_IMPLEMENTATION) */
 
 #endif /* !LIBACQUIRE_LIBFETCH_H */

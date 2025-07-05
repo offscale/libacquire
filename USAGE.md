@@ -240,6 +240,11 @@ void non_blocking_extraction(const char *archive_path, const char *destination_d
         status = acquire_extract_async_poll(handle);
         if (status == ACQUIRE_IN_PROGRESS) {
             printf("Extracting: %s\n", handle->current_file);
+            #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    Sleep(100); /* 100ms */
+#else
+    usleep(100000); /* 100ms */
+#endif
         }
     } while (status == ACQUIRE_IN_PROGRESS);
     

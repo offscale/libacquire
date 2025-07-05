@@ -1,4 +1,4 @@
-set(exec_name "test_${PROJECT_NAME}")
+set(EXEC_NAME "test_${PROJECT_NAME}")
 
 #########################
 # Dependencies download #
@@ -119,7 +119,6 @@ endmacro(test_wrapper)
 
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
-set(EXEC_NAME ${exec_name})
 set(Header_Files
         "test_handle.h"
         "test_checksum.h"
@@ -137,6 +136,11 @@ source_group("Header Files" FILES "${Header_Files}")
 # Add cli.c to the test sources
 set(Source_Files "test.c" "${CMAKE_SOURCE_DIR}/acquire/cli/cli.c")
 source_group("Source Files" FILES "${Source_Files}")
+
+set_source_files_properties("test_string_extras.c"
+        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
+set_source_files_properties("test.c"
+        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_DOWNLOAD_DIR_IMPL=1")
 
 set_source_files_properties("test_string_extras.c"
         PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")

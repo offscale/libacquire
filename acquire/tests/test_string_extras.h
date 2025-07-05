@@ -44,6 +44,31 @@ TEST test_strcasestr_not_found(void) {
   PASS();
 }
 
+TEST test_strncasecmp_impl(void) {
+  ASSERT_EQ(0, strncasecmp("hello", "HELLO", 5));
+  ASSERT_EQ(0, strncasecmp("hello", "HELLO", 10)); /* Test over string length */
+  ASSERT_EQ(0, strncasecmp("hello", "HELLo", 5));
+  ASSERT_EQ(0, strncasecmp("", "", 5));
+  ASSERT_NEQ(0, strncasecmp("hello", "HELLA", 5));
+  ASSERT(strncasecmp("apple", "banana", 5) < 0);
+  ASSERT(strncasecmp("Banana", "Apple", 5) > 0);
+  ASSERT_EQ(0, strncasecmp("Test", "test", 4));
+  ASSERT_EQ('i' - 'a', strncasecmp("Testing", "Testa", 5)); /* test n limit */
+  PASS();
+}
+
+TEST test_strerrorlen_s_impl(void) {
+  size_t len;
+  const char *err_str;
+  len = strerrorlen_s(EDOM);
+  ASSERT(len > 0);
+  err_str = strerror(99999);
+  if (strstr(err_str, "Unknown error") != NULL) {
+    ASSERT_EQ_FMT(strlen(err_str), strerrorlen_s(99999), "%zu");
+  }
+  PASS();
+}
+
 /* Suites can group multiple tests with common setup. */
 SUITE(string_extras_suite) {
   RUN_TEST(x_strnstr_should_succeed);
@@ -51,6 +76,8 @@ SUITE(string_extras_suite) {
   RUN_TEST(x_strnstr_should_fail);
   RUN_TEST(test_strcasestr_found);
   RUN_TEST(test_strcasestr_not_found);
+  RUN_TEST(test_strncasecmp_impl);
+  RUN_TEST(test_strerrorlen_s_impl);
 }
 
 #endif /* !TEST_STRING_EXTRAS_H */

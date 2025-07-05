@@ -9,15 +9,16 @@ extern "C" {
 
 struct acquire_handle; /* Forward declaration */
 
-#if defined(LIBACQUIRE_USE_CRC32C)
+#if defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
 int _crc32c_verify_async_start(struct acquire_handle *handle,
                                const char *filepath, enum Checksum algorithm,
                                const char *expected_hash);
 enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle);
 void _crc32c_verify_async_cancel(struct acquire_handle *handle);
-#endif
+#endif /* defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C)
+#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) &&    \
+    LIBACQUIRE_USE_CRC32C
 
 #include "acquire_handle.h"
 #include <errno.h>
@@ -27,7 +28,7 @@ void _crc32c_verify_async_cancel(struct acquire_handle *handle);
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
-#endif
+#endif /* !CHUNK_SIZE */
 
 struct checksum_backend {
   FILE *file;
@@ -176,7 +177,7 @@ void _crc32c_verify_async_cancel(struct acquire_handle *handle) {
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) \
-        */
+          && LIBACQUIRE_USE_CRC32C */
 
 #ifdef __cplusplus
 }

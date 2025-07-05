@@ -11,7 +11,7 @@
 
 #include "acquire_download.h"
 
-#if defined(LIBACQUIRE_DOWNLOAD_DIR_IMPL)
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 

@@ -126,7 +126,7 @@ TEST test_is_relative(void) {
 }
 
 TEST test_is_absolute(void) {
-#ifdef _WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
   ASSERT(!is_relative("C:\\Windows\\System32"));
   ASSERT(!is_relative("\\Windows"));
 #else

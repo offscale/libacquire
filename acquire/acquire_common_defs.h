@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 #include "acquire_status_codes.h"
 
@@ -20,12 +20,8 @@ enum Checksum {
 #define PATH_SEP "/"
 #endif
 
-#if (defined(WIN32) || defined(_WIN32)) && !defined(__WIN32__)
-#define __WIN32__ 1
-#endif
-
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_ACQUIRE_COMMON_DEFS_H */

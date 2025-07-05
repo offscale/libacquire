@@ -9,6 +9,7 @@
 #include "acquire_checksums.h"
 #include "acquire_common_defs.h"
 #include "acquire_config.h"
+#include "acquire_download.h"
 #include "acquire_extract.h"
 #include "acquire_fileutils.h"
 #include "acquire_handle.h"
@@ -73,10 +74,38 @@ TEST test_extract_corrupted_archive(void) {
   acquire_handle_free(handle);
   PASS();
 }
+TEST test_extract_invalid_args(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  ASSERT_EQ(-1, acquire_extract_sync(NULL, "archive.zip", "dest"));
+  ASSERT_EQ(-1, acquire_extract_sync(h, NULL, "dest"));
+  ASSERT_EQ(-1, acquire_extract_sync(h, "archive.zip", NULL));
+  ASSERT_EQ(ACQUIRE_ERROR_INVALID_ARGUMENT, acquire_handle_get_error_code(h));
+  acquire_handle_free(h);
+  PASS();
+}
+
+TEST test_extract_reusability(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+  result = acquire_extract_sync(h, GREATEST_ARCHIVE, EXTRACT_DIR "_reuse1");
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT(is_file(EXTRACT_DIR "_reuse1" PATH_SEP
+                             "greatest-cmake-and-msvc" PATH_SEP "greatest.h"));
+  result = acquire_extract_sync(h, CORRUPT_ARCHIVE, EXTRACT_DIR "_reuse2");
+  ASSERT_EQ_FMT(-1, result, "%d");
+  ASSERT(acquire_handle_get_error_code(h) >= ACQUIRE_ERROR_ARCHIVE_OPEN_FAILED);
+  result = acquire_extract_sync(h, GREATEST_ARCHIVE, EXTRACT_DIR "_reuse3");
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT(is_file(EXTRACT_DIR "_reuse3" PATH_SEP
+                             "greatest-cmake-and-msvc" PATH_SEP "greatest.h"));
+  acquire_handle_free(h);
+  PASS();
+}
 
 /* --- Backend specific tests --- */
 
-#ifdef LIBACQUIRE_USE_WINCOMPRESSAPI
+#if defined(LIBACQUIRE_USE_WINCOMPRESSAPI) && LIBACQUIRE_USE_WINCOMPRESSAPI
 TEST test_extract_wincompressapi_placeholder(void) {
   struct acquire_handle *handle = acquire_handle_init();
   int result;
@@ -91,9 +120,10 @@ TEST test_extract_wincompressapi_placeholder(void) {
   acquire_handle_free(handle);
   PASS();
 }
-#endif /* LIBACQUIRE_USE_WINCOMPRESSAPI */
+#endif /* defined(LIBACQUIRE_USE_WINCOMPRESSAPI) &&                            \
+          LIBACQUIRE_USE_WINCOMPRESSAPI */
 
-#ifdef LIBACQUIRE_USE_MINIZ
+#if defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ
 TEST test_extract_miniz_cancellation(void) {
   struct acquire_handle *handle = acquire_handle_init();
   int result;
@@ -112,9 +142,9 @@ TEST test_extract_miniz_cancellation(void) {
   acquire_handle_free(handle);
   PASS();
 }
-#endif /* LIBACQUIRE_USE_MINIZ */
+#endif /* defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ */
 
-#ifdef LIBACQUIRE_USE_LIBARCHIVE
+#if defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
 TEST test_extract_async_success(void) {
   struct acquire_handle *handle = acquire_handle_init();
   enum acquire_status status;
@@ -138,13 +168,14 @@ TEST test_extract_async_success(void) {
   ASSERT(is_file(EXTRACTED_CONTENT));
 
   acquire_handle_free(handle);
+  /* TODO: cleanup extracted files */
   PASS();
 }
 
 TEST test_extract_async_cancellation(void) {
   struct acquire_handle *handle = acquire_handle_init();
   enum acquire_status status = ACQUIRE_IDLE;
-  int initial_poll_done = 0;
+  int was_in_progress = 0;
 
   ASSERT(handle != NULL);
 
@@ -153,14 +184,19 @@ TEST test_extract_async_cancellation(void) {
 
   /* Poll once to get it started */
   status = acquire_extract_async_poll(handle);
-  initial_poll_done = 1;
+  if (status == ACQUIRE_IN_PROGRESS)
+    was_in_progress = 1;
 
   if (status == ACQUIRE_IN_PROGRESS) {
     acquire_extract_async_cancel(handle);
     /* Poll until no longer in progress */
     while ((status = acquire_extract_async_poll(handle)) ==
            ACQUIRE_IN_PROGRESS) {
-      /* Spin */
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+      Sleep(10);
+#else
+      usleep(10000);
+#endif
     }
   }
 
@@ -170,7 +206,7 @@ TEST test_extract_async_cancellation(void) {
    * was actually attempted (i.e., if the operation was still in progress
    * after the first poll).
    */
-  if (initial_poll_done && handle->cancel_flag) {
+  if (was_in_progress) {
     ASSERT_EQ_FMT(ACQUIRE_ERROR, status, "%d");
     ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED,
                   acquire_handle_get_error_code(handle), "%d");
@@ -182,24 +218,29 @@ TEST test_extract_async_cancellation(void) {
   acquire_handle_free(handle);
   PASS();
 }
-#endif /* LIBACQUIRE_USE_LIBARCHIVE */
+
+#endif /* defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE */
 
 SUITE(extract_suite) {
   RUN_TEST(test_extract_sync_success);
   RUN_TEST(test_extract_non_existent_archive);
   RUN_TEST(test_extract_corrupted_archive);
+  RUN_TEST(test_extract_invalid_args);
+  RUN_TEST(test_extract_reusability);
 
-#ifdef LIBACQUIRE_USE_WINCOMPRESSAPI
+#if defined(LIBACQUIRE_USE_WINCOMPRESSAPI) && LIBACQUIRE_USE_WINCOMPRESSAPI
   RUN_TEST(test_extract_wincompressapi_placeholder);
-#endif /* LIBACQUIRE_USE_WINCOMPRESSAPI */
-#ifdef LIBACQUIRE_USE_MINIZ
+#endif /* defined(LIBACQUIRE_USE_WINCOMPRESSAPI) &&                            \
+          LIBACQUIRE_USE_WINCOMPRESSAPI */
+#if defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ
   RUN_TEST(test_extract_miniz_cancellation);
-#endif /* LIBACQUIRE_USE_MINIZ */
+#endif /* defined(LIBACQUIRE_USE_MINIZ) && LIBACQUIRE_USE_MINIZ */
 
-#ifdef LIBACQUIRE_USE_LIBARCHIVE
+#if defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE
   RUN_TEST(test_extract_async_success);
   RUN_TEST(test_extract_async_cancellation);
-#endif /* LIBACQUIRE_USE_LIBARCHIVE */
+  /* RUN_TEST(test_extract_async_cancellation_large_file); */
+#endif /* defined(LIBACQUIRE_USE_LIBARCHIVE) && LIBACQUIRE_USE_LIBARCHIVE */
 }
 
 #endif /* !LIBACQUIRE_TEST_EXTRACT_H */

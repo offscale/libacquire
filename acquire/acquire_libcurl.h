@@ -17,6 +17,7 @@
 #include <unistd.h>
 #endif
 
+#include "acquire_config.h"
 #include "acquire_download.h"
 #include "acquire_handle.h"
 
@@ -38,7 +39,7 @@ static void acquire_curl_global_cleanup(void) {
 }
 /* --- */
 
-#if defined(LIBACQUIRE_DOWNLOAD_DIR_IMPL)
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
@@ -152,6 +153,8 @@ int acquire_download_async_start(struct acquire_handle *handle, const char *url,
   curl_easy_setopt(be->easy_handle, CURLOPT_NOPROGRESS, 0L);
   curl_easy_setopt(be->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(be->easy_handle, CURLOPT_FAILONERROR, 1L);
+  curl_easy_setopt(be->easy_handle, CURLOPT_USERAGENT,
+                   "libacquire/" LIBACQUIRE_VERSION);
   curl_easy_setopt(be->easy_handle, CURLOPT_SSLVERSION,
                    CURL_SSLVERSION_TLSv1_2);
 

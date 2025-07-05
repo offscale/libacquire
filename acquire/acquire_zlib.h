@@ -4,7 +4,7 @@
  */
 
 #if !defined(LIBACQUIRE_ACQUIRE_ZLIB_H) && defined(LIBACQUIRE_USE_ZLIB) &&     \
-    LIBACQUIRE_USE_ZLIB defined(LIBACQUIRE_IMPLEMENTATION)
+    LIBACQUIRE_USE_ZLIB && defined(LIBACQUIRE_IMPLEMENTATION)
 #define LIBACQUIRE_ACQUIRE_ZLIB_H
 
 #ifdef __cplusplus
@@ -128,4 +128,4 @@ int extract_archive(enum Archive archive, const char *archive_filepath,
 #endif /* __cplusplus */
 
 #endif /* !defined(LIBACQUIRE_ACQUIRE_ZLIB_H) && defined(LIBACQUIRE_USE_ZLIB)  \
-          && LIBACQUIRE_USE_ZLIB defined(LIBACQUIRE_IMPLEMENTATION) */
+          && LIBACQUIRE_USE_ZLIB && defined(LIBACQUIRE_IMPLEMENTATION) */

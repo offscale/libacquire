@@ -55,6 +55,21 @@ TEST test_libfetch_base64_encoder(void) {
   PASS();
 }
 
+TEST test_fetchGet_file_nonexistent(void) {
+  struct url *u;
+  FILE *f;
+
+  u = fetchParseURL("file:///non/existent/path/for/sure");
+  ASSERT(u);
+
+  f = fetchGet(u, "");
+  ASSERT_EQ(NULL, f);
+  ASSERT_EQ_FMT(FETCH_UNAVAIL, fetchLastErrCode, "%d");
+
+  fetchFreeURL(u);
+  PASS();
+}
+
 /* === FILE.C TESTS === */
 TEST test_file_c_get(void) {
   struct url *u = fetchParseURL("file://" GREATEST_FILE);
@@ -94,7 +109,8 @@ SUITE(libfetch_file_suite) {
 }
 
 /* === COMMON.C TESTS === */
-#if !defined(_WIN32)
+#if !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32__) &&              \
+    !defined(__NT__)
 TEST test_common_no_proxy_match(void) {
   setenv("no_proxy", "*.example.com, .google.com, other.org", 1);
   ASSERT(fetch_no_proxy_match("host.example.com"));
@@ -133,15 +149,48 @@ TEST test_common_netrc_auth(void) {
   remove(netrc_path);
   PASS();
 }
-#endif
+
+#endif /* !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32__) &&        \
+          !defined(__NT__)) */
+
+TEST test_fetchGet_http(void) {
+  struct url *u;
+  FILE *f;
+  char buf[10];
+
+  u = fetchParseURL("http://httpbin.org/get");
+  ASSERT(u);
+
+  f = fetchGet(u, "");
+  if (f == NULL) {
+    if (fetchLastErrCode == FETCH_NETWORK || fetchLastErrCode == FETCH_DOWN ||
+        fetchLastErrCode == FETCH_TEMP || fetchLastErrCode == FETCH_RESOLV) {
+      fetchFreeURL(u);
+      SKIPm("Network may be down, skipping test_fetchGet_http.");
+    }
+    FAILm("fetchGet failed");
+  }
+
+  ASSERT(f);
+  ASSERT(fread(buf, 1, sizeof(buf), f) > 0);
+
+  fclose(f);
+  fetchFreeURL(u);
+
+  PASS();
+}
 
 SUITE(libfetch_suite) {
-#if !defined(_WIN32)
+#if !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32__) &&              \
+    !defined(__NT__)
   RUN_TEST(test_common_no_proxy_match);
   RUN_TEST(test_common_netrc_auth);
-#endif
+#endif /* !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32__) &&        \
+          !defined(__NT__) */
   RUN_TEST(test_libfetch_url_parser);
   RUN_TEST(test_libfetch_base64_encoder);
+  RUN_TEST(test_fetchGet_http);
+  RUN_TEST(test_fetchGet_file_nonexistent);
 }
 
 #endif /* defined(LIBACQUIRE_USE_LIBFETCH) && LIBACQUIRE_USE_LIBFETCH */

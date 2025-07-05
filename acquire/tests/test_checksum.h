@@ -45,7 +45,8 @@ TEST test_verify_sync_success_sha512(void) {
   PASS();
 }
 
-#if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
+#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH ||             \
+    defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
 TEST test_verify_sync_success_crc32c(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
@@ -57,7 +58,8 @@ TEST test_verify_sync_success_crc32c(void) {
   acquire_handle_free(h);
   PASS();
 }
-#endif
+#endif /* defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH ||       \
+          defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
 
 TEST test_verify_sync_failure_bad_hash(void) {
   struct acquire_handle *h = acquire_handle_init();
@@ -168,19 +170,49 @@ TEST test_invalid_hash_length(void) {
   PASS();
 }
 
+TEST test_verify_reusability(void) {
+  struct acquire_handle *h = acquire_handle_init();
+  int result;
+  ASSERT(h != NULL);
+
+  /* First, a successful verification */
+  result =
+      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA256, GREATEST_SHA256);
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ(ACQUIRE_COMPLETE, h->status);
+
+  /* Resetting state is done inside acquire_verify_sync. Now, a failing one. */
+  result = acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA256, "badhash");
+  ASSERT_EQ_FMT(-1, result, "%d");
+  ASSERT_EQ(ACQUIRE_ERROR, h->status);
+  ASSERT_NEQ(ACQUIRE_OK, acquire_handle_get_error_code(h));
+
+  /* And another successful one, showing the handle is clean for reuse */
+  result =
+      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA256, GREATEST_SHA256);
+  ASSERT_EQ_FMT(0, result, "%d");
+  ASSERT_EQ(ACQUIRE_COMPLETE, h->status);
+
+  acquire_handle_free(h);
+  PASS();
+}
+
 SUITE(checksums_suite) {
   RUN_TEST(test_invalid_hash_length);
   RUN_TEST(test_unsupported_algorithm);
   RUN_TEST(test_verify_sync_success_sha256);
   RUN_TEST(test_verify_sync_success_sha512);
-#if defined(LIBACQUIRE_USE_LIBRHASH) || defined(LIBACQUIRE_USE_CRC32C)
+#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH ||             \
+    defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
   RUN_TEST(test_verify_sync_success_crc32c);
-#endif
+#endif /* defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH ||       \
+          defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
   RUN_TEST(test_verify_sync_failure_bad_hash);
   RUN_TEST(test_verify_sync_failure_bad_file);
   RUN_TEST(test_verify_async_success);
   RUN_TEST(test_verify_async_cancellation);
   RUN_TEST(test_verify_empty_file);
+  RUN_TEST(test_verify_reusability);
 }
 
 #endif /* !TEST_CHECKSUM_H */

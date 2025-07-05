@@ -1,7 +1,7 @@
 #ifndef LIBACQUIRE_ACQUIRE_LIBRHASH_H
 #define LIBACQUIRE_ACQUIRE_LIBRHASH_H
 
-#ifdef LIBACQUIRE_USE_LIBRHASH
+#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
 
 #ifdef __cplusplus
 extern "C" {
@@ -172,6 +172,6 @@ void _librhash_verify_async_cancel(struct acquire_handle *handle) {
 }
 #endif /* __cplusplus */
 
-#endif /* LIBACQUIRE_USE_LIBRHASH */
+#endif /* defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH */
 
 #endif /* !LIBACQUIRE_ACQUIRE_LIBRHASH_H */

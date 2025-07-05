@@ -3,28 +3,26 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
+
+#if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 
 #include "acquire_common_defs.h"
 
-#if defined(__WIN32__)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <wincrypt.h>
-#include <windows.h>
-#endif
+#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
+          defined(__NT__) */
 
 struct acquire_handle;
 
-#if defined(LIBACQUIRE_USE_WINCRYPT)
 int _wincrypt_verify_async_start(struct acquire_handle *handle,
                                  const char *filepath, enum Checksum algorithm,
                                  const char *expected_hash);
 enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle);
 void _wincrypt_verify_async_cancel(struct acquire_handle *handle);
-#endif
 
-#if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_WINCRYPT)
-#ifndef ACQUIRE_WINCRYPT_IMPL_
-#define ACQUIRE_WINCRYPT_IMPL_
+#ifdef LIBACQUIRE_IMPLEMENTATION
 
 #include "acquire_handle.h"
 #include <errno.h>
@@ -33,7 +31,7 @@ void _wincrypt_verify_async_cancel(struct acquire_handle *handle);
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
-#endif
+#endif /* !CHUNK_SIZE */
 
 struct wincrypt_backend {
   HCRYPTPROV hProv;
@@ -162,11 +160,12 @@ void _wincrypt_verify_async_cancel(struct acquire_handle *handle) {
     handle->cancel_flag = 1;
 }
 
-#endif /* ACQUIRE_WINCRYPT_IMPL_ */
-#endif /* defined(LIBACQUIRE_IMPLEMENTATION) */
+#endif /* LIBACQUIRE_IMPLEMENTATION */
+
+#endif /* defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT */
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* !LIBACQUIRE_ACQUIRE_WINCRYPT_H */

@@ -30,8 +30,8 @@ TEST test_is_downloaded_success(void) {
 
 TEST test_is_downloaded_file_missing(void) {
   /* Use a URL for a file that does not exist locally. */
-  const char *DUMMY_URL = "http://example.com/non_existent_file.txt";
-  bool result =
+  const char *const DUMMY_URL = "http://example.com/non_existent_file.txt";
+  const bool result =
       is_downloaded(DUMMY_URL, LIBACQUIRE_SHA256, "somehash", DOWNLOAD_DIR);
   ASSERT_FALSE(result);
   PASS();
@@ -39,8 +39,8 @@ TEST test_is_downloaded_file_missing(void) {
 
 TEST test_is_downloaded_bad_hash(void) {
   /* Use correct URL/file but provide an incorrect hash. */
-  bool result = is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256, "incorrect_hash",
-                              DOWNLOAD_DIR);
+  const bool result = is_downloaded(GREATEST_URL, LIBACQUIRE_SHA256,
+                                    "incorrect_hash", DOWNLOAD_DIR);
   ASSERT_FALSE(result);
   PASS();
 }
@@ -87,8 +87,16 @@ TEST test_is_downloaded_from_local_path(void) {
   PASS();
 }
 
+TEST get_download_dir_is_not_empty(void) {
+  const char *const dir = get_download_dir();
+  ASSERT(dir != NULL);
+  ASSERT(dir[0] != '\0');
+  PASS();
+}
+
 SUITE(net_common_suite) {
   setup_net_common_suite(NULL); /* Manually call setup. */
+  RUN_TEST(get_download_dir_is_not_empty);
   RUN_TEST(test_is_downloaded_bad_algorithm);
   RUN_TEST(test_is_downloaded_bad_hash);
   RUN_TEST(test_is_downloaded_file_missing);
