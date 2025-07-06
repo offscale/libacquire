@@ -12,6 +12,7 @@ extern "C" {
 #include "acquire_common_defs.h"
 #include "acquire_handle.h"
 #include "libacquire_export.h"
+#include <acquire_string_extras.h>
 
 struct rhash_backend {
   rhash handle;
@@ -98,12 +99,15 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
                              "rhash backend allocation failed");
     return -1;
   } /* LCOV_EXCL_STOP */
-  be->file = fopen(filepath, "rb");
-  if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
-                             strerror(errno));
-    free(be);
-    return -1;
+  {
+    const errno_t err = fopen_s(&be->file, filepath, "rb");
+    if (err != 0 || be->file == NULL) {
+      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                               "Cannot open file: %s", filepath);
+      free(be);
+      return -1;
+    }
   }
   be->handle = rhash_init(rhash_algo_id);
   if (!be->handle) { /* LCOV_EXCL_START */
@@ -113,7 +117,17 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
     return -1;
   } /* LCOV_EXCL_STOP */
   be->algorithm_id = rhash_algo_id;
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t e = strncpy_s(be->expected_hash, sizeof(be->expected_hash),
+                                expected_hash, sizeof(be->expected_hash) - 1);
+    if (e)
+      be->expected_hash[0] = '\0';
+  }
+#else
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+#endif
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
   return 0;
@@ -146,13 +160,21 @@ enum acquire_status _librhash_verify_async_poll(struct acquire_handle *handle) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "rhash_update failed");
     } else { /* LCOV_EXCL_STOP */
-      handle->bytes_processed += bytes_read;
+      handle->bytes_processed += (off_t)bytes_read;
       return ACQUIRE_IN_PROGRESS;
     }
   }
   if (ferror(be->file)) { /* LCOV_EXCL_START */
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
-                             strerror(errno));
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    char error_code[256];
+    strerror_s(error_code, sizeof(error_code), errno);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", error_code);
+#else
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", strerror(errno));
+#endif
   } else { /* LCOV_EXCL_STOP */
     unsigned char hash[64];
     char computed_hex[130];

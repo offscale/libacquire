@@ -59,6 +59,8 @@ extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 #if defined(LIBACQUIRE_IMPLEMENTATION) &&                                      \
     defined(LIBACQUIRE_ACQUIRE_URL_UTILS_IMPL)
 
+#include <acquire_string_extras.h>
+
 char *get_path_from_url(const char *url) {
   char buf[NAME_MAX + 1];
   const char *last_slash, *end;
@@ -85,7 +87,16 @@ char *get_path_from_url(const char *url) {
     len = sizeof(buf) - 1;
   }
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t e = strncpy_s(buf, sizeof buf, url, NAME_MAX + 1);
+    if (e)
+      buf[0] = '\0';
+  }
+#else
   strncpy(buf, last_slash, len);
+#endif
   buf[len] = '\0';
 
   return strdup(buf);

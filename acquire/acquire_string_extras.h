@@ -4,7 +4,7 @@
  * */
 
 #ifndef LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
-#define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
+#define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,13 +17,13 @@ extern "C" {
 #include <bsd/string.h>
 #else
 #include <string.h>
-#endif /* HAVE_LIBBSD */
+#endif /* HAVE_LIBBSD 1 */
 
 #include "libacquire_export.h"
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) ||     \
     defined(__bsdi__) || defined(__DragonFly__) || defined(BSD)
-#define ANY_BSD
+#define ANY_BSD 1
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -33,13 +33,13 @@ extern "C" {
 /* snprintf is implemented in VS 2015 */
 #if _MSC_VER >= 1900
 
-#define HAVE_SNPRINTF_H
+#define HAVE_SNPRINTF 1
 
 #endif /* _MSC_VER >= 1900 */
 
 #else
 
-#define HAVE_STRNCASECMP
+#define HAVE_STRNCASECMP 1
 
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
@@ -49,30 +49,30 @@ extern "C" {
 
 #if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE ||                   \
     _POSIX_C_SOURCE >= 200112L
-#define HAVE_SNPRINTF_H
+#define HAVE_SNPRINTF 1
 #endif /* _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE ||             \
           _POSIX_C_SOURCE >= 200112L */
 #if defined(_GNU_SOURCE) || defined(ANY_BSD)
-#define HAVE_STRCASESTR_H
+#define HAVE_STRCASESTR 1
 #endif /* defined(_GNU_SOURCE) || defined(ANY_BSD) */
 
 #if defined(__APPLE__) && defined(__MACH__)
-#define HAVE_SNPRINTF_H
-#define HAVE_STRNCASECMP
+#define HAVE_SNPRINTF 1
+#define HAVE_STRNCASECMP 1
 #endif /* defined(__APPLE__) && defined(__MACH__) */
 
 #if defined(BSD) && (BSD >= 199306) && !defined(__linux__) &&                  \
     !defined(linux) && !defined(__linux) && !defined(HAVE_STRNSTR)
-#define HAVE_STRNSTR
+#define HAVE_STRNSTR 1
 #endif /* defined(BSD) && (BSD >= 199306) && !defined(__linux__) &&            \
-          !defined(linux) && !defined(__linux) */
+          !defined(linux) && !defined(__linux) && !defined(HAVE_STRNSTR) */
 
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
           defined(__NT__) */
 
 #if defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
 
-#define HAVE_STRERRORLEN_S
+#define HAVE_STRERRORLEN_S 1
 
 #else
 
@@ -81,24 +81,26 @@ typedef int errno_t;
 #endif /* !defined(__APPLE__) && !defined(__APPLE_CC__) */
 
 #if defined(__linux__) || defined(linux) || defined(__linux) || defined(ANY_BSD)
+
 #ifndef strerror_s
 #define strerror_s strerror_r
 #endif /* !strerror_s */
-#define HAVE_STRERRORLEN_S
+
+#define HAVE_STRERRORLEN_S 1
 #endif /* defined(__linux__) || defined(linux) || defined(__linux) ||          \
           defined(ANY_BSD) */
 
 #endif /* defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ */
 
 #ifndef _MSC_VER
-#define HAVE_STRINGS_H
-#define HAVE_STRNCASECMP
+#define HAVE_STRINGS_H 1
+/*#define HAVE_STRNCASECMP*/
 #endif /* !_MSC_VER */
 
 #if defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||             \
     defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-#define HAVE_ASPRINTF
-#define HAVE_SNPRINTF
+#define HAVE_ASPRINTF 1
+#define HAVE_SNPRINTF 1
 #endif /* defined(ANY_BSD) || defined(__APPLE__) && defined(__MACH__) ||       \
           defined(_GNU_SOURCE) || defined(_BSD_SOURCE) */
 
@@ -106,42 +108,46 @@ typedef int errno_t;
 #include <strings.h>
 #endif /* HAVE_STRINGS_H */
 
-#ifndef HAVE_STRNCASECMP
+#if !defined(HAVE_STRNCASECMP) || defined(STRNCASECMP_IMPL) && STRNCASECMP_IMPL
 
 extern LIBACQUIRE_EXPORT int strncasecmp(const char *, const char *, size_t);
 
 extern LIBACQUIRE_EXPORT int strcasecmp(const char *, const char *);
 
-#endif /* !HAVE_STRNCASECMP */
+#endif /* !defined(HAVE_STRNCASECMP) || defined(STRNCASECMP_IMPL) &&           \
+          STRNCASECMP_IMPL */
 
-#ifndef HAVE_STRNSTR
+#if !defined(HAVE_STRNSTR) || defined(STRNSTR_IMPL) && STRNSTR_IMPL
 
 extern LIBACQUIRE_EXPORT char *strnstr(const char *, const char *, size_t);
 
-#endif /* ! HAVE_STRNSTR */
+#endif /* !defined(HAVE_STRNSTR) || defined(STRNSTR_IMPL) && STRNSTR_IMPL */
 
-#ifndef HAVE_STRCASESTR_H
+#if !defined(HAVE_STRCASESTR) || defined(STRCASESTR_IMPL) && STRCASESTR_IMPL
 
 extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
 
-#endif /* ! HAVE_STRCASESTR_H */
+#endif /* !defined(HAVE_STRCASESTR) || defined(STRCASESTR_IMPL) &&             \
+          STRCASESTR_IMPL */
 
-#ifndef HAVE_STRERRORLEN_S
+#if !defined(HAVE_STRERRORLEN_S) ||                                            \
+    defined(STRERRORLEN_IMPL) && STRERRORLEN_IMPL
 
 extern LIBACQUIRE_EXPORT size_t strerrorlen_s(errno_t);
 
-#endif /* !HAVE_STRERRORLEN_S */
+#endif /* !defined(HAVE_STRERRORLEN_S) || defined(STRERRORLEN_IMPL) &&         \
+          STRERRORLEN_IMPL */
 
-#if !defined(HAVE_SNPRINTF) && !defined(HAVE_SNPRINTF_H)
+#if !defined(HAVE_SNPRINTF) || defined(SNPRINTF_IMPL) && SNPRINTF_IMPL
 extern LIBACQUIRE_EXPORT int snprintf(char *buffer, size_t count,
                                       const char *format, ...);
-#endif /* !defined(HAVE_SNPRINTF) && !defined(HAVE_SNPRINTF_H) */
+#endif /* !defined(HAVE_SNPRINTF) || defined(SNPRINTF_IMPL) && SNPRINTF_IMPL   \
+        */
 
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
-#if !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) &&                      \
-    !defined(HAVE_SNPRINTF_H)
-#define SNPRINTF_IMPL
+#if !defined(HAVE_SNPRINTF) && defined(SNPRINTF_IMPL) && SNPRINTF_IMPL
+#define HAVE_SNPRINTF 1
 
 /*
  * `snprintf`, `vsnprintf`, `strnstr` taken from:
@@ -151,7 +157,7 @@ extern LIBACQUIRE_EXPORT int snprintf(char *buffer, size_t count,
  * Copyright (C) 2006, 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2020 Offscale.io. All rights reserved.
  *
- * SPDX-License-Identifier:  BSD-2-Clause
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 int snprintf(char *buffer, size_t count, const char *format, ...) {
@@ -183,11 +189,11 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #define vsnprintf(buffer, count, format, args)                                 \
   wtf_vsnprintf(buffer, count, format, args)
 
-#endif /* !defined(HAVE_SNPRINTF) && !defined(SNPRINTF_IMPL) &&                \
-          !defined(HAVE_SNPRINTF_H) */
+#endif /* !defined(HAVE_SNPRINTF) && defined(SNPRINTF_IMPL) && SNPRINTF_IMPL   \
+        */
 
-#if !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL)
-#define STRNCASECMP_IMPL
+#if !defined(HAVE_STRNCASECMP) && defined(STRNCASECMP_IMPL) && STRNCASECMP_IMPL
+#define HAVE_STRNCASECMP 1
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define strncasecmp _strnicmp
@@ -206,9 +212,11 @@ int strncasecmp(const char *_l, const char *_r, size_t n) {
 }
 #endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) */
 
-#endif /* !defined(HAVE_STRNCASECMP) && !defined(STRNCASECMP_IMPL) */
+#endif /* !defined(HAVE_STRNCASECMP) && defined(STRNCASECMP_IMPL) &&           \
+          STRNCASECMP_IMPL */
 
-#if !defined(HAVE_STRNSTR) && defined(STRNSTR_IMPL)
+#if !defined(HAVE_STRNSTR) && defined(STRNSTR_IMPL) && STRNSTR_IMPL
+#define HAVE_STRNSTR 1
 
 char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   /*
@@ -240,9 +248,10 @@ char *strnstr(const char *buffer, const char *target, size_t bufferLength) {
   }
   return 0;
 }
-#endif /* !defined(HAVE_STRNSTR) && !defined(STRNSTR_IMPL) */
+#endif /* !defined(HAVE_STRNSTR) && defined(STRNSTR_IMPL) && STRNSTR_IMPL */
 
-#ifdef LIBACQUIRE_STRCASESTR_IMPL
+#if !defined(HAVE_STRCASESTR) && defined(STRCASESTR_IMPL) && STRCASESTR_IMPL
+#define HAVE_STRCASESTR 1
 /* `strcasestr` from MUSL */
 
 char *strcasestr(const char *h, const char *n) {
@@ -253,9 +262,12 @@ char *strcasestr(const char *h, const char *n) {
   return 0;
 }
 
-#endif /* LIBACQUIRE_STRCASESTR_IMPL */
+#endif /* !defined(HAVE_STRCASESTR) && defined(STRCASESTR_IMPL) &&             \
+          STRCASESTR_IMPL */
 
-#if !defined(HAVE_STRERRORLEN_S) && defined(LIBACQUIRE_STRERRORLEN_IMPL)
+#if !defined(HAVE_STRERRORLEN_S) && defined(STRERRORLEN_IMPL) &&               \
+    STRERRORLEN_IMPL
+#define HAVE_STRERRORLEN_S 1
 /* MIT licensed function from Safe C Library */
 
 size_t strerrorlen_s(errno_t errnum) {
@@ -300,10 +312,10 @@ size_t strerrorlen_s(errno_t errnum) {
   }
 }
 
-#endif /* !defined(HAVE_STRERRORLEN_S) && defined(LIBACQUIRE_STRERRORLEN_IMPL) \
-        */
+#endif /* !defined(HAVE_STRERRORLEN_S) && defined(STRERRORLEN_IMPL) &&         \
+          STRERRORLEN_IMPL */
 
-#endif /* ! LIBACQUIRE_IMPLEMENTATION */
+#endif /* LIBACQUIRE_IMPLEMENTATION */
 
 #ifdef __cplusplus
 }

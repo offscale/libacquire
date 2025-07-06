@@ -20,11 +20,13 @@ void _crc32c_verify_async_cancel(struct acquire_handle *handle);
 #if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_USE_CRC32C) &&    \
     LIBACQUIRE_USE_CRC32C
 
-#include "acquire_handle.h"
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "acquire_handle.h"
+#include "acquire_string_extras.h"
 
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 4096
@@ -116,6 +118,18 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
                              "Out of memory");
     return -1;
   }
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t err = fopen_s(&be->file, filepath, "rb");
+    if (err != 0 || be->file == NULL) {
+      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                               "Cannot open file: %s", filepath);
+      free(be);
+      return -1;
+    }
+  }
+#else
   be->file = fopen(filepath, "rb");
   if (!be->file) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
@@ -123,8 +137,14 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
     free(be);
     return -1;
   }
+#endif
   be->crc = crc32c_init();
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  strncpy_s(be->expected_hash, sizeof be->expected_hash, expected_hash, 8);
+#else
   strncpy(be->expected_hash, expected_hash, 8);
+#endif
   be->expected_hash[8] = '\0';
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
@@ -149,12 +169,20 @@ enum acquire_status _crc32c_verify_async_poll(struct acquire_handle *handle) {
   bytes_read = fread(buffer, 1, sizeof(buffer), be->file);
   if (bytes_read > 0) {
     be->crc = crc32c_update(be->crc, buffer, bytes_read);
-    handle->bytes_processed += bytes_read;
+    handle->bytes_processed += (off_t)bytes_read;
     return ACQUIRE_IN_PROGRESS;
   }
   if (ferror(be->file)) {
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    char error_code[256];
+    strerror_s(error_code, sizeof(error_code), errno);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", error_code);
+#else
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
                              "File read error: %s", strerror(errno));
+#endif
   } else {
     char computed_hex[9];
     uint32_t final_crc = crc32c_finalize(be->crc);

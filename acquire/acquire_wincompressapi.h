@@ -3,12 +3,14 @@
 
 #if defined(LIBACQUIRE_IMPLEMENTATION) && defined(LIBACQUIRE_EXTRACT_IMPL)
 
-#include <compressapi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <compressapi.h>
+
 #include "acquire_extract.h"
 #include "acquire_handle.h"
+#include "acquire_string_extras.h"
 
 /*
  * NOTE: This is a synchronous wrapper around a complex API. True async would
@@ -75,25 +77,6 @@ void acquire_extract_async_cancel(struct acquire_handle *handle) {
   if (handle) {
     handle->cancel_flag = 1;
   }
-}
-
-/* --- Deprecated API Implementation --- */
-
-enum Archive extension2archive(const char *const extension) {
-  if (strncasecmp(extension, ".zip", 4) == 0)
-    return LIBACQUIRE_ZIP;
-  return LIBACQUIRE_UNSUPPORTED_ARCHIVE;
-}
-
-int extract_archive(enum Archive archive, const char *archive_filepath,
-                    const char *output_folder) {
-  (void)archive;
-  struct acquire_handle *handle = acquire_handle_init();
-  if (!handle)
-    return EXIT_FAILURE;
-  int result = acquire_extract_sync(handle, archive_filepath, output_folder);
-  acquire_handle_free(handle);
-  return (result == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \

@@ -184,6 +184,10 @@ else ()
 
     message(STATUS "header_impls = ${header_impls}")
 
+    if (WIN32)
+        list(APPEND header_impls "acquire_windows.h")
+    endif (WIN32)
+
     foreach (header_file IN LISTS header_impls)
         if (header_file STREQUAL "")
             continue()
@@ -306,12 +310,12 @@ else ()
             if (HAS_LIBBSD)
                 set_source_files_properties(
                         ${src} PROPERTIES
-                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_STRCASESTR_IMPL=1;LIBACQUIRE_STRERRORLEN_IMPL=1"
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRERRORLEN_IMPL=1"
                 )
             else ()
                 set_source_files_properties(
                         ${src} PROPERTIES
-                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_STRCASESTR_IMPL=1;LIBACQUIRE_STRERRORLEN_IMPL=1;STRNSTR_IMPL=1"
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRERRORLEN_IMPL=1;STRNSTR_IMPL=1"
                 )
             endif ()
         elseif (src MATCHES "/gen_acquire_url_utils.c$")

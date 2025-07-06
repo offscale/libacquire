@@ -133,17 +133,18 @@ set(Header_Files
 )
 source_group("Header Files" FILES "${Header_Files}")
 
-# Add cli.c to the test sources
 set(Source_Files "test.c" "${CMAKE_SOURCE_DIR}/acquire/cli/cli.c")
 source_group("Source Files" FILES "${Source_Files}")
 
-set_source_files_properties("test_string_extras.c"
-        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
-set_source_files_properties("test.c"
-        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_DOWNLOAD_DIR_IMPL=1")
-
-set_source_files_properties("test_string_extras.c"
-        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
+if (MSVC)
+    set_source_files_properties("test_string_extras.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRNCASECMP_IMPL=1")
+else ()
+    set_source_files_properties("test.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_DOWNLOAD_DIR_IMPL=1")
+    set_source_files_properties("test_string_extras.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
+endif ()
 
 add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
@@ -202,6 +203,8 @@ if (LIBACQUIRE_USE_LIBCURL)
             "${CMAKE_BINARY_DIR}/gen/gen_acquire_libcurl.c"
             "${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
     )
+    set_source_files_properties("${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRNCASECMP_IMPL=1")
     source_group("${EXEC_NAME} Source Files" FILES "${Test_Libcurl_Source_Files}")
 
     add_executable("${EXEC_NAME}" "${Test_Libcurl_Header_Files}" "${Test_Libcurl_Source_Files}")

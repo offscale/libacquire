@@ -8,11 +8,16 @@ extern "C" {
 #if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
 
 #include "acquire_common_defs.h"
+#include "acquire_string_extras.h"
+// #include <ntdef.h>
+#include "acquire_windows.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <Guiddef.h>
+// #include <dvp.h>
+
+#include <basetsd.h>
+
 #include <wincrypt.h>
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
-          defined(__NT__) */
 
 struct acquire_handle;
 
@@ -25,6 +30,7 @@ void _wincrypt_verify_async_cancel(struct acquire_handle *handle);
 #ifdef LIBACQUIRE_IMPLEMENTATION
 
 #include "acquire_handle.h"
+#include "acquire_string_extras.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,12 +89,15 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
     acquire_handle_set_error(handle, ACQUIRE_ERROR_OUT_OF_MEMORY, "wincrypt");
     return -1;
   }
-  be->file = fopen(filepath, "rb");
-  if (!be->file) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
-                             strerror(errno));
-    free(be);
-    return -1;
+  {
+    const errno_t err = fopen_s(&be->file, filepath, "rb");
+    if (err != 0 || be->file == NULL) {
+      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                               "Cannot open file: %s", filepath);
+      free(be);
+      return -1;
+    }
   }
   if (!CryptAcquireContext(&be->hProv, NULL, NULL, PROV_RSA_AES,
                            CRYPT_VERIFYCONTEXT) ||
@@ -98,7 +107,17 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
                              "wincrypt init failed");
     return -1;
   }
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t e = strncpy_s(be->expected_hash, sizeof(be->expected_hash),
+                                expected_hash, sizeof(be->expected_hash) - 1);
+    if (e)
+      be->expected_hash[0] = '\0';
+  }
+#else
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+#endif
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
   return 0;
@@ -124,21 +143,29 @@ enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle) {
       acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
                                "CryptHashData failed");
     } else {
-      handle->bytes_processed += bytes_read;
+      handle->bytes_processed += (off_t)bytes_read;
       return ACQUIRE_IN_PROGRESS;
     }
   }
   if (ferror(be->file)) {
+    char error_code[256];
+    strerror_s(error_code, sizeof(error_code), errno);
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
-                             strerror(errno));
+                             "File read error: %s", error_code);
   } else {
     BYTE hash[64];
     DWORD hash_len = sizeof(hash);
     char computed_hex[130];
-    int i;
     if (CryptGetHashParam(be->hHash, HP_HASHVAL, hash, &hash_len, 0)) {
-      for (i = 0; i < (int)hash_len; i++)
-        sprintf(computed_hex + (i * 2), "%02x", hash[i]);
+      size_t BUF_SIZE = sizeof(computed_hex);
+      DWORD j;
+
+      for (j = 0; j < hash_len; j++)
+        sprintf_s(computed_hex + (j * 2), BUF_SIZE - (j * 2), "%02x", hash[j]);
+      computed_hex[hash_len * 2] = '\0';
+
+      for (j = 0; j < hash_len; j++)
+        sprintf_s(computed_hex + (j * 2), BUF_SIZE - (j * 2), "%02x", hash[j]);
       computed_hex[hash_len * 2] = '\0';
       if (strncasecmp(computed_hex, be->expected_hash, hash_len * 2) == 0)
         handle->status = ACQUIRE_COMPLETE;

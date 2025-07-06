@@ -22,30 +22,6 @@
 const char *get_download_dir(void) { return ".downloads"; }
 #endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
-/* --- Common Handle Management --- */
-
-struct acquire_handle *acquire_handle_init(void) {
-  struct acquire_handle *handle =
-      (struct acquire_handle *)calloc(1, sizeof(struct acquire_handle));
-  if (handle) {
-    handle->total_size = -1;
-    handle->status = ACQUIRE_IDLE;
-  }
-  return handle;
-}
-
-void acquire_handle_free(struct acquire_handle *handle) {
-  if (!handle)
-    return;
-  if (handle->output_file)
-    fclose(handle->output_file);
-  free(handle);
-}
-
-const char *acquire_handle_get_error_string(struct acquire_handle *handle) {
-  return handle ? handle->error_message : "Invalid handle.";
-}
-
 /* --- Synchronous API --- */
 
 /**
@@ -96,7 +72,7 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
       break;
     }
     fwrite(buffer, 1, bytes_read, handle->output_file);
-    handle->bytes_processed += bytes_read;
+    handle->bytes_processed += (off_t)bytes_read;
   }
 
   fclose(handle->output_file);

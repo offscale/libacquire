@@ -223,7 +223,16 @@ void fetch_syserr(void) {
   default:
     fetchLastErrCode = FETCH_UNKNOWN;
   }
-  snprintf(fetchLastErrString, MAXERRSTRING, "%s", strerror(errno));
+  {
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    char error_code[256];
+    strerror_s(error_code, sizeof(error_code), errno);
+#else
+    const char *const error_code = strerror(errno);
+#endif
+    snprintf(fetchLastErrString, MAXERRSTRING, "%s", error_code);
+  }
 }
 
 /*

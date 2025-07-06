@@ -8,8 +8,23 @@ extern "C" {
 #include "acquire_handle.h"
 #include "libacquire_export.h"
 
+#if defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C
+#include "acquire_crc32c.h"
+#endif /* defined(LIBACQUIRE_USE_CRC32C) && LIBACQUIRE_USE_CRC32C */
+
+#if defined(LIBACQUIRE_USE_LIBRHASH) && LIBACQUIRE_USE_LIBRHASH
 #include "acquire_librhash.h"
+#endif
+
+#if (defined(LIBACQUIRE_USE_OPENSSL) && LIBACQUIRE_USE_OPENSSL) ||             \
+    (defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO) || \
+    (defined(LIBACQUIRE_USE_LIBRESSL) && LIBACQUIRE_USE_LIBRESSL)
 #include "acquire_openssl.h"
+#endif
+
+#if defined(LIBACQUIRE_USE_WINCRYPT) && LIBACQUIRE_USE_WINCRYPT
+#include "acquire_wincrypt.h"
+#endif
 
 extern LIBACQUIRE_EXPORT enum Checksum string2checksum(const char *s);
 extern LIBACQUIRE_EXPORT int
@@ -33,6 +48,7 @@ extern LIBACQUIRE_EXPORT int acquire_verify_sync(struct acquire_handle *handle,
 #else
 #include <unistd.h> /* For usleep() */
 #endif
+#include <acquire_string_extras.h>
 
 enum Checksum string2checksum(const char *const s) {
   if (s == NULL)

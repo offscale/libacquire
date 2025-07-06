@@ -1,33 +1,55 @@
 #ifndef TEST_CLI_H
 #define TEST_CLI_H
 
-#include "acquire_config.h"
-#include "cli.h"
-#include <greatest.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <greatest.h>
+
+#include "acquire_config.h"
+#include "cli.h"
 
 /* Helper to create a mutable argv array for tests */
 static char **create_argv(const char *const *src, int count) {
   int i;
   size_t total_len = 0;
   char **argv = (char **)malloc(sizeof(char *) * (count + 1));
-  char *data;
-  for (i = 0; i < count; i++) {
+  char *data = malloc(total_len);
+  for (i = 0; i < count; i++)
     total_len += strlen(src[i]) + 1;
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    char *current_pos = data;
+
+    for (i = 0; i < count; i++) {
+      const size_t remaining_size = total_len - (current_pos - data);
+
+      const size_t src_len = strlen(src[i]) + 1;
+
+      if (remaining_size < src_len)
+        break;
+
+      strcpy_s(current_pos, remaining_size, src[i]);
+
+      argv[i] = current_pos;
+
+      current_pos += src_len;
+    }
   }
-  data = (char *)malloc(total_len);
+#else
   for (i = 0; i < count; i++) {
     strcpy(data, src[i]);
     argv[i] = data;
     data += strlen(src[i]) + 1;
   }
+#endif
   argv[count] = NULL;
   return argv;
 }
 
-static void free_argv(char **argv) {
+static void free_argv(char *argv[]) {
   if (argv != NULL) {
     if (argv[0] != NULL) {
       free(argv[0]); /* Free the contiguous block */

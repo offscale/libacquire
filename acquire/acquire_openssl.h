@@ -37,6 +37,7 @@ void _openssl_verify_async_cancel(struct acquire_handle *handle);
 #endif /* !EVP_MAX_MD_SIZE */
 
 #include "acquire_handle.h"
+#include <acquire_string_extras.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,6 +104,18 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
                              "openssl backend memory allocation failed");
     return -1;
   }
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t err = fopen_s(&be->file, filepath, "rb");
+    if (err != 0 || be->file == NULL) {
+      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                               "Cannot open file: %s", filepath);
+      free(be);
+      return -1;
+    }
+  }
+#else
   be->file = fopen(filepath, "rb");
   if (!be->file) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED, "%s",
@@ -110,6 +123,7 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     free(be);
     return -1;
   }
+#endif
 
 #if defined(LIBACQUIRE_USE_COMMON_CRYPTO) && LIBACQUIRE_USE_COMMON_CRYPTO
   be->algorithm = algorithm;
@@ -135,7 +149,17 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
   }
 #endif
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+  {
+    const errno_t e = strncpy_s(be->expected_hash, sizeof(be->expected_hash),
+                                expected_hash, sizeof(be->expected_hash) - 1);
+    if (e)
+      be->expected_hash[0] = '\0';
+  }
+#else
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+#endif
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;
   return 0;
@@ -181,13 +205,21 @@ enum acquire_status _openssl_verify_async_poll(struct acquire_handle *handle) {
     }
 #endif
     if (handle->error.code == ACQUIRE_OK) {
-      handle->bytes_processed += bytes_read;
+      handle->bytes_processed += (off_t)bytes_read;
       return ACQUIRE_IN_PROGRESS;
     }
   }
   if (ferror(be->file)) {
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED, "%s",
-                             strerror(errno));
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
+    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
+    char error_code[256];
+    strerror_s(error_code, sizeof(error_code), errno);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", error_code);
+#else
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_READ_FAILED,
+                             "File read error: %s", strerror(errno));
+#endif
   } else {
     unsigned char hash[EVP_MAX_MD_SIZE];
     char computed_hex[EVP_MAX_MD_SIZE * 2 + 1];
