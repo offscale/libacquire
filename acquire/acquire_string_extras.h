@@ -4,7 +4,7 @@
  * */
 
 #ifndef LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
-#define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H 1
+#define LIBACQUIRE_ACQUIRE_STRING_EXTRAS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -192,13 +192,25 @@ inline double wtf_vsnprintf(char *buffer, size_t count, const char *format,
 #endif /* !defined(HAVE_SNPRINTF) && defined(SNPRINTF_IMPL) && SNPRINTF_IMPL   \
         */
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(STRNCASECMP_IMPL)
+/* TODO: remove this hack */
+#define STRNCASECMP_IMPL 1
+#endif /* defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(STRNCASECMP_IMPL) */
+
 #if !defined(HAVE_STRNCASECMP) && defined(STRNCASECMP_IMPL) && STRNCASECMP_IMPL
 #define HAVE_STRNCASECMP 1
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#define strncasecmp _strnicmp
+/* this didn't work `#define strncasecmp _strnicmp` */
+LIBACQUIRE_EXPORT int strncasecmp(const char *_l, const char *_r, size_t n) {
+    return _strnicmp(_l, _r, n);
+}
 
-#define strcasecmp _stricmp
+/* this didn't work `#define strcasecmp _stricmp` */
+LIBACQUIRE_EXPORT int strcasecmp(const char *l, const char *r) {
+    return _stricmp(l, r);
+}
+
 #else
 /* from MIT licensed musl @ e0ef93c20de1a9e0a6b8f4a4a951a8e61a1a2973 */
 int strncasecmp(const char *_l, const char *_r, size_t n) {

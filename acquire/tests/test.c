@@ -27,10 +27,6 @@
 #include "test_string_extras.h"
 #include "test_url_utils.h"
 
-#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
-const char *get_download_dir(void) { return ".test_downloads"; }
-#endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
-
 /* Add definitions that need to be in the test runner's main file. */
 GREATEST_MAIN_DEFS();
 

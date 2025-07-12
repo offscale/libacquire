@@ -315,7 +315,7 @@ else ()
             else ()
                 set_source_files_properties(
                         ${src} PROPERTIES
-                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRERRORLEN_IMPL=1;STRNSTR_IMPL=1"
+                        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRERRORLEN_IMPL=1;STRNSTR_IMPL=1;STRNCASECMP_IMPL=1"
                 )
             endif ()
         elseif (src MATCHES "/gen_acquire_url_utils.c$")
@@ -585,7 +585,7 @@ include(GenerateExportHeader)
 set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/lib${LIBRARY_NAME}_export.h")
 
 if (1)
-    # pass
+    # pass (intentionally never run)
 elseif (LIBACQUIRE_HEADER_ONLY)
     file(WRITE "${_export_file}"
             "#ifndef LIBACQUIRE_EXPORT_H\n"

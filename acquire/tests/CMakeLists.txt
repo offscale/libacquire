@@ -1,5 +1,3 @@
-set(EXEC_NAME "test_${PROJECT_NAME}")
-
 #########################
 # Dependencies download #
 #########################
@@ -119,6 +117,45 @@ endmacro(test_wrapper)
 
 configure_file(config_for_tests.h.in "${PROJECT_BINARY_DIR}/src/config_for_tests.h" @ONLY)
 
+#######################
+# Download dir target #
+#######################
+
+set(DOWNLOAD_DIR_LIB "test_${PROJECT_NAME}_download_dir")
+
+set(Header_Files
+        "${CMAKE_BINARY_DIR}/gen/gen_acquire_common_defs.h"
+        "${CMAKE_BINARY_DIR}/gen/gen_acquire_net_common.h"
+)
+source_group("${DOWNLOAD_DIR_LIB} Header Files" FILES "${Header_Files}")
+
+set(Source_Files
+        "${CMAKE_BINARY_DIR}/gen/gen_acquire_net_common.c")
+source_group("${DOWNLOAD_DIR_LIB} Source Files" FILES "${Source_Files}")
+
+add_library("${DOWNLOAD_DIR_LIB}" SHARED "${Header_Files}" "${Source_Files}")
+
+target_link_libraries("${DOWNLOAD_DIR_LIB}" PRIVATE "${PROJECT_NAME}")
+
+target_include_directories(
+        "${DOWNLOAD_DIR_LIB}"
+        PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/gen>"
+)
+if (WIN32)
+    target_compile_definitions(
+            "${DOWNLOAD_DIR_LIB}"
+            PRIVATE
+            "_${TARGET_ARCH}_"
+    )
+endif ()
+
+####
+
+set(EXEC_NAME "test_${PROJECT_NAME}")
+
 set(Header_Files
         "test_handle.h"
         "test_checksum.h"
@@ -133,18 +170,23 @@ set(Header_Files
 )
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "test.c" "${CMAKE_SOURCE_DIR}/acquire/cli/cli.c")
+set(Source_Files
+        "${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
+        "test.c"
+        "${CMAKE_SOURCE_DIR}/acquire/cli/cli.c")
 source_group("Source Files" FILES "${Source_Files}")
 
 if (MSVC)
     set_source_files_properties("test_string_extras.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRNCASECMP_IMPL=1")
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=0;STRCASESTR_IMPL=0;STRNCASECMP_IMPL=0")
+    set_source_files_properties("${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
+            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRNCASECMP_IMPL=0;STRNSTR_IMPL=1;STRERRORLEN_IMPL=1")
 else ()
-    set_source_files_properties("test.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_DOWNLOAD_DIR_IMPL=1")
     set_source_files_properties("test_string_extras.c"
             PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1")
 endif ()
+#set_source_files_properties("test.c"
+#        PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_DOWNLOAD_DIR_IMPL=1")
 
 add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 target_compile_definitions("${EXEC_NAME}" PUBLIC "_${TARGET_ARCH}_")
@@ -156,11 +198,12 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}"
         "${PROJECT_NAME}_compiler_flags"
+        "${DOWNLOAD_DIR_LIB}"
 )
 
 if (LIBACQUIRE_USE_MY_LIBFETCH)
     target_link_libraries(${EXEC_NAME} PRIVATE freebsd_libfetch)
-endif ()
+endif (LIBACQUIRE_USE_MY_LIBFETCH)
 
 if (LIBACQUIRE_USE_MINIZ)
     find_package(kubazip CONFIG REQUIRED)
