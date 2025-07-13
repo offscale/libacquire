@@ -16,9 +16,6 @@
 
 #define EMPTY_FILE_SHA256                                                      \
   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-#define GREATEST_SHA512                                                        \
-  "3dd506fcf7b60d46e3a3865b9159f19ad35b359398bcb736c9f8de239059187ae625fb0041" \
-  "7f16a8bb8520c7bbeb388e974a3294aa3eb4c4f93185831ed2b6a2e"
 static const char *EMPTY_FILE_PATH = DOWNLOAD_DIR PATH_SEP "empty.txt";
 
 TEST test_verify_sync_success_sha256(void) {
@@ -37,8 +34,8 @@ TEST test_verify_sync_success_sha512(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
   ASSERT(h != NULL);
-  result =
-      acquire_verify_sync(h, GREATEST_FILE, LIBACQUIRE_SHA512, GREATEST_SHA512);
+  result = acquire_verify_sync(h, GREATEST_ARCHIVE, LIBACQUIRE_SHA512,
+                               GREATEST_ZIP_SHA512);
   ASSERT_EQ_FMT(0, result, "%d");
   ASSERT_EQ_FMT(ACQUIRE_COMPLETE, h->status, "%d");
   acquire_handle_free(h);

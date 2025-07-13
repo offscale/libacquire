@@ -25,6 +25,7 @@ extern "C" {
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ||           \
           defined(__NT__) */
 #include <acquire_common_defs.h>
+#include <stdlib.h>
 #include <string.h>
 #ifndef NAME_MAX
 #define NAME_MAX 4096
@@ -34,14 +35,13 @@ extern "C" {
  * @brief Extract the path component (filename) from a URL string.
  *
  * Given a URL string, returns a newly allocated string containing
- * everything after the last '/' character in the URL, stopping before any
- * query ('?') or fragment ('#') delimiter.
- *
- * If the URL is NULL or empty, returns NULL.
+ * everything after the last '/' character in the URL's path, stopping before
+ * any query ('?') or fragment ('#') delimiter.
  *
  * @param url Input URL string.
- * @return Pointer to a newly allocated string, or `NULL` on failure.
- *         The caller is responsible for freeing this memory.
+ * @return Pointer to a newly allocated string, or `NULL` on failure or if the
+ *         input is NULL/empty. The caller is responsible for freeing this
+ * memory.
  */
 extern LIBACQUIRE_EXPORT char *get_path_from_url(const char *url);
 
@@ -62,44 +62,52 @@ extern LIBACQUIRE_EXPORT bool is_url(const char *maybe_url);
 #include <acquire_string_extras.h>
 
 char *get_path_from_url(const char *url) {
-  char buf[NAME_MAX + 1];
-  const char *last_slash, *end;
+  const char *path_start, *filename_start, *query_or_frag;
   size_t len;
+  char *result;
 
-  if (!url || url[0] == '\0')
+  if (!url || !*url) {
     return NULL;
+  }
 
-  last_slash = strrchr(url, '/');
-  if (last_slash) {
-    if ((last_slash - url) < 9)
+  path_start = strstr(url, "://");
+  if (path_start) {
+    /* It's a URL. Find the path part, which starts after the authority. */
+    path_start = strchr(path_start + 3, '/');
+    if (!path_start) {
+      /* URL has host, but no path. E.g. http://example.com */
       return strdup("");
-    last_slash++;
-  } else
-    last_slash = url;
-
-  end = last_slash;
-  while (*end != '\0' && *end != '?' && *end != '#') {
-    end++;
+    }
+  } else {
+    /* Not a full URL with scheme. Treat as local path. */
+    path_start = url;
   }
 
-  len = end - last_slash;
-  if (len >= sizeof(buf)) {
-    len = sizeof(buf) - 1;
+  /* Now path_start points to the beginning of the path, e.g.,
+   * "/path/to/file.txt" */
+  filename_start = strrchr(path_start, '/');
+  if (filename_start) {
+    /* We found a slash, the filename is after it */
+    filename_start++;
+  } else {
+    /* No slashes in path, the whole path is the filename */
+    filename_start = path_start;
   }
 
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
-    defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
-  {
-    const errno_t e = strncpy_s(buf, sizeof buf, url, NAME_MAX + 1);
-    if (e)
-      buf[0] = '\0';
+  /* Find end of filename (start of query or fragment) */
+  query_or_frag = filename_start;
+  while (*query_or_frag && *query_or_frag != '?' && *query_or_frag != '#') {
+    query_or_frag++;
   }
-#else
-  strncpy(buf, last_slash, len);
-#endif
-  buf[len] = '\0';
 
-  return strdup(buf);
+  len = query_or_frag - filename_start;
+  result = (char *)malloc(len + 1);
+  if (!result)
+    return NULL; /* LCOV_EXCL_LINE */
+
+  memcpy(result, filename_start, len);
+  result[len] = '\0';
+  return result;
 }
 
 bool is_url(const char *maybe_url) {

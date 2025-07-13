@@ -78,13 +78,12 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
     break;
   case LIBACQUIRE_SHA512:
     rhash_algo_id = RHASH_SHA512;
-    expected_len = 129;
+    expected_len = 128;
     break;
   default:
     return -1;
   }
-  if (strlen(expected_hash) != expected_len &&
-      !(algorithm == LIBACQUIRE_SHA512 && strlen(expected_hash) == 128)) {
+  if (strlen(expected_hash) != expected_len) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_UNSUPPORTED_CHECKSUM_FORMAT,
                              "Invalid hash length for selected algorithm");
     return -1;
@@ -99,6 +98,7 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
                              "rhash backend allocation failed");
     return -1;
   } /* LCOV_EXCL_STOP */
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
   {
     const errno_t err = fopen_s(&be->file, filepath, "rb");
     if (err != 0 || be->file == NULL) {
@@ -109,6 +109,16 @@ int _librhash_verify_async_start(struct acquire_handle *handle,
       return -1;
     }
   }
+#else
+  be->file = fopen(filepath, "rb");
+  if (!be->file) {
+    fprintf(stderr, "couldn't open file for reading %s\n", filepath);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                             "Cannot open file: %s", strerror(errno));
+    free(be);
+    return -1;
+  }
+#endif
   be->handle = rhash_init(rhash_algo_id);
   if (!be->handle) { /* LCOV_EXCL_START */
     cleanup_rhash_backend(handle);

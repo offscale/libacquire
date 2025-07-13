@@ -14,35 +14,42 @@
 static char **create_argv(const char *const *src, int count) {
   int i;
   size_t total_len = 0;
-  char **argv = (char **)malloc(sizeof(char *) * (count + 1));
-  char *data = malloc(total_len);
-  for (i = 0; i < count; i++)
+  char **argv;
+  char *data;
+
+  for (i = 0; i < count; i++) {
     total_len += strlen(src[i]) + 1;
+  }
+
+  argv = (char **)malloc(sizeof(char *) * (count + 1));
+  if (!argv)
+    return NULL;
+
+  data = (char *)malloc(total_len);
+  if (!data) {
+    free(argv);
+    return NULL;
+  }
+
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
     defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
   {
     char *current_pos = data;
-
     for (i = 0; i < count; i++) {
-      const size_t remaining_size = total_len - (current_pos - data);
-
       const size_t src_len = strlen(src[i]) + 1;
-
-      if (remaining_size < src_len)
-        break;
-
-      strcpy_s(current_pos, remaining_size, src[i]);
-
+      strcpy_s(current_pos, src_len, src[i]);
       argv[i] = current_pos;
-
       current_pos += src_len;
     }
   }
 #else
-  for (i = 0; i < count; i++) {
-    strcpy(data, src[i]);
-    argv[i] = data;
-    data += strlen(src[i]) + 1;
+  {
+    char *current_pos = data;
+    for (i = 0; i < count; i++) {
+      strcpy(current_pos, src[i]);
+      argv[i] = current_pos;
+      current_pos += strlen(src[i]) + 1;
+    }
   }
 #endif
   argv[count] = NULL;

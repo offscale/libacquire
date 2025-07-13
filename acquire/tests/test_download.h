@@ -82,20 +82,33 @@ TEST test_async_download_invalid_args(void) {
 
 TEST test_async_cancellation(void) {
   struct acquire_handle *handle = acquire_handle_init();
-  const char local_path[] = DOWNLOAD_DIR PATH_SEP "greatest_cancelled.h";
+  const char local_path[] = DOWNLOAD_DIR PATH_SEP "5MB_cancelled.zip";
   enum acquire_status status;
 
   ASSERT(handle != NULL);
-  if (acquire_download_async_start(handle, GREATEST_URL, local_path) != 0)
-    FAILm("Failed to start download for a test that is supposed to be "
-          "cancelled.");
+  if (acquire_download_async_start(handle, LARGE_FILE_URL, local_path) != 0) {
+    char fail_msg[512];
+    snprintf(fail_msg, sizeof(fail_msg),
+             "Failed to start download for cancellation test. Error: [%d] %s",
+             acquire_handle_get_error_code(handle),
+             acquire_handle_get_error_string(handle));
+    if (acquire_handle_get_error_code(handle) == ACQUIRE_ERROR_HOST_NOT_FOUND) {
+      SKIPm(fail_msg);
+    }
+    FAILm(fail_msg);
+  }
 
+  /* Let it download for a bit to ensure it's in progress */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-  Sleep(20);
+  Sleep(200); /* 200ms */
 #else
-  usleep(20000);
+  usleep(200000); /* 200ms */
 #endif
-  acquire_download_async_cancel(handle);
+
+  status = acquire_download_async_poll(handle);
+  if (status == ACQUIRE_IN_PROGRESS) {
+    acquire_download_async_cancel(handle);
+  }
 
   while ((status = acquire_download_async_poll(handle)) == ACQUIRE_IN_PROGRESS)
     ;
@@ -105,6 +118,7 @@ TEST test_async_cancellation(void) {
                 "%d");
 
   acquire_handle_free(handle);
+  remove(local_path);
   PASS();
 }
 
@@ -176,49 +190,6 @@ TEST test_sync_download_invalid_args(void) {
   PASS();
 }
 
-TEST test_async_cancellation_large_file(void) {
-  struct acquire_handle *handle = acquire_handle_init();
-  const char local_path[] = DOWNLOAD_DIR PATH_SEP "5MB_cancelled.zip";
-  enum acquire_status status;
-
-  ASSERT(handle != NULL);
-  if (acquire_download_async_start(handle, LARGE_FILE_URL, local_path) != 0) {
-    char fail_msg[512];
-    snprintf(fail_msg, sizeof(fail_msg),
-             "Failed to start download for large file. Error: [%d] %s",
-             acquire_handle_get_error_code(handle),
-             acquire_handle_get_error_string(handle));
-    if (acquire_handle_get_error_code(handle) == ACQUIRE_ERROR_HOST_NOT_FOUND) {
-      SKIPm(fail_msg);
-    }
-    FAILm(fail_msg);
-  }
-
-  /* Let it download for a bit */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-  Sleep(200);
-#else
-  usleep(200000);
-#endif
-
-  status = acquire_download_async_poll(handle);
-  if (status == ACQUIRE_IN_PROGRESS) {
-    acquire_download_async_cancel(handle);
-  }
-
-  while ((status = acquire_download_async_poll(handle)) == ACQUIRE_IN_PROGRESS)
-    ;
-
-  ASSERT_EQ_FMT(ACQUIRE_ERROR, status, "%d");
-  ASSERT_EQ_FMT(ACQUIRE_ERROR_CANCELLED, acquire_handle_get_error_code(handle),
-                "%d");
-
-  acquire_handle_free(handle);
-  /* The file might have been created, so remove it */
-  remove(local_path);
-  PASS();
-}
-
 TEST test_download_reusability(void) {
   struct acquire_handle *h = acquire_handle_init();
   int result;
@@ -251,15 +222,13 @@ TEST test_download_reusability(void) {
 
 SUITE(downloads_suite) {
   RUN_TEST(test_sync_download);
-  RUN_TEST(test_sync_download_invalid_args);
   RUN_TEST(test_async_download);
+  RUN_TEST(test_sync_download_invalid_args);
   RUN_TEST(test_async_download_invalid_args);
   RUN_TEST(test_async_cancellation);
-  RUN_TEST(test_async_cancellation_large_file);
   RUN_TEST(test_download_404_error);
   RUN_TEST(test_download_bad_host);
   RUN_TEST(test_download_to_invalid_path);
   RUN_TEST(test_download_reusability);
 }
-
 #endif /* !TEST_DOWNLOAD_H */

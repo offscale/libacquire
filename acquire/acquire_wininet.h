@@ -7,9 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include <winuser.h>
-// #include <windef.h>
-
 #include "acquire_windows.h"
 
 #include <wininet.h>
@@ -29,26 +26,41 @@ const char *get_download_dir(void) { return ".downloads"; }
 int acquire_download_sync(struct acquire_handle *handle, const char *url,
                           const char *dest_path) {
   HINTERNET h_internet, h_url;
-  DWORD bytes_read, content_len_size = sizeof(handle->total_size);
+  DWORD bytes_read, content_len_size = sizeof(handle->total_size),
+                    dwStatusCode = 0, dwSize = sizeof(dwStatusCode);
   char buffer[4096];
-  if (handle == NULL)
+
+  if (!handle || !url || !dest_path) {
+    if (handle)
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                               "Invalid arguments for sync download");
     return -1;
+  }
 
   h_internet = InternetOpen("acquire_wininet", INTERNET_OPEN_TYPE_PRECONFIG,
                             NULL, NULL, 0);
   if (h_internet == NULL) {
-    strcpy_s(handle->error.message, sizeof(handle->error.message),
-             "InternetOpen failed");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_INIT_FAILED,
+                             "InternetOpen failed");
     return -1;
   }
 
   h_url = InternetOpenUrl(h_internet, url, NULL, 0,
                           INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE, 0);
   if (h_url == NULL) {
-    strcpy_s(handle->error.message, sizeof(handle->error.message),
-             "InternetOpenUrl failed");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_HOST_NOT_FOUND,
+                             "InternetOpenUrl failed");
     InternetCloseHandle(h_internet);
     return -1;
+  }
+
+  if (HttpQueryInfo(h_url, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER,
+                    &dwStatusCode, &dwSize, NULL)) {
+    if (dwStatusCode >= 400) {
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_HTTP_FAILURE,
+                               "HTTP error: %lu", dwStatusCode);
+      goto fail;
+    }
   }
 
   {
@@ -69,8 +81,8 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
   while (InternetReadFile(h_url, buffer, sizeof(buffer), &bytes_read) &&
          bytes_read > 0) {
     if (handle->cancel_flag) { /* Check for cancellation */
-      strcpy_s(handle->error.message, sizeof(handle->error.message),
-               "Download cancelled");
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                               "Download cancelled");
       goto fail;
     }
     fwrite(buffer, 1, bytes_read, handle->output_file);
@@ -90,7 +102,6 @@ fail:
   handle->output_file = NULL;
   InternetCloseHandle(h_url);
   InternetCloseHandle(h_internet);
-  handle->status = ACQUIRE_ERROR;
   return -1;
 }
 

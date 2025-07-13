@@ -9,11 +9,9 @@ extern "C" {
 
 #include "acquire_common_defs.h"
 #include "acquire_string_extras.h"
-// #include <ntdef.h>
 #include "acquire_windows.h"
 
 #include <Guiddef.h>
-// #include <dvp.h>
 
 #include <basetsd.h>
 
@@ -44,7 +42,17 @@ struct wincrypt_backend {
   HCRYPTHASH hHash;
   FILE *file;
   char expected_hash[130];
+  ALG_ID alg_id;
 };
+
+static void reverse_bytes(BYTE *p, size_t len) {
+  size_t i;
+  for (i = 0; i < len / 2; ++i) {
+    BYTE t = p[i];
+    p[i] = p[len - 1 - i];
+    p[len - 1 - i] = t;
+  }
+}
 
 static void cleanup_wincrypt_backend(struct acquire_handle *handle) {
   if (handle && handle->backend_handle) {
@@ -107,6 +115,7 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
                              "wincrypt init failed");
     return -1;
   }
+  be->alg_id = alg_id;
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
     defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
   {
@@ -160,9 +169,9 @@ enum acquire_status _wincrypt_verify_async_poll(struct acquire_handle *handle) {
       size_t BUF_SIZE = sizeof(computed_hex);
       DWORD j;
 
-      for (j = 0; j < hash_len; j++)
-        sprintf_s(computed_hex + (j * 2), BUF_SIZE - (j * 2), "%02x", hash[j]);
-      computed_hex[hash_len * 2] = '\0';
+      if (be->alg_id == CALG_SHA_512) {
+        /*reverse_bytes(hash, hash_len);*/
+      }
 
       for (j = 0; j < hash_len; j++)
         sprintf_s(computed_hex + (j * 2), BUF_SIZE - (j * 2), "%02x", hash[j]);

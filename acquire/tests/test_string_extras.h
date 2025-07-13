@@ -6,6 +6,7 @@
 #include "config_for_tests.h"
 
 #include <acquire_string_extras.h>
+#include <errno.h>
 
 static const char *const test_buffer = "hello world";
 static const char *const test_target = "hello\0\0\0";
@@ -58,35 +59,22 @@ TEST test_strncasecmp_impl(void) {
 }
 
 TEST test_strerrorlen_s_impl(void) {
-  enum { errnum = 99999 };
   const size_t len = strerrorlen_s(EDOM);
   ASSERT(len > 0);
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) ||                         \
     defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
   {
     char err_str[256];
-    const size_t buffer_size = sizeof(err_str);
-    const errno_t result = strerror_s(err_str, buffer_size, errnum);
-    if (result == 0) {
-      printf("Error %d: %s\n", errnum, err_str); // Print the error message
-      PASS();
-    } else {
-      printf("strerror_s failed to get error message for %d\n", errnum);
-      FAIL();
-    }
+    strerror_s(err_str, sizeof(err_str), EDOM);
+    ASSERT_EQ_FMT(strlen(err_str), len, "%zu");
   }
 #else
   {
-    const char *err_str;
-    err_str = strerror(errnum);
-    if (strstr(err_str, "Unknown error") != NULL) {
-      ASSERT_EQ_FMT(strlen(err_str), strerrorlen_s(errnum), "%zu");
-      PASS();
-    } else {
-      FAIL();
-    }
+    const char *err_str = strerror(EDOM);
+    ASSERT_EQ_FMT(strlen(err_str), len, "%zu");
   }
 #endif
+  PASS();
 }
 
 /* Suites can group multiple tests with common setup. */

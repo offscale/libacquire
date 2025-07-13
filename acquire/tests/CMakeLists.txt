@@ -29,6 +29,7 @@ if (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
     file(RENAME "${DOWNLOAD_DIR}/greatest-cmake-and-msvc" "${DOWNLOAD_DIR}/greatest")
 endif (NOT IS_DIRECTORY "${DOWNLOAD_DIR}/greatest")
 set(GREATEST_FILE "${DOWNLOAD_DIR}/greatest/greatest.h")
+file(SHA512 "${GREATEST_ARCHIVE}" GREATEST_ARCHIVE_SHA512)
 
 ###############################################
 # Create a dummy corrupted zip file for tests #
