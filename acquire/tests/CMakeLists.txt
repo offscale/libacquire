@@ -136,6 +136,10 @@ source_group("${DOWNLOAD_DIR_LIB} Source Files" FILES "${Source_Files}")
 
 add_library("${DOWNLOAD_DIR_LIB}" SHARED "${Header_Files}" "${Source_Files}")
 
+set_source_files_properties(
+        "${CMAKE_BINARY_DIR}/gen/gen_acquire_net_common.c" PROPERTIES
+        COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;LIBACQUIRE_DOWNLOAD_DIR_IMPL=1"
+)
 target_link_libraries("${DOWNLOAD_DIR_LIB}" PRIVATE "${PROJECT_NAME}")
 
 target_include_directories(

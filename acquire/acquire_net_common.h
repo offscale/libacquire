@@ -79,7 +79,9 @@ bool is_downloaded(const char *url_or_path, enum Checksum checksum,
 }
 
 /* fallback */
-static const char *get_download_dir(void) { return ".fallback_downloads"; }
+#ifdef LIBACQUIRE_DOWNLOAD_DIR_IMPL
+const char *get_download_dir(void) { return ".fallback_downloads"; }
+#endif /* LIBACQUIRE_DOWNLOAD_DIR_IMPL */
 
 #endif /* defined(LIBACQUIRE_IMPLEMENTATION) &&                                \
           defined(LIBACQUIRE_ACQUIRE_NET_COMMON_IMPL) */
