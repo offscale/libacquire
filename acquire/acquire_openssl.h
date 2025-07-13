@@ -138,14 +138,16 @@ int _openssl_verify_async_start(struct acquire_handle *handle,
     break;
   }
 #else
-  const EVP_MD *md =
-      (algorithm == LIBACQUIRE_SHA256) ? EVP_sha256() : EVP_sha512();
-  be->ctx = EVP_MD_CTX_new();
-  if (!be->ctx || (1 != EVP_DigestInit_ex(be->ctx, md, NULL))) {
-    cleanup_openssl_backend(handle);
-    acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
-                             "EVP_DigestInit_ex failed");
-    return -1;
+  {
+    const EVP_MD *md =
+        (algorithm == LIBACQUIRE_SHA256) ? EVP_sha256() : EVP_sha512();
+    be->ctx = EVP_MD_CTX_new();
+    if (!be->ctx || (1 != EVP_DigestInit_ex(be->ctx, md, NULL))) {
+      cleanup_openssl_backend(handle);
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_UNKNOWN,
+                               "EVP_DigestInit_ex failed");
+      return -1;
+    }
   }
 #endif
 

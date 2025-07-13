@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <kubazip/zip/zip.h>
+#include <kubazip/zip.h>
 
 #include "acquire_extract.h"
 #include "acquire_fileutils.h"

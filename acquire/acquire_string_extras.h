@@ -86,7 +86,7 @@ typedef int errno_t;
 #define strerror_s strerror_r
 #endif /* !strerror_s */
 
-#define HAVE_STRERRORLEN_S 1
+/*#define HAVE_STRERRORLEN_S 1*/
 #endif /* defined(__linux__) || defined(linux) || defined(__linux) ||          \
           defined(ANY_BSD) */
 
@@ -130,7 +130,7 @@ extern LIBACQUIRE_EXPORT char *strcasestr(const char *, const char *);
 #endif /* !defined(HAVE_STRCASESTR) || defined(STRCASESTR_IMPL) &&             \
           STRCASESTR_IMPL */
 
-#if !defined(HAVE_STRERRORLEN_S) ||                                            \
+#if !defined(HAVE_STRERRORLEN_S) || HAVE_STRERRORLEN_S == 0 ||                 \
     defined(STRERRORLEN_IMPL) && STRERRORLEN_IMPL
 
 extern LIBACQUIRE_EXPORT size_t strerrorlen_s(errno_t);

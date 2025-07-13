@@ -21,6 +21,10 @@ struct rhash_backend {
   unsigned int algorithm_id;
 };
 
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#else
+__attribute__((unused))
+#endif
 static int rhash_lib_initialized = 0;
 
 extern LIBACQUIRE_EXPORT int

@@ -71,7 +71,7 @@ TEST test_strerrorlen_s_impl(void) {
 #else
   {
     const char *err_str = strerror(EDOM);
-    ASSERT_EQ_FMT(strlen(err_str), len, "%zu");
+    ASSERT_EQ_FMT(strlen(err_str), len, "%ld");
   }
 #endif
   PASS();

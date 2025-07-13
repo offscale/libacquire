@@ -22,10 +22,10 @@ typedef size_t num_type;
 #define BOOL_FORMAT NUM_FORMAT
 #elif defined(__linux__) || defined(linux) || defined(__linux)
 #ifndef NUM_FORMAT
-#define NUM_FORMAT "d"
+#define NUM_FORMAT "ld"
 typedef int num_type;
 #endif /* !NUM_FORMAT */
-#define BOOL_FORMAT "d"
+#define BOOL_FORMAT "ld"
 #else
 #ifndef NUM_FORMAT
 #define NUM_FORMAT "d"
