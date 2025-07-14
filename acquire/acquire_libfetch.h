@@ -40,8 +40,8 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
 
   u = fetchParseURL(url);
   if (u == NULL) {
-    strncpy(handle->error_message, fetchLastErrString,
-            sizeof(handle->error_message) - 1);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_URL_PARSE_FAILED,
+                             fetchLastErrString);
     return -1;
   }
 
@@ -52,15 +52,16 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
 
   f = fetchGet(u, "");
   if (f == NULL) {
-    strncpy(handle->error_message, fetchLastErrString,
-            sizeof(handle->error_message) - 1);
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_URL_PARSE_FAILED,
+                             fetchLastErrString);
     fetchFreeURL(u);
     return -1;
   }
 
   handle->output_file = fopen(dest_path, "wb");
   if (!handle->output_file) {
-    strcpy(handle->error_message, "Failed to open destination file");
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
+                             "Failed to open destination file");
     fclose(f);
     fetchFreeURL(u);
     return -1;
@@ -68,7 +69,8 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
 
   while ((bytes_read = fread(buffer, 1, sizeof(buffer), f)) > 0) {
     if (handle->cancel_flag) {
-      strcpy(handle->error_message, "Download cancelled");
+      acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
+                               "Download cancelled");
       break;
     }
     fwrite(buffer, 1, bytes_read, handle->output_file);

@@ -15,6 +15,7 @@
 static int on_extract_entry(const char *filename, void *arg) {
   struct acquire_handle *handle = (struct acquire_handle *)arg;
   strncpy(handle->current_file, filename, sizeof(handle->current_file) - 1);
+  handle->current_file[sizeof(handle->current_file) - 1] = '\0';
   return handle->cancel_flag ? -1 : 0;
 }
 

@@ -241,28 +241,17 @@ if (LIBACQUIRE_USE_LIBRHASH)
 endif (LIBACQUIRE_USE_LIBRHASH)
 
 if (LIBACQUIRE_USE_LIBCURL)
-    set(EXEC_NAME "test_curl_helpers")
+    set(EXEC_NAME "test_libcurl_backend")
 
-    set(Test_Libcurl_Header_Files "test_libcurl_backend.h")
+    set(Test_Libcurl_Header_Files "${EXEC_NAME}.h")
     source_group("${EXEC_NAME} Header Files" FILES "${Test_Libcurl_Header_Files}")
 
-    set(Test_Libcurl_Source_Files
-            "test_libcurl_backend.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_libcurl.c"
-            "${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
-    )
-    set_source_files_properties("${CMAKE_BINARY_DIR}/gen/gen_acquire_string_extras.c"
-            PROPERTIES COMPILE_DEFINITIONS "LIBACQUIRE_IMPLEMENTATION=1;STRCASESTR_IMPL=1;STRNCASECMP_IMPL=1")
+    set(Test_Libcurl_Source_Files "${EXEC_NAME}.c")
     source_group("${EXEC_NAME} Source Files" FILES "${Test_Libcurl_Source_Files}")
 
     add_executable("${EXEC_NAME}" "${Test_Libcurl_Header_Files}" "${Test_Libcurl_Source_Files}")
 
     target_compile_definitions(${EXEC_NAME} PRIVATE ACQUIRE_TESTING=1)
-
-    target_link_libraries("${EXEC_NAME}" PRIVATE CURL::libcurl)
-    if (HAS_LIBBSD)
-        target_link_libraries("${EXEC_NAME}" PRIVATE LibBSD::LibBSD)
-    endif (HAS_LIBBSD)
 
     target_link_libraries("${EXEC_NAME}" PRIVATE "${PROJECT_NAME}")
 

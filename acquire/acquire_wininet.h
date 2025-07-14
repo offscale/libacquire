@@ -66,7 +66,6 @@ int acquire_download_sync(struct acquire_handle *handle, const char *url,
   {
     const errno_t err = fopen_s(&handle->output_file, dest_path, "wb");
     if (err != 0 || handle->output_file == NULL) {
-      fprintf(stderr, "couldn't open file for reading %s\n", dest_path);
       acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
                                "Failed to open destination file: %s",
                                dest_path);

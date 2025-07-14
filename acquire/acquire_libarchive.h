@@ -94,6 +94,7 @@ int acquire_extract_async_start(struct acquire_handle *handle,
   }
   handle->backend_handle = be;
   strncpy(be->dest_path, dest_path, sizeof(be->dest_path) - 1);
+  be->dest_path[sizeof(be->dest_path) - 1] = '\0';
 
   flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_ACL |
           ARCHIVE_EXTRACT_FFLAGS;
@@ -144,6 +145,7 @@ enum acquire_status acquire_extract_async_poll(struct acquire_handle *handle) {
   }
   strncpy(handle->current_file, archive_entry_pathname(entry),
           sizeof(handle->current_file) - 1);
+  handle->current_file[sizeof(handle->current_file) - 1] = '\0';
   handle->bytes_processed += archive_entry_size(entry);
   {
     char full_path[NAME_MAX * 2];

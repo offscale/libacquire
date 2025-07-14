@@ -100,7 +100,6 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
   {
     const errno_t err = fopen_s(&be->file, filepath, "rb");
     if (err != 0 || be->file == NULL) {
-      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
       acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
                                "Cannot open file: %s", filepath);
       free(be);
@@ -126,6 +125,7 @@ int _wincrypt_verify_async_start(struct acquire_handle *handle,
   }
 #else
   strncpy(be->expected_hash, expected_hash, sizeof(be->expected_hash) - 1);
+  be->expected_hash[sizeof(be->expected_hash) - 1] = '\0';
 #endif
   handle->backend_handle = be;
   handle->status = ACQUIRE_IN_PROGRESS;

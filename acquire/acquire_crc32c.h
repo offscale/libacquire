@@ -122,7 +122,6 @@ int _crc32c_verify_async_start(struct acquire_handle *handle,
   {
     const errno_t err = fopen_s(&be->file, filepath, "rb");
     if (err != 0 || be->file == NULL) {
-      fprintf(stderr, "couldn't open file for reading %s\n", filepath);
       acquire_handle_set_error(handle, ACQUIRE_ERROR_FILE_OPEN_FAILED,
                                "Cannot open file: %s", filepath);
       free(be);

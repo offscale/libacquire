@@ -163,6 +163,12 @@ int acquire_download_async_start(struct acquire_handle *handle, const char *url,
                    CURL_SSLVERSION_TLSv1_2);
 
   be->multi_handle = curl_multi_init();
+  if (!be->multi_handle) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_INIT_FAILED,
+                             "curl_multi_init() failed");
+    cleanup_curl_backend(handle);
+    return -1;
+  }
   curl_multi_add_handle(be->multi_handle, be->easy_handle);
 
   handle->status = ACQUIRE_IN_PROGRESS;
@@ -171,51 +177,55 @@ int acquire_download_async_start(struct acquire_handle *handle, const char *url,
 
 enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
   struct curl_backend *be;
-  int still_running = 0, r;
-  CURLMsg *msg;
-  if (!handle || !handle->backend_handle)
+  CURLMcode mc;
+  int still_running = 0;
+
+  /* 1. Basic sanity checks and state validation */
+  if (handle == NULL)
     return ACQUIRE_ERROR;
   if (handle->status != ACQUIRE_IN_PROGRESS)
     return handle->status;
+  if (handle->backend_handle == NULL) {
+    acquire_handle_set_error(handle, ACQUIRE_ERROR_INVALID_ARGUMENT,
+                             "Polling on an uninitialized backend.");
+    return ACQUIRE_ERROR;
+  }
 
   be = (struct curl_backend *)handle->backend_handle;
+
+  /* 2. Check for user cancellation first */
   if (handle->cancel_flag) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_CANCELLED,
-                             "Download cancelled by user");
-    handle->status = ACQUIRE_ERROR;
+                             "Download cancelled by user.");
     cleanup_curl_backend(handle);
-    return handle->status;
+    return ACQUIRE_ERROR;
   }
 
-  r = curl_multi_perform(be->multi_handle, &still_running);
-  if (r != CURLM_OK) {
+  /* 3. Drive the multi stack to perform I/O */
+  mc = curl_multi_perform(be->multi_handle, &still_running);
+  if (mc != CURLM_OK) {
     acquire_handle_set_error(handle, ACQUIRE_ERROR_NETWORK_FAILURE,
                              "curl_multi_perform() failed: %s",
-                             curl_multi_strerror(r));
+                             curl_multi_strerror(mc));
     cleanup_curl_backend(handle);
-    return handle->status;
+    return ACQUIRE_ERROR;
   }
-  if (still_running == 0) {
-    int queued;
-    msg = curl_multi_info_read(be->multi_handle, &queued);
-    if (msg) {
-      if (msg->msg == CURLMSG_DONE) {
-        long response_code = 0;
 
-        /* First, check if the transfer was successful */
+  /* 4. Check for transfer completion messages */
+  {
+    CURLMsg *msg;
+    int msgs_left;
+    while ((msg = curl_multi_info_read(be->multi_handle, &msgs_left))) {
+      if (msg->msg == CURLMSG_DONE) {
+        /* This transfer is finished. Since we only manage one, the whole
+         * operation is done. */
         if (msg->data.result == CURLE_OK) {
-          curl_off_t cl;
           handle->status = ACQUIRE_COMPLETE;
-          /* Explicitly get final size to ensure it's set */
-          if (curl_easy_getinfo(msg->easy_handle,
-                                CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
-                                &cl) == CURLE_OK &&
-              cl >= 0) {
-            handle->total_size = (off_t)cl;
-          }
         } else {
+          long response_code = 0;
           curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE,
                             &response_code);
+
           if (msg->data.result == CURLE_COULDNT_RESOLVE_HOST) {
             acquire_handle_set_error(handle, ACQUIRE_ERROR_HOST_NOT_FOUND,
                                      "Could not resolve host: %s",
@@ -229,22 +239,21 @@ enum acquire_status acquire_download_async_poll(struct acquire_handle *handle) {
                                      curl_easy_strerror(msg->data.result));
           }
         }
+        break; /* Exit loop, we only care about our one transfer */
       }
-    } else {
-      /* If still_running is 0 but we have no message, it implies success. */
-      if (handle->status == ACQUIRE_IN_PROGRESS) {
-        curl_off_t cl;
-        handle->status = ACQUIRE_COMPLETE;
-        if (curl_easy_getinfo(be->easy_handle,
-                              CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
-                              &cl) == CURLE_OK &&
-            cl >= 0) {
-          handle->total_size = (off_t)cl;
-        }
-      }
+    }
+  }
+
+  /* 5. If it's not running, the operation is over */
+  if (still_running == 0) {
+    if (handle->status == ACQUIRE_IN_PROGRESS) {
+      /* If curl reports not running but we haven't received a DONE message,
+       * it implies success. */
+      handle->status = ACQUIRE_COMPLETE;
     }
     cleanup_curl_backend(handle);
   }
+
   return handle->status;
 }
 
